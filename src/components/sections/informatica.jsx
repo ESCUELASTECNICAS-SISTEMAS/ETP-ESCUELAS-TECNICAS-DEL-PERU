@@ -1,8 +1,18 @@
 import React from 'react'
 import info from '../../data/informatica.json'
+import CardCurso from '../UI/CardCurso'
 
 export default function Informatica(){
   if(!info) return null
+
+  // Build simple course objects from the informatica list so they render as cards
+  const cursos = info.cursos.map((titulo, i) => ({
+    id: `inf-${i}`,
+    titulo,
+    modalidad: 'Virtual / Presencial',
+    duracion: '40 horas',
+    image: '/assets/images/Hero1.jpg'
+  }))
 
   return (
     <section id="informatica" className="section-padding">
@@ -11,30 +21,13 @@ export default function Informatica(){
           <h3>Cursos Informáticos</h3>
           <a href="#" className="link-primary">Ver todos</a>
         </div>
-        <div className="row">
-          <div className="col-12 col-md-6">
-            <div className="card h-100">
-              <div className="card-body">
-                <h5 className="card-title">Paquete Informática</h5>
-                <p className="text-muted">Incluye: {info.cursos.join(', ')}</p>
-                <div className="mt-3">
-                  <div>Matrícula: <strong>S/ {info.matricula}</strong></div>
-                  <div>Pensión: <strong>S/ {info.pension}</strong></div>
-                  <div className="text-success">Promoción: Matrícula S/ {info.promocion.matricula_desc} - Pensión S/ {info.promocion.pension_desc}</div>
-                </div>
-              </div>
+
+        <div className="row g-4">
+          {cursos.map((c, i) => (
+            <div className="col-12 col-sm-6 col-md-4" key={i}>
+              <CardCurso curso={c} />
             </div>
-          </div>
-          <div className="col-12 col-md-6">
-            <div className="card h-100">
-              <div className="card-body">
-                <h6>Temas</h6>
-                <ul>
-                  {info.cursos.map((c,i) => <li key={i}>{c}</li>)}
-                </ul>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

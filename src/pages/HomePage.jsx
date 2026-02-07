@@ -9,7 +9,7 @@ import CursosGenerales from '../components/sections/cursosgenerales'
 
 export default function HomePage(){
   return (
-    <div>
+    <div className="home-page">
       <HeroCarousel />
       <Highlights />
       <Carreras />

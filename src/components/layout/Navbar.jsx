@@ -47,6 +47,9 @@ export default function Navbar() {
               <a className="nav-link" href="#carreras">Carreras</a>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/noticias">Noticias</Link>
+            </li>
+            <li className="nav-item">
               <a className="btn btn-accent ms-3 contact-btn" href="#contacto">Contacto</a>
             </li>
           </ul>

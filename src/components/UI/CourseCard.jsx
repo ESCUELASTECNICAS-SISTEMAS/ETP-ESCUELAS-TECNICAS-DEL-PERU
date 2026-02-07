@@ -22,6 +22,13 @@ export default function CourseCard({ item }) {
             </div>
           </div>
         )}
+
+        <div className="card-hover-overlay">
+          <div className="overlay-ctas">
+            <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-sm btn-light me-2">Ver ficha</a>
+            <a href="#contacto" className="btn btn-sm btn-accent">Inscribirme</a>
+          </div>
+        </div>
       </div>
       <div className="card-body d-flex flex-column">
         <h5 className="card-title">{item.titulo}</h5>

@@ -153,6 +153,49 @@ main{padding-top:var(--navbar-height)}
 
 .card img{object-fit:cover;height:180px}
 
+/* Larger image for carreras cards and responsive sizing */
+/* Larger image for carreras, cursos and talleres cards and responsive sizing */
+#carreras .card-img-wrapper,
+#cursos .card-img-wrapper,
+#talleres .card-img-wrapper{height:260px}
+@media (max-width:991px){
+  #carreras .card-img-wrapper,
+  #cursos .card-img-wrapper,
+  #talleres .card-img-wrapper{height:220px}
+}
+@media (max-width:575px){
+  #carreras .card-img-wrapper,
+  #cursos .card-img-wrapper,
+  #talleres .card-img-wrapper{height:160px}
+}
+
+/* Homepage card entrance animation + hover lift */
+@keyframes cardIn {
+  from{opacity:0; transform:translateY(12px) scale(.995)}
+  to{opacity:1; transform:translateY(0) scale(1)}
+}
+.home-page .card{
+  opacity:0;
+  transform:translateY(12px) scale(.995);
+  animation: cardIn .48s cubic-bezier(.2,.9,.2,1) forwards;
+}
+/* Smooth hover: gentle lift + scale with transition (no bounce) */
+.home-page .card{
+  transition: transform .22s cubic-bezier(.2,.9,.2,1), box-shadow .22s ease;
+}
+.home-page .card:hover{
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(2,6,23,0.10);
+}
+
+/* Slightly gentler on very small screens */
+@media (max-width:575px){
+  .home-page .card:hover{
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 10px 24px rgba(2,6,23,0.08);
+  }
+}
+
 footer{background:#212529;color:#fff}
 
 /* Accent styles */
@@ -177,6 +220,91 @@ footer{background:#212529;color:#fff}
 .card-img-top{width:100%;height:100%;object-fit:cover}
 .card-image-placeholder{background:#e9ecef;color:#6c757d;height:100%;}
 .card-image-placeholder .fs-4{opacity:.9}
+
+/* Hover overlay that appears over the card image */
+.card-img-wrapper{position:relative}
+.card-hover-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.55));
+  opacity:0;transform:translateY(6px);transition:opacity .22s ease, transform .22s ease;
+  pointer-events:none;
+}
+.card:hover .card-hover-overlay,.card:focus-within .card-hover-overlay{
+  opacity:1;transform:translateY(0);pointer-events:auto;
+}
+.overlay-ctas .btn{min-width:92px}
+.overlay-ctas .btn-light{background:rgba(255,255,255,0.92);color:#0b2140}
+.overlay-ctas .btn-accent{background:var(--primary-dark);border:none}
+
+@media (max-width:575px){
+  .card-hover-overlay{background:linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.45));}
+  .overlay-ctas .btn{min-width:72px;padding:.35rem .6rem;font-size:.85rem}
+}
+
+/* News aside previews (used in Carreras section) */
+.news-aside{position:sticky;top:calc(var(--navbar-height) + 12px)}
+.news-preview .small-card{border-radius:.5rem;overflow:hidden}
+.news-preview img{height:72px;width:100%;object-fit:cover}
+.news-preview .card-body{padding:.5rem}
+.news-preview .card-title{font-size:.92rem;margin-bottom:0}
+.news-preview .text-muted{font-size:.8rem}
+
+@media (max-width:991px){
+  .news-aside{position:static}
+}
+
+/* rotor single-item animation */
+.news-preview-single{overflow:hidden;animation: slideInTop .42s ease}
+@keyframes slideInTop{
+  from{transform:translateY(-8px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+.news-rotor .btn{font-weight:700}
+
+/* vertical rotor showing multiple news items */
+.news-viewport{overflow:hidden}
+.news-list{transition:transform .45s cubic-bezier(.2,.9,.2,1)}
+.news-item{display:block;padding:0;margin-bottom:8px;height:86px}
+.news-item .col-4{padding:0}
+.news-item img{height:86px;object-fit:cover}
+.news-item .card-body{padding:.5rem}
+
+/* WhatsApp floating action button */
+.whatsapp-fab{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:1080;
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;text-decoration:none;font-size:1.35rem;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  box-shadow:0 10px 30px rgba(2,6,23,0.16);
+  transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+.whatsapp-fab:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(2,6,23,0.18);opacity:0.98}
+.whatsapp-fab:active{transform:translateY(-2px)}
+
+@media (max-width:575px){
+  .whatsapp-fab{right:14px;bottom:14px;width:48px;height:48px;font-size:1.05rem}
+}
+
+/* Social FAB group (stacked above WhatsApp) */
+.social-fab-group{
+  position:fixed;right:18px;bottom:86px;z-index:1080;display:flex;flex-direction:column;gap:10px;align-items:center
+}
+.social-fab{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;font-size:1.05rem;box-shadow:0 10px 26px rgba(2,6,23,0.12);transition:transform .16s ease,box-shadow .16s ease,opacity .16s ease}
+.social-fab:hover{transform:translateY(-5px);box-shadow:0 18px 38px rgba(2,6,23,0.14)}
+.social-fab.facebook{background:#1877F2}
+.social-fab.instagram{background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)}
+.social-fab.tiktok{background:#010101}
+.social-fab.tiktok i{color:#fff}
+
+@media (max-width:575px){
+  .social-fab-group{right:14px;bottom:78px}
+  .social-fab{width:42px;height:42px}
+}
 
 /* Badge accent for special courses */
 .badge-accent{
