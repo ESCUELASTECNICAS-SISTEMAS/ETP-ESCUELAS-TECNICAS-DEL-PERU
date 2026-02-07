@@ -1,7 +1,11 @@
 import React from 'react'
 import HeroCarousel from '../components/home/HeroCarousel'
 import Highlights from '../components/home/Highlights'
-import Cursos from '../components/sections/cursos'
+import Carreras from '../components/sections/carreras'
+import Talleres from '../components/sections/talleres'
+import Informatica from '../components/sections/informatica'
+import Especiales from '../components/sections/especiales'
+import CursosGenerales from '../components/sections/cursosgenerales'
 import noticias from '../data/noticias.json'
 
 export default function HomePage(){
@@ -9,7 +13,11 @@ export default function HomePage(){
     <div>
       <HeroCarousel />
       <Highlights />
-      <Cursos />
+      <Carreras />
+      <Talleres />
+      <Informatica />
+          <Especiales />
+      <CursosGenerales />
 
       <section id="noticias" className="section-padding bg-light">
         <div className="container">

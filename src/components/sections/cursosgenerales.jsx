@@ -1,17 +1,21 @@
 import React from 'react'
-import carreras from '../../data/carreras.json'
+import cursos from '../../data/cursos.json'
 import CourseCard from '../UI/CourseCard'
 
-export default function Carreras(){
+export default function CursosGenerales(){
+  const generales = cursos.filter(c => !c.tipo || c.tipo.toLowerCase() === 'curso')
+
+  if(!generales.length) return null
+
   return (
-    <section id="carreras" className="section-padding">
+    <section id="cursos-generales" className="section-padding bg-light">
       <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3>Carreras</h3>
-          <a href="#" className="link-primary">Ver todas</a>
+          <h3>Cursos</h3>
+          <a href="#" className="link-primary">Ver todos</a>
         </div>
         <div className="row g-4">
-          {carreras.map((c, i) => (
+          {generales.map((c,i) => (
             <div className="col-12 col-md-4" key={i}>
               <CourseCard item={c} />
             </div>
