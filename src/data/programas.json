@@ -1,0 +1,31 @@
+[
+  {
+    "id": "programa-auxiliar-informatica",
+    "tipo": "Programa",
+    "titulo": "Auxiliar en Soporte Informático",
+    "modalidad": "Presencial",
+    "matricula": 80,
+    "pension": 200,
+    "descuento_pct": 15,
+    "descripcion": "Programa completo de soporte y mantenimiento de equipos.",
+    "temario": ["Hardware", "Sistemas Operativos", "Redes básicas"]
+  },
+  {
+    "id": "programa-electricidad",
+    "tipo": "Programa",
+    "titulo": "Instalaciones Eléctricas Residenciales",
+    "modalidad": "Presencial",
+    "pago_unico": 450,
+    "descripcion": "Formación en instalaciones eléctricas domiciliarias.",
+    "temario": ["Circuitos", "Seguridad eléctrica", "Montaje"]
+  },
+  {
+    "id": "programa-emprendimiento",
+    "tipo": "Programa",
+    "titulo": "Emprendimiento y Gestión de Negocios",
+    "modalidad": "Virtual",
+    "pago_unico": 200,
+    "descripcion": "Programa orientado a crear y gestionar microempresas.",
+    "temario": ["Plan de negocio", "Marketing básico", "Finanzas simples"]
+  }
+]

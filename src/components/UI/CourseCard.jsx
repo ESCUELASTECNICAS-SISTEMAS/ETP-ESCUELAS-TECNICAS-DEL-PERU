@@ -59,7 +59,7 @@ export default function CourseCard({ item }) {
         )}
 
         <div className="mt-auto">
-          <a href={`#${item.id}`} className="btn btn-primary me-2">Ver ficha</a>
+          <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-primary me-2">Ver ficha</a>
           <a href="#contacto" className="btn btn-accent">Inscribirme</a>
         </div>
       </div>

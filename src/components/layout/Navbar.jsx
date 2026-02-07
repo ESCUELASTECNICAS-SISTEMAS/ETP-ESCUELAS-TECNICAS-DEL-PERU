@@ -1,13 +1,26 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav className={`navbar navbar-expand-lg navbar-light bg-white nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
       <div className="container">
-        <a className="navbar-brand d-flex align-items-center" href="#">
-          <img src="/assets/images/logo.png" alt="ETP" height="40" className="me-2" />
-          <span className="fw-bold">Escuelas Técnicas del Perú</span>
-        </a>
+        <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Escuelas Técnicas del Perú">
+          <img src="/assets/images/logo.jpg" alt="ETP" className="me-2 brand-img" />
+          <div className="brand-text">
+            <div className="brand-title">Escuelas Técnicas</div>
+            <div className="brand-subtitle">del Perú</div>
+          </div>
+        </Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -22,25 +35,19 @@ export default function Navbar() {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="/">Inicio</a>
+              <Link className="nav-link active" aria-current="page" to="/">Inicio</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/cursos">Cursos</a>
+              <Link className="nav-link" to="/cursos">Cursos</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#modalidades">Modalidades</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#especialidades">Especialidades</a>
+              <Link className="nav-link" to="/cursos-informatica">Cursos Informáticos</Link>
             </li>
             <li className="nav-item">
               <a className="nav-link" href="#carreras">Carreras</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#noticias">Noticias</a>
-            </li>
-            <li className="nav-item">
-              <a className="btn btn-accent ms-3" href="#contacto">Contacto</a>
+              <a className="btn btn-accent ms-3 contact-btn" href="#contacto">Contacto</a>
             </li>
           </ul>
         </div>
