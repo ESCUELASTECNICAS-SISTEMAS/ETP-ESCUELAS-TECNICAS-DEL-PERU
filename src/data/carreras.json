@@ -1,0 +1,37 @@
+[
+  {
+    "id": "carr-aux-1",
+    "categoria": "Carreras Auxiliares",
+    "modalidad": "Presencial",
+    "titulo": "Apoyo Administrativo",
+    "duracion": "1 año",
+    "matricula": 50,
+    "pension_mensual": 200,
+    "promocion": {
+      "porcentaje": 25,
+      "matricula_desc": 25,
+      "pension_desc": 150
+    },
+    "descripcion": "Formación en tareas administrativas básicas."
+  },
+  {
+    "id": "carr-aux-2",
+    "categoria": "Carreras Auxiliares",
+    "modalidad": "Presencial",
+    "titulo": "Asistencia en Contabilidad",
+    "duracion": "1 año",
+    "matricula": 50,
+    "pension_mensual": 200,
+    "promocion": { "porcentaje": 25, "matricula_desc": 25, "pension_desc": 150 }
+  },
+  {
+    "id": "carr-aux-3",
+    "categoria": "Carreras Auxiliares",
+    "modalidad": "Presencial",
+    "titulo": "Soporte Técnico",
+    "duracion": "1 año",
+    "matricula": 50,
+    "pension_mensual": 200,
+    "promocion": { "porcentaje": 25, "matricula_desc": 25, "pension_desc": 150 }
+  }
+]

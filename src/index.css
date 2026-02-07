@@ -1,0 +1,41 @@
+:root{
+  --primary: #0d6efd;
+  --accent: #ff6a00;
+  --muted: #6c757d;
+  --hero-height: 60vh;
+}
+
+/* Keep bootstrap defaults intact; add small app-specific overrides */
+body{
+  margin:0;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #212529;
+  background-color: #f8f9fa;
+}
+
+a{color:var(--primary)}
+
+.hero-carousel{height:var(--hero-height);object-fit:cover}
+.section-padding{padding:3rem 1rem}
+
+.navbar-brand img{height:42px}
+
+.card img{object-fit:cover;height:180px}
+
+footer{background:#212529;color:#fff}
+
+/* Accent styles */
+.btn-accent{
+  color: #fff;
+  background: var(--accent);
+  border-color: rgba(0,0,0,0.08);
+}
+.btn-accent:hover{filter:brightness(.95)}
+
+.highlight-dot{display:inline-block;width:12px;height:12px;background:var(--accent);border-radius:50%;margin-bottom:8px}
+
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.1));}
+
+.carousel-caption h1,.carousel-caption h2{color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+
+

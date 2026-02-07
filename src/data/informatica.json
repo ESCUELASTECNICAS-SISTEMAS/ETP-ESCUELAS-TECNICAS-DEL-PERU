@@ -1,0 +1,6 @@
+{
+  "matricula": 50,
+  "pension": 200,
+  "promocion": { "matricula_desc": 25, "pension_desc": 120 },
+  "cursos": ["Ofimática","Excel","Diseño Gráfico","Edición de Video","Power BI"]
+}

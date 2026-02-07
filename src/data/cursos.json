@@ -1,0 +1,49 @@
+[
+  {
+    "id": "curso-celulares",
+    "tipo": "Taller",
+    "titulo": "Reparación de Celulares",
+    "modalidad": "Presencial",
+    "precio": 450,
+    "descuento_pct": 20,
+    "precio_con_descuento": 360,
+    "descripcion": "Taller práctico de reparación de móviles.",
+    "temario": ["Diagnóstico", "Reemplazo de pantallas", "Soldadura BGA"]
+  },
+  {
+    "id": "curso-muebles",
+    "tipo": "Taller",
+    "titulo": "Diseño y Armado de Muebles en Melamina",
+    "modalidad": "Presencial",
+    "precio": 400,
+    "descuento_pct": 20,
+    "precio_con_descuento": 320,
+    "temario": ["Medidas", "Corte", "Montaje", "Acabados"]
+  },
+  {
+    "id": "curso-compus",
+    "tipo": "Curso",
+    "titulo": "Reparación de Computadoras",
+    "modalidad": "Presencial",
+    "matricula": 50,
+    "pension": 150,
+    "descuento_pct": 25,
+    "temario": ["Hardware", "Formateo", "Redes básicas"]
+  },
+  {
+    "id": "curso-camaras",
+    "tipo": "Curso",
+    "titulo": "Instalación de Cámaras de Seguridad",
+    "modalidad": "Presencial",
+    "pago_unico": 200,
+    "temario": ["Planificación", "Montaje", "Configuración"]
+  },
+  {
+    "id": "curso-ai",
+    "tipo": "Especial",
+    "titulo": "Inteligencia Artificial",
+    "modalidad": "Presencial/Virtual",
+    "pago_unico": 140,
+    "temario": ["Fundamentos", "ML básico", "Proyectos prácticos"]
+  }
+]
