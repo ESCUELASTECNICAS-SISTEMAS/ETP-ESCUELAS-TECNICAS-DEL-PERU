@@ -8,6 +8,8 @@ import CarrerasPage from './pages/CarrerasPage'
 import CursosInformatica from './pages/TalleresInformatica'
 import CourseDetail from './pages/CourseDetail'
 import NoticiasPage from './pages/NoticiasPage'
+import LoginPage from './pages/LoginPage'
+import AdminDashboard from './pages/AdminDashboard'
 import { Routes, Route } from 'react-router-dom'
 
 export default function App(){
@@ -20,6 +22,8 @@ export default function App(){
           <Route path="/cursos" element={<CursosPage />} />
           <Route path="/programas" element={<CarrerasPage />} />
           <Route path="/noticias" element={<NoticiasPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/curso/:id" element={<CourseDetail />} />
           <Route path="/programa/:id" element={<CourseDetail />} />
