@@ -3,6 +3,12 @@ import { useParams } from 'react-router-dom'
 import cursos from '../data/cursos.json'
 import programas from '../data/programas.json'
 
+// helper to resolve image from different shapes
+const resolveImage = (item) => {
+  if(!item) return null
+  return item.image || item.imagen || item.image_url || item.url || (item.thumbnail && item.thumbnail.url) || (item.media && item.media.url) || item.foto || null
+}
+
 export default function CourseDetail(){
   const { id } = useParams()
   let item = cursos.find(c => c.id === id)
@@ -23,6 +29,16 @@ export default function CourseDetail(){
   return (
     <div className="section-padding">
       <div className="container">
+        {(() => {
+          const img = resolveImage(item)
+          if (img) return (
+            <div className="course-hero mb-4">
+              <img src={img} alt={item.titulo || ''} />
+            </div>
+          )
+          return null
+        })()}
+
         <h2>{item.titulo}</h2>
         <p className="text-muted">{item.modalidad} • {item.tipo || (source === 'programas' ? 'Programa' : 'Curso')}</p>
         {item.pago_unico && <p>Pago único: S/ {item.pago_unico}</p>}

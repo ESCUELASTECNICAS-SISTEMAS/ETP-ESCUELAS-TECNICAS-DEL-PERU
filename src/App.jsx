@@ -10,6 +10,10 @@ import CourseDetail from './pages/CourseDetail'
 import NoticiasPage from './pages/NoticiasPage'
 import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminCarousel from './pages/AdminCarousel'
+import AdminMedia from './pages/AdminMedia'
+import AdminCourses from './pages/AdminCourses'
+import AdminRoute from './components/layout/AdminRoute'
 import { Routes, Route } from 'react-router-dom'
 
 export default function App(){
@@ -23,7 +27,10 @@ export default function App(){
           <Route path="/programas" element={<CarrerasPage />} />
           <Route path="/noticias" element={<NoticiasPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin/carousel" element={<AdminRoute><AdminCarousel /></AdminRoute>} />
+            <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
+            <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/curso/:id" element={<CourseDetail />} />
           <Route path="/programa/:id" element={<CourseDetail />} />

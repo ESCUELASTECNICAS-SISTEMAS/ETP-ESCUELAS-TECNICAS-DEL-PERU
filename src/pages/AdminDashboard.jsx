@@ -28,7 +28,6 @@ function SectionCard({ title, desc, icon, onManage }){
 
 export default function AdminDashboard(){
   const navigate = useNavigate()
-
   useEffect(() => {
     try {
       const raw = localStorage.getItem('etp_user')
@@ -39,18 +38,22 @@ export default function AdminDashboard(){
     } catch (e) { navigate('/login') }
   }, [navigate])
 
+  const cards = [
+    { title: 'Carousel', desc: 'Administrar diapositivas del home', route: '/admin/carousel' },
+    { title: 'Media', desc: 'Administrar imágenes y recursos', route: '/admin/media' },
+    { title: 'Usuarios', desc: 'Gestionar administradores', route: '/admin/users' },
+    { title: 'Cursos', desc: 'Agregar/editar cursos', route: '/admin/courses' },
+  ]
+
   const handleManage = (section) => {
-    // For now, navigate to a placeholder route or show a simple alert.
-    // Future: open editors for each section and call API endpoints.
     if (section === 'Carousel') navigate('/admin/carousel')
-    else if (section === 'Cursos') navigate('/admin/cursos')
+    else if (section === 'Cursos') navigate('/admin/courses')
     else if (section === 'Noticias') navigate('/admin/noticias')
     else if (section === 'Media') navigate('/admin/media')
     else if (section === 'Social Links') navigate('/admin/social')
     else if (section === 'Usuarios') navigate('/admin/users')
     else alert('Gestionar: ' + section)
   }
-
   return (
     <div className="container section-padding">
       <div className="row mb-4">

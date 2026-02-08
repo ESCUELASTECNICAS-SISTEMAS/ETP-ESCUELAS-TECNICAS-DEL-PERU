@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { endpoints } from '../utils/apiStatic'
 import { useNavigate } from 'react-router-dom'
 
 export default function LoginPage(){
@@ -14,7 +15,7 @@ export default function LoginPage(){
     setError(null)
     setLoading(true)
     try {
-      const res = await axios.post('https://servidorpaginaetp-production.up.railway.app/auth/login', { email, password }, { headers: { 'Content-Type': 'application/json' } })
+      const res = await axios.post(endpoints.LOGIN, { email, password }, { headers: { 'Content-Type': 'application/json' } })
       const data = res.data
       localStorage.setItem('etp_token', data.token)
       localStorage.setItem('etp_user', JSON.stringify(data.user))
