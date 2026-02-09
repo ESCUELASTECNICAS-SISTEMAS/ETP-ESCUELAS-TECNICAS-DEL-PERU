@@ -4,6 +4,13 @@ import CourseCard from '../UI/CourseCard'
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
 
+const tipoValue = curso => (curso?.type || curso?.tipo || '').toLowerCase()
+
+const isCursoOTaller = curso => {
+  const val = tipoValue(curso)
+  return val === 'taller' || val === 'cursos_talleres'
+}
+
 export default function Talleres(){
   const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,28 +30,18 @@ export default function Talleres(){
           titulo: c.title || c.titulo || c.name,
           modalidad: c.modalidad || c.mode || c.modality || '',
           descripcion: c.description || c.descripcion || c.subtitle || '',
-          duration: c.duration || c.hours || null,
           image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
         }))
-        if(mapped.length) {
-          // ensure featured local talleres are present (guarantee requested workshops)
-          const featuredIds = ['curso-celulares','curso-muebles','curso-compus','curso-camaras']
-          const featuredLocal = cursosLocal.filter(c => featuredIds.includes(c.id))
-          const merged = [
-            ...featuredLocal,
-            ...mapped.filter(m => !featuredLocal.some(f => f.id === m.id))
-          ]
-          setCursos(merged)
-        }
-        else setCursos(cursosLocal.filter(c => c.tipo && c.tipo.toLowerCase() === 'taller'))
-      }catch(err){ setCursos(cursosLocal.filter(c => c.tipo && c.tipo.toLowerCase() === 'taller')) }
+        if(mapped.length) setCursos(mapped)
+        else setCursos(cursosLocal.filter(isCursoOTaller))
+      }catch(err){ setCursos(cursosLocal.filter(isCursoOTaller)) }
       finally{ if(mounted) setLoading(false) }
     }
     load()
     return () => { mounted = false }
   }, [])
 
-  const talleres = cursos.filter(c => c.tipo && String(c.tipo).toLowerCase() === 'taller')
+  const talleres = cursos.filter(isCursoOTaller)
   if(loading && talleres.length === 0) return null
 
   return (

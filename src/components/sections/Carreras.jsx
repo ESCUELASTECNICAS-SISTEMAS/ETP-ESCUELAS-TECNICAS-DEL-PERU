@@ -44,6 +44,11 @@ export default function Carreras(){
   const prev = () => setCurrent(i => (i - 1 + noticias.length) % noticias.length)
   const next = () => setCurrent(i => (i + 1) % noticias.length)
 
+  const carrerasAuxiliares = carreras.filter(c => {
+    const tipo = (c.type || c.tipo || '').toLowerCase()
+    return tipo !== 'cursos_talleres'
+  })
+
   return (
     <section id="carreras" className="section-padding">
       <div className="container">
@@ -55,7 +60,7 @@ export default function Carreras(){
             </div>
 
             <div className="row g-4">
-              {carreras.map((c, i) => (
+              {carrerasAuxiliares.map((c, i) => (
                 <div className="col-12 col-md-4" key={i}>
                   <CourseCard item={c} showPrice={false} />
                 </div>
