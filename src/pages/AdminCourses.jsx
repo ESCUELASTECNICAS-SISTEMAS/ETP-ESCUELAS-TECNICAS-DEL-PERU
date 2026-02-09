@@ -102,7 +102,11 @@ export default function AdminCourses(){
         // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
-      setForm({ title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true })
+      setForm({ 
+        title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
+        hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+        modalidad: '', temario: ''
+      })
       await fetchCourses()
       await fetchMedia()
     }catch(err){ console.error('createCourse', err); setError('Error al crear curso') }
@@ -165,7 +169,14 @@ export default function AdminCourses(){
 
   
 
-  const cancelEdit = () => { setEditingId(null); setForm({ title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true }) }
+  const cancelEdit = () => { 
+    setEditingId(null); 
+    setForm({ 
+      title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
+      hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+      modalidad: '', temario: ''
+    }) 
+  }
 
   const saveEdit = async (id) => {
     setSaving(true); setError(null)
