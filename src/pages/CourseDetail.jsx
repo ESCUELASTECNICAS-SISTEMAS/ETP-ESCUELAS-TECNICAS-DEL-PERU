@@ -47,9 +47,22 @@ export default function CourseDetail(){
         {item.temario && (
           <>
             <h5>Temario</h5>
-            <ul>
-              {item.temario.map((t,i) => <li key={i}>{t}</li>)}
-            </ul>
+            <div>
+              {item.temario.map((t,i) => {
+                if (typeof t === 'string') return <li key={i}>{t}</li>
+                if (t && typeof t === 'object' && t.title) {
+                  return (
+                    <div key={i} className="mb-2">
+                      <h6 className="mb-1">{t.title}</h6>
+                      <ul>
+                        {Array.isArray(t.items) ? t.items.map((it,ii) => <li key={ii}>{it}</li>) : null}
+                      </ul>
+                    </div>
+                  )
+                }
+                return <div key={i}>{JSON.stringify(t)}</div>
+              })}
+            </div>
           </>
         )}
       </div>

@@ -23,9 +23,19 @@ export default function Talleres(){
           titulo: c.title || c.titulo || c.name,
           modalidad: c.modalidad || c.mode || c.modality || '',
           descripcion: c.description || c.descripcion || c.subtitle || '',
+          duration: c.duration || c.hours || null,
           image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
         }))
-        if(mapped.length) setCursos(mapped)
+        if(mapped.length) {
+          // ensure featured local talleres are present (guarantee requested workshops)
+          const featuredIds = ['curso-celulares','curso-muebles','curso-compus','curso-camaras']
+          const featuredLocal = cursosLocal.filter(c => featuredIds.includes(c.id))
+          const merged = [
+            ...featuredLocal,
+            ...mapped.filter(m => !featuredLocal.some(f => f.id === m.id))
+          ]
+          setCursos(merged)
+        }
         else setCursos(cursosLocal.filter(c => c.tipo && c.tipo.toLowerCase() === 'taller'))
       }catch(err){ setCursos(cursosLocal.filter(c => c.tipo && c.tipo.toLowerCase() === 'taller')) }
       finally{ if(mounted) setLoading(false) }
@@ -41,7 +51,7 @@ export default function Talleres(){
     <section id="talleres" className="section-padding">
       <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3>Cursos y Talleres</h3>
+          <h3>Cursos Talleres</h3>
           <a href="#" className="link-primary">Ver todos</a>
         </div>
         <div className="row g-4">

@@ -12,8 +12,11 @@ export default function AdminCourses(){
   const [error, setError] = useState(null)
 
   const [form, setForm] = useState({
-    title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true
+    title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
+    hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+    modalidad: '', temario: ''
   })
+
 
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -86,7 +89,17 @@ export default function AdminCourses(){
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
         slug: form.slug,
-        published: Boolean(form.published)
+        published: Boolean(form.published),
+        hours: form.hours || null,
+        duration: form.duration || null,
+        modalidad: form.modalidad || null,
+        temario: parseTemarioInput(form.temario),
+        grado: form.grado || null,
+        registro: form.registro || null,
+        perfil_egresado: form.perfil_egresado || null,
+        mision: form.mision || null,
+        vision: form.vision || null,
+        // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       setForm({ title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true })
@@ -96,10 +109,61 @@ export default function AdminCourses(){
     finally{ setSaving(false) }
   }
 
+  // render temario array (strings or section objects) back to editable text
+  const renderTemarioToText = (arr) => {
+    if (!arr) return ''
+    // if array of strings, render each as '- item' per line
+    if (Array.isArray(arr) && arr.every(x => typeof x === 'string')) {
+      return arr.map(s => `- ${s}`).join('\n')
+    }
+    // mixed or section objects
+    return arr.map(el => {
+      if (!el) return ''
+      if (typeof el === 'string') return `- ${el}`
+      if (el.title && Array.isArray(el.items)) {
+        return [el.title, ...el.items.map(i => `- ${i}`)].join('\n')
+      }
+      return JSON.stringify(el)
+    }).join('\n\n')
+  }
+
+  // parse temario input: try JSON, then structured text (subtitle + '- item'), then comma-separated
+  const parseTemarioInput = (txt) => {
+    if (!txt) return []
+    try { const v = JSON.parse(txt); return Array.isArray(v) ? v : [v] } catch (e) {}
+    const lines = txt.split(/\r?\n/).map(l=>l.replace(/\u00A0/g,' ').trim()).filter(Boolean)
+    if (lines.length > 0) {
+      const result = []
+      let current = null
+      for (let ln of lines) {
+        if (/^[-*]\s+/.test(ln)) {
+          const item = ln.replace(/^[-*]\s+/, '').trim()
+          if (current) current.items.push(item)
+          else result.push(item)
+        } else {
+          if (current) result.push(current)
+          current = { title: ln, items: [] }
+        }
+      }
+      if (current) result.push(current)
+      if (result.length) return result
+    }
+    return txt.split(',').map(s=>s.trim()).filter(Boolean)
+  }
+
   const startEdit = (c) => {
     setEditingId(c.id)
-    setForm({ title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'', thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', slug: c.slug||'', published: !!c.published })
+    setForm({
+      title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
+      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', slug: c.slug||'', published: !!c.published,
+      hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
+      perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
+      modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
+      // docentes and schedules removed from course edit form
+    })
   }
+
+  
 
   const cancelEdit = () => { setEditingId(null); setForm({ title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true }) }
 
@@ -113,7 +177,17 @@ export default function AdminCourses(){
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
         slug: form.slug,
-        published: Boolean(form.published)
+        published: Boolean(form.published),
+        hours: form.hours || null,
+        duration: form.duration || null,
+        modalidad: form.modalidad || null,
+        temario: parseTemarioInput(form.temario),
+        grado: form.grado || null,
+        registro: form.registro || null,
+        perfil_egresado: form.perfil_egresado || null,
+        mision: form.mision || null,
+        vision: form.vision || null,
+        // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       cancelEdit(); await fetchCourses(); await fetchMedia()
@@ -134,6 +208,8 @@ export default function AdminCourses(){
 
   const formPreviewUrl = form.thumbnail_media_id ? (findMediaById(form.thumbnail_media_id)||{}).url : (editingId ? getCourseMediaUrl(items.find(i=>i.id===editingId)) : null)
   const formPreviewAlt = form.thumbnail_media_id ? (findMediaById(form.thumbnail_media_id)||{}).alt_text : (editingId ? getCourseMediaAlt(items.find(i=>i.id===editingId)) : '')
+
+  
 
   return (
     <div className="container section-padding">
@@ -162,6 +238,38 @@ export default function AdminCourses(){
                 <div className="mb-3">
                   <label className="form-label">Descripción</label>
                   <textarea className="form-control" rows={4} value={form.description} onChange={e=>handleChange('description', e.target.value)} />
+                </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <label className="form-label">Horas</label>
+                    <input className="form-control" value={form.hours} onChange={e=>handleChange('hours', e.target.value)} />
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label">Duración</label>
+                    <input className="form-control" value={form.duration} onChange={e=>handleChange('duration', e.target.value)} />
+                  </div>
+                </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <label className="form-label">Grado</label>
+                    <input className="form-control" value={form.grado} onChange={e=>handleChange('grado', e.target.value)} />
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label">Registro</label>
+                    <input className="form-control" value={form.registro} onChange={e=>handleChange('registro', e.target.value)} />
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Perfil de egresado</label>
+                  <textarea className="form-control" rows={2} value={form.perfil_egresado} onChange={e=>handleChange('perfil_egresado', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Misión</label>
+                  <textarea className="form-control" rows={2} value={form.mision} onChange={e=>handleChange('mision', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Visión</label>
+                  <textarea className="form-control" rows={2} value={form.vision} onChange={e=>handleChange('vision', e.target.value)} />
                 </div>
                 <div className="row g-2 mb-3">
                   <div className="col-12 col-md-6">
@@ -213,6 +321,13 @@ export default function AdminCourses(){
                   <input className="form-check-input" type="checkbox" id="publishedSwitch" checked={form.published} onChange={e=>handleChange('published', e.target.checked)} />
                   <label className="form-check-label" htmlFor="publishedSwitch">Publicado</label>
                 </div>
+                
+                
+                <div className="mb-3">
+                  <label className="form-label">Temario (Texto estructurado: subtítulo en una línea, luego líneas que comienzan con "- ")</label>
+                  <textarea className="form-control" rows={8} value={form.temario} onChange={e=>handleChange('temario', e.target.value)} placeholder={'INTRODUCCIÓN A LAS HOJAS DE CÁLCULO\n- ¿Qué es una hoja de cálculo?\n- Elementos de la Interfaz de Excel\n'} />
+                  <small className="text-muted">También acepta JSON array o coma-separado.</small>
+                </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="d-flex gap-2">
                   <button className="btn btn-accent" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}</button>
@@ -221,6 +336,8 @@ export default function AdminCourses(){
               </form>
             </div>
           </div>
+
+          
         </div>
 
         <div className="col-12 col-md-7">
@@ -238,49 +355,53 @@ export default function AdminCourses(){
               {!loading && items.length === 0 && <div className="text-muted">No hay cursos.</div>}
 
               <div className="row row-cols-1 gy-3">
-                {activeItems.map(c => (
-                  <div key={c.id} className="col">
-                    <div className="card shadow-sm">
-                      <div className="card-body d-flex align-items-center gap-3">
-                        {(() => {
-                          const thumbUrl = getCourseMediaUrl(c)
-                          const thumbAlt = getCourseMediaAlt(c)
-                          if (thumbUrl) {
-                            return (
-                              <div style={{width:120,height:76,flex:'0 0 120px',borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef'}}>
-                                <img src={thumbUrl} alt={thumbAlt || 'thumb'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                              </div>
-                            )
-                          }
-                          return (
-                            <div style={{width:120,height:76,flex:'0 0 120px',display:'grid',placeItems:'center',border:'1px dashed #e9ecef',borderRadius:6}}>
-                              <small className="text-muted">No miniatura</small>
-                            </div>
-                          )
-                        })()}
+                    {activeItems.map(c => (
+                      <div key={c.id} className="col">
+                        <div className="card shadow-sm">
+                          <div className="card-body d-flex align-items-center gap-3">
+                            {(() => {
+                              const thumbUrl = getCourseMediaUrl(c)
+                              const thumbAlt = getCourseMediaAlt(c)
+                              if (thumbUrl) {
+                                return (
+                                  <div style={{width:120,height:76,flex:'0 0 120px',borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef'}}>
+                                    <img src={thumbUrl} alt={thumbAlt || 'thumb'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                  </div>
+                                )
+                              }
+                              return (
+                                <div style={{width:120,height:76,flex:'0 0 120px',display:'grid',placeItems:'center',border:'1px dashed #e9ecef',borderRadius:6}}>
+                                  <small className="text-muted">No miniatura</small>
+                                </div>
+                              )
+                            })()}
 
-                        <div style={{flex:1}}>
-                          <div className="d-flex justify-content-between align-items-start">
-                            <div>
-                              <h6 className="mb-1">{c.title}</h6>
-                              <div className="text-muted small">{c.subtitle}</div>
+                            <div style={{flex:1}}>
+                              <div className="d-flex justify-content-between align-items-start">
+                                <div>
+                                  <h6 className="mb-1">{c.title}</h6>
+                                  <div className="text-muted small">{c.subtitle}</div>
+                                  <div className="text-muted small mt-1">{c.hours ? `Horas: ${c.hours}` : ''} {c.duration ? `· Duración: ${c.duration}` : ''}</div>
+                                  {c.grado && <div className="badge badge-accent mt-2">{c.grado}</div>}
+                                </div>
+                                <div className="text-end">
+                                  <div className="text-muted small">Tipo: {c.type}</div>
+                                  <div className="text-muted small">Slug: {c.slug}</div>
+                                  {c.registro && <div className="text-muted small">Registro: {c.registro}</div>}
+                                </div>
+                              </div>
+                              {c.perfil_egresado && <div className="mt-2"><strong>Perfil egresado:</strong> <div className="text-muted small">{c.perfil_egresado}</div></div>}
                             </div>
-                            <div className="text-end">
-                              <div className="text-muted small">Tipo: {c.type}</div>
-                              <div className="text-muted small">Slug: {c.slug}</div>
+
+                            <div className="d-flex flex-column align-items-end">
+                              <button className="btn btn-sm btn-outline-primary mb-2" onClick={()=>startEdit(c)}>Editar</button>
+                              <button className="btn btn-sm btn-outline-warning" onClick={()=>togglePublished(c)}>{c.published ? 'Despublicar' : 'Publicar'}</button>
                             </div>
                           </div>
                         </div>
-
-                        <div className="d-flex flex-column align-items-end">
-                          <button className="btn btn-sm btn-outline-primary mb-2" onClick={()=>startEdit(c)}>Editar</button>
-                          <button className="btn btn-sm btn-outline-warning" onClick={()=>togglePublished(c)}>{c.published ? 'Despublicar' : 'Publicar'}</button>
-                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
               {showInactive && (
                 <div className="mt-3">

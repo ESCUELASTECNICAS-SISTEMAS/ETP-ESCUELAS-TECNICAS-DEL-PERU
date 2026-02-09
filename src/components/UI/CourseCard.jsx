@@ -12,6 +12,10 @@ export default function CourseCard({ item, showPrice = true }) {
   // resolve image from multiple possible shapes (static data, API with thumbnail/media, different keys)
   const imgSrc = item.image || item.imagen || item.image_url || item.url || (item.thumbnail && item.thumbnail.url) || (item.media && item.media.url) || item.foto || null
 
+  const modalidad = item.modalidad || item.mode || item.modality || item.modalidad_tipo || ''
+  const hoursVal = item.duration || item.hours || item.horas || null
+  const durationDays = item.duration_days || item.duracion_dias || (hoursVal ? Math.ceil(Number(hoursVal) / 8) : null)
+
   return (
     <div className="card h-100">
       <div className="card-img-wrapper">
@@ -28,14 +32,14 @@ export default function CourseCard({ item, showPrice = true }) {
 
         <div className="card-hover-overlay">
           <div className="overlay-ctas">
-            <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-sm btn-light me-2">Ver ficha</a>
+            <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-sm btn-light me-2">Ver temario</a>
             <a href="#contacto" className="btn btn-sm btn-accent">Inscribirme</a>
           </div>
         </div>
       </div>
       <div className="card-body d-flex flex-column">
         <h5 className="card-title">{item.titulo}</h5>
-        <p className="text-muted">{item.modalidad} {item.tipo ? `• ${item.tipo}` : ''}</p>
+        <p className="text-muted">{modalidad ? `• ${modalidad}` : ''} {durationDays ? `• ${durationDays} días` : ''}</p>
 
         {showPrice ? (
           <>
@@ -61,25 +65,10 @@ export default function CourseCard({ item, showPrice = true }) {
               </div>
             )}
           </>
-        ) : (
-          // show original info instead of prices when showPrice is false
-          <div className="mt-2">
-            <p className="text-muted mb-2">{item.description || item.descripcion || item.subtitle || item.titulo}</p>
-          </div>
-        )}
-
-        {item.temario && (
-          <details className="mt-3">
-            <summary>Temario</summary>
-            <ul className="mt-2">
-              {item.temario.map((t, i) => <li key={i}>{t}</li>)}
-            </ul>
-          </details>
-        )}
+        ) : null}
 
         <div className="mt-auto">
-          <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-primary me-2">Ver ficha</a>
-          <a href="#contacto" className="btn btn-accent">Inscribirme</a>
+          <a href={item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`} className="btn btn-primary">Temario</a>
         </div>
       </div>
     </div>

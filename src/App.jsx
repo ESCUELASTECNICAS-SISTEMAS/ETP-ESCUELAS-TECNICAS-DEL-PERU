@@ -13,6 +13,12 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminCarousel from './pages/AdminCarousel'
 import AdminMedia from './pages/AdminMedia'
 import AdminCourses from './pages/AdminCourses'
+import AdminCertificaciones from './pages/AdminCertificaciones'
+import AdminDocentes from './pages/AdminDocentes'
+import AdminConvenios from './pages/AdminConvenios'
+import AdminSeminarios from './pages/AdminSeminarios'
+import AdminNoticias from './pages/AdminNoticias'
+import AdminSocialLinks from './pages/AdminSocialLinks'
 import AdminRoute from './components/layout/AdminRoute'
 import { Routes, Route } from 'react-router-dom'
 
@@ -31,6 +37,13 @@ export default function App(){
             <Route path="/admin/carousel" element={<AdminRoute><AdminCarousel /></AdminRoute>} />
             <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
             <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
+            <Route path="/admin/certificaciones" element={<AdminRoute><AdminCertificaciones /></AdminRoute>} />
+            <Route path="/admin/certificaciones/:courseId" element={<AdminRoute><AdminCertificaciones /></AdminRoute>} />
+            <Route path="/admin/docentes" element={<AdminRoute><AdminDocentes /></AdminRoute>} />
+            <Route path="/admin/convenios" element={<AdminRoute><AdminConvenios /></AdminRoute>} />
+            <Route path="/admin/seminarios" element={<AdminRoute><AdminSeminarios /></AdminRoute>} />
+            <Route path="/admin/noticias" element={<AdminRoute><AdminNoticias /></AdminRoute>} />
+            <Route path="/admin/social" element={<AdminRoute><AdminSocialLinks /></AdminRoute>} />
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/curso/:id" element={<CourseDetail />} />
           <Route path="/programa/:id" element={<CourseDetail />} />
