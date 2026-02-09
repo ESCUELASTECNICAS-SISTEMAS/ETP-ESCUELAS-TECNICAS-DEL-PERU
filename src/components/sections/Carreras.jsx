@@ -46,7 +46,7 @@ export default function Carreras(){
 
   const carrerasAuxiliares = carreras.filter(c => {
     const tipo = (c.type || c.tipo || '').toLowerCase()
-    return tipo !== 'cursos_talleres'
+    return tipo !== 'cursos_talleres' && tipo !== 'ofimatica'
   })
 
   return (

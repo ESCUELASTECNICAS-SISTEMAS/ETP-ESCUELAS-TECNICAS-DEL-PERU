@@ -18,7 +18,7 @@ export default function CursosInformatica(){
   return (
     <div className="section-padding">
       <div className="container">
-        <h2 className="mb-4">Cursos Informáticos</h2>
+        <h2 className="mb-4">Ofimática</h2>
         <div className="row g-4">
           {items.map((c,i) => (
             <div className="col-12 col-md-4" key={i}>

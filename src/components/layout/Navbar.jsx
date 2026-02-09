@@ -64,7 +64,7 @@ export default function Navbar() {
                 <Link className="nav-link" to="/cursos">Cursos</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/cursos-informatica">Cursos Informáticos</Link>
+                <Link className="nav-link" to="/cursos-informatica">Ofimática</Link>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#carreras">Carreras</a>

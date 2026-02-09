@@ -5,7 +5,6 @@ import Carreras from '../components/sections/Carreras'
 import Talleres from '../components/sections/talleres'
 import Informatica from '../components/sections/informatica'
 import Especiales from '../components/sections/especiales'
-import CursosGenerales from '../components/sections/cursosgenerales'
 
 export default function HomePage(){
   return (
@@ -15,8 +14,7 @@ export default function HomePage(){
       <Carreras />
       <Talleres />
       <Informatica />
-          <Especiales />
-      <CursosGenerales />
+      <Especiales />
     </div>
   )
 }
