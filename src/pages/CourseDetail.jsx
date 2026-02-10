@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import cursos from '../data/cursos.json'
 import programas from '../data/programas.json'
 
@@ -11,6 +11,7 @@ const resolveImage = (item) => {
 
 export default function CourseDetail(){
   const { id } = useParams()
+  const navigate = useNavigate()
   let item = cursos.find(c => c.id === id)
   let source = 'cursos'
   if(!item){
@@ -29,6 +30,7 @@ export default function CourseDetail(){
   return (
     <div className="section-padding">
       <div className="container">
+        <button onClick={() => navigate(-1)} className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver</button>
         {(() => {
           const img = resolveImage(item)
           if (img) return (

@@ -35,7 +35,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`navbar navbar-expand-lg navbar-light bg-white nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
+      <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Escuelas Técnicas del Perú">
             <img src="/assets/images/logo.jpg" alt="ETP" className="me-2 brand-img" />
@@ -79,7 +79,7 @@ export default function Navbar() {
               {/* Auth area */}
               {!user && (
                 <li className="nav-item ms-2">
-                  <Link className="btn btn-outline-light btn-sm" to="/login">Iniciar sesión</Link>
+                  <Link className="btn btn-accent btn-sm" to="/login">Iniciar sesión</Link>
                 </li>
               )}
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 
@@ -116,8 +117,9 @@ export default function AdminCourses(){
   // render temario array (strings or section objects) back to editable text
   const renderTemarioToText = (arr) => {
     if (!arr) return ''
+    if (!Array.isArray(arr)) return String(arr)
     // if array of strings, render each as '- item' per line
-    if (Array.isArray(arr) && arr.every(x => typeof x === 'string')) {
+    if (arr.every(x => typeof x === 'string')) {
       return arr.map(s => `- ${s}`).join('\n')
     }
     // mixed or section objects
@@ -224,6 +226,7 @@ export default function AdminCourses(){
 
   return (
     <div className="container section-padding">
+      <Link to="/admin" className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver al Panel</Link>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3>Administrar Cursos</h3>
         <small className="text-muted">Crear y editar cursos de carreras auxiliares</small>

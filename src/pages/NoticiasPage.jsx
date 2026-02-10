@@ -36,7 +36,7 @@ export default function NoticiasPage(){
               <div className="card h-100">
                 <div className="row g-0">
                   <div className="col-4 d-none d-sm-block">
-                    <div style={{height: '100%', background: 'linear-gradient(90deg,#0b67d0,#ff7a00)'}}></div>
+                    <div style={{height: '100%', background: 'linear-gradient(90deg,var(--primary),var(--accent))'}}></div>
                   </div>
                   <div className="col">
                     <div className="card-body">

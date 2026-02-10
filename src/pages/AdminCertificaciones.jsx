@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 export default function AdminCertificaciones(){
   const navigate = useNavigate()
@@ -282,6 +282,7 @@ export default function AdminCertificaciones(){
 
   return (
     <div className="container section-padding">
+      <Link to="/admin" className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver al Panel</Link>
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between align-items-center">
           <h3>Certificaciones por curso</h3>

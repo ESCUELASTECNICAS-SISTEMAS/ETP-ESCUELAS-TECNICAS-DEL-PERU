@@ -61,12 +61,11 @@ export default function AdminDashboard(){
 	const cards = [
 		{ title: 'Carousel', desc: 'Slides del home', icon: 'bi-images', to:'/admin/carousel' },
 		{ title: 'Cursos', desc: 'Cursos y programas', icon: 'bi-journal-bookmark', to:'/admin/courses' },
-		{ title: 'Noticias', desc: 'Publicaciones y previsualizaciones', icon: 'bi-newspaper', to:'/admin/noticias' },
+		{ title: 'Noticias', desc: 'Gestionar noticias del sitio', icon: 'bi-newspaper', to:'/admin/noticias' },
 		{ title: 'Certificaciones', desc: 'Gestionar certificados y constancias', icon: 'bi-award', to:'/admin/certificaciones' },
 		{ title: 'Docentes', desc: 'Gestionar docentes', icon: 'bi-person-badge', to:'/admin/docentes' },
 		{ title: 'Convenios', desc: 'Gestionar convenios por curso', icon: 'bi-handshake', to:'/admin/convenios' },
 		{ title: 'Seminarios', desc: 'Gestionar seminarios por curso', icon: 'bi-calendar-event', to:'/admin/seminarios' },
-		{ title: 'Noticias', desc: 'Gestionar noticias del sitio', icon: 'bi-newspaper', to:'/admin/noticias' },
 		{ title: 'Media', desc: 'Imágenes y recursos', icon: 'bi-card-image', to:'/admin/media' },
 		{ title: 'Social Links', desc: 'Enlaces y números sociales', icon: 'bi-share', to:'/admin/social' },
 		{ title: 'Usuarios', desc: 'Gestión de administradores', icon: 'bi-people', to:'/admin/users' }
