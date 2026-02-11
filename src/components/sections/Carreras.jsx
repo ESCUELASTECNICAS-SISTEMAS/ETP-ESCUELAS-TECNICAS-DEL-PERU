@@ -54,9 +54,12 @@ export default function Carreras(){
       <div className="container">
         <div className="row g-4">
           <div className="col-12 col-md-9">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3>Carreras</h3>
-              <a href="#" className="link-primary">Ver todas</a>
+            <div className="section-header">
+              <div>
+                <h3 className="section-title">Carreras</h3>
+                <p className="section-subtitle">Formación técnica con certificación oficial</p>
+              </div>
+              <a href="/programas" className="section-link">Ver todas <i className="bi bi-arrow-right"></i></a>
             </div>
 
             <div className="row g-4">

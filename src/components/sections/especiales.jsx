@@ -40,9 +40,12 @@ export default function Especiales(){
   return (
     <section id="especiales" className="section-padding">
       <div className="container">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3>Cursos Especiales</h3>
-          <a href="#" className="link-primary">Ver todos</a>
+        <div className="section-header">
+          <div>
+            <h3 className="section-title">Cursos Especiales</h3>
+            <p className="section-subtitle">Programas exclusivos de especialización</p>
+          </div>
+          <a href="/cursos" className="section-link">Ver todos <i className="bi bi-arrow-right"></i></a>
         </div>
         <div className="row g-4">
           {especiales.map((e,i) => (

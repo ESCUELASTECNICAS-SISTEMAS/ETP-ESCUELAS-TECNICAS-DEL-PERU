@@ -1,22 +1,28 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function CardCurso({curso}){
-  return (
-    <div className="card h-100">
-      <div className="card-img-wrapper">
-        <img src={curso.image || '/assets/images/cursos/curso-1.jpg'} className="card-img-top" alt={curso.titulo} />
+  const imgSrc = curso.image || curso.imagen || (curso.thumbnail && curso.thumbnail.url) || '/assets/images/cursos/curso-1.jpg'
+  const detailUrl = `/curso/${curso.id}`
 
-        <div className="card-hover-overlay">
-          <div className="overlay-ctas">
-            <a href="#" className="btn btn-sm btn-light me-2">Más info</a>
-            <a href="#contacto" className="btn btn-sm btn-accent">Inscribirme</a>
-          </div>
+  return (
+    <div className="cc-card">
+      <div className="cc-img-wrap">
+        <img src={imgSrc} className="cc-img" alt={curso.titulo || curso.title || ''} />
+        <div className="cc-img-overlay">
+          <Link to={detailUrl} className="btn btn-sm btn-light cc-overlay-btn"><i className="bi bi-eye me-1"></i>Ver más</Link>
+          <Link to="/contacto" className="btn btn-sm btn-accent cc-overlay-btn"><i className="bi bi-send me-1"></i>Inscribirme</Link>
         </div>
       </div>
-      <div className="card-body d-flex flex-column">
-        <h5 className="card-title">{curso.titulo}</h5>
-        <p className="card-text text-muted">{curso.modalidad} · {curso.duracion}</p>
-        <p className="mt-auto"><a href="#" className="btn btn-outline-primary btn-sm">Más información</a></p>
+      <div className="cc-body">
+        <h5 className="cc-title">{curso.titulo || curso.title}</h5>
+        <div className="cc-meta">
+          {curso.modalidad && <span className="cc-meta-item"><i className="bi bi-laptop"></i>{curso.modalidad}</span>}
+          {curso.duracion && <span className="cc-meta-item"><i className="bi bi-clock"></i>{curso.duracion}</span>}
+        </div>
+        <Link to={detailUrl} className="cc-cta">
+          Ver detalles <i className="bi bi-arrow-right"></i>
+        </Link>
       </div>
     </div>
   )

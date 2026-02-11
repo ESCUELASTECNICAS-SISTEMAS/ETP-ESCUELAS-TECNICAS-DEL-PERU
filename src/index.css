@@ -459,4 +459,322 @@ footer{background:#212529;color:#fff}
 }
 .btn-back i,.btn-back .bi{font-size:1rem}
 
+/* =============================================
+   COURSE DETAIL PAGE — Professional Layout
+   ============================================= */
+.cd-page{padding-bottom:4rem}
+
+/* Hero */
+.cd-hero{
+  position:relative;
+  min-height:380px;
+  background-size:cover;
+  background-position:center;
+  background-color:var(--primary);
+}
+.cd-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(2,17,204,0.72) 0%, rgba(2,15,153,0.92) 100%);
+  display:flex;align-items:flex-end;padding-bottom:2.5rem;
+}
+.cd-hero-content{color:#fff;max-width:700px}
+.cd-hero-title{font-size:2.4rem;font-weight:800;margin-bottom:.5rem;line-height:1.15;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+.cd-hero-subtitle{font-size:1.15rem;opacity:.92;margin-bottom:0;font-weight:400}
+.cd-badge-grado{
+  display:inline-block;padding:.3rem .8rem;border-radius:50px;
+  background:var(--accent);color:#fff;font-weight:700;font-size:.8rem;
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:.8rem;
+}
+
+/* Info strip */
+.cd-info-strip{
+  display:flex;flex-wrap:wrap;gap:1rem;
+  margin-top:-30px;position:relative;z-index:2;
+}
+.cd-info-badge{
+  display:flex;align-items:center;gap:.6rem;
+  background:#fff;padding:.8rem 1.2rem;border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);flex:1 1 140px;min-width:140px;
+}
+.cd-info-badge i{font-size:1.4rem;color:var(--accent)}
+.cd-info-badge small{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cd-info-badge strong{font-size:.95rem;color:#212529}
+
+/* Body */
+.cd-body{margin-top:2rem}
+
+/* Card blocks */
+.cd-card{
+  background:#fff;border-radius:14px;padding:1.8rem;
+  box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:1.5rem;
+}
+.cd-card-title{
+  font-size:1.15rem;font-weight:700;color:var(--primary);
+  margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid #f0f0f0;
+}
+.cd-card-title i{color:var(--accent)}
+.cd-description{font-size:1rem;line-height:1.7;color:#444}
+
+/* Tabs */
+.cd-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem;border-bottom:2px solid #f0f0f0;padding-bottom:0}
+.cd-tab{
+  background:none;border:none;padding:.6rem 1.2rem;
+  font-weight:600;font-size:.92rem;color:var(--muted);
+  border-bottom:3px solid transparent;cursor:pointer;transition:all .2s ease;
+}
+.cd-tab:hover{color:var(--primary)}
+.cd-tab.active{color:var(--primary);border-bottom-color:var(--accent)}
+
+/* Tab content sections */
+.cd-section-block{margin-bottom:1.2rem}
+.cd-section-title{
+  font-size:1rem;font-weight:700;color:var(--primary);
+  margin-bottom:.5rem;padding:.5rem .8rem;
+  background:linear-gradient(90deg,rgba(2,17,204,0.06),transparent);
+  border-left:3px solid var(--accent);border-radius:0 6px 6px 0;
+}
+.cd-section-title i{color:var(--accent)}
+.cd-section-items{
+  list-style:none;padding-left:1.2rem;margin:0;
+}
+.cd-section-items li{
+  position:relative;padding:.4rem 0 .4rem 1.2rem;
+  font-size:.93rem;color:#444;line-height:1.5;
+}
+.cd-section-items li::before{
+  content:'';position:absolute;left:0;top:.75rem;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);opacity:.7;
+}
+.cd-list-item{
+  padding:.4rem 0;font-size:.93rem;color:#444;list-style:disc inside;
+}
+
+/* Misión / Visión boxes */
+.cd-mv-box{
+  padding:1.2rem;border-radius:12px;height:100%;
+}
+.cd-mv-box h6{font-weight:700;margin-bottom:.5rem;font-size:.95rem}
+.cd-mv-box p{font-size:.9rem;line-height:1.6;margin:0;color:#444}
+.cd-mision{background:linear-gradient(135deg,rgba(2,17,204,0.06),rgba(2,17,204,0.02));border-left:4px solid var(--primary)}
+.cd-mision h6{color:var(--primary)}
+.cd-vision{background:linear-gradient(135deg,rgba(253,113,15,0.06),rgba(253,113,15,0.02));border-left:4px solid var(--accent)}
+.cd-vision h6{color:var(--accent)}
+
+/* Sidebar */
+.cd-sidebar-card{
+  background:#fff;border-radius:14px;padding:1.4rem;
+  box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:1.2rem;
+}
+.cd-sidebar-img{width:100%;border-radius:10px;object-fit:cover;max-height:220px}
+.cd-sidebar-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:.8rem}
+.cd-sidebar-title i{color:var(--accent)}
+.cd-sidebar-text{font-size:.9rem;line-height:1.6;color:#444;margin:0}
+
+/* Convenios */
+.cd-convenio{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid #f5f5f5}
+.cd-convenio:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cd-convenio-logo{width:48px;height:48px;border-radius:8px;object-fit:contain;background:#f8f9fa;padding:4px}
+
+/* Docentes */
+.cd-docente{display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem}
+.cd-docente-foto{width:40px;height:40px;border-radius:50%;object-fit:cover}
+
+/* CTA card */
+.cd-cta-card{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;text-align:center;
+}
+.cd-cta-card h5{font-weight:700}
+.cd-cta-card p{opacity:.85}
+.cd-cta-card .btn-accent{box-shadow:0 4px 16px rgba(253,113,15,0.3)}
+
+/* Responsive */
+@media(max-width:767px){
+  .cd-hero{min-height:280px}
+  .cd-hero-title{font-size:1.6rem}
+  .cd-hero-subtitle{font-size:.95rem}
+  .cd-info-strip{margin-top:-20px;gap:.6rem}
+  .cd-info-badge{padding:.6rem .8rem;min-width:120px}
+  .cd-card{padding:1.2rem}
+}
+
+/* =============================================
+   MODERN COURSE CARDS (.cc-*)
+   ============================================= */
+.cc-card{
+  position:relative;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.06);
+  transition:transform .25s ease,box-shadow .25s ease;
+  height:100%;
+  display:flex;flex-direction:column;
+}
+.cc-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 36px rgba(0,0,0,0.12);
+}
+
+/* Image wrapper — respects image proportions */
+.cc-img-wrap{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg,#f0f2f8,#e8eaf6);
+}
+.cc-img{
+  width:100%;
+  height:auto;
+  display:block;
+  aspect-ratio:1080/1090;
+  object-fit:contain;
+  transition:transform .4s ease;
+  background:linear-gradient(135deg,#f0f2f8,#e8eaf6);
+}
+.cc-card:hover .cc-img{
+  transform:scale(1.04);
+}
+.cc-img-placeholder{
+  aspect-ratio:1080/1090;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#e8eaf6,#f5f5f5);
+  color:var(--primary);
+}
+
+/* Hover overlay */
+.cc-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(2,17,204,0.0) 30%,rgba(2,17,204,0.75) 100%);
+  display:flex;align-items:flex-end;justify-content:center;gap:.6rem;
+  padding-bottom:1rem;
+  opacity:0;transition:opacity .3s ease;
+}
+.cc-card:hover .cc-img-overlay{opacity:1}
+.cc-overlay-btn{
+  border-radius:50px;font-weight:600;font-size:.82rem;
+  padding:.4rem .9rem;backdrop-filter:blur(4px);
+}
+
+/* Grado badge on image */
+.cc-badge-grado{
+  position:absolute;top:12px;left:12px;
+  background:var(--accent);color:#fff;
+  font-size:.72rem;font-weight:700;text-transform:uppercase;
+  padding:.25rem .65rem;border-radius:50px;letter-spacing:.5px;
+  box-shadow:0 2px 8px rgba(253,113,15,0.3);
+}
+
+/* Body */
+.cc-body{
+  padding:1.2rem 1.4rem;
+  display:flex;flex-direction:column;flex:1;
+}
+.cc-title{
+  font-size:1.05rem;font-weight:700;color:#1a1a2e;
+  margin-bottom:.35rem;line-height:1.3;
+}
+.cc-subtitle{
+  font-size:.85rem;color:var(--muted);
+  line-height:1.45;margin-bottom:.6rem;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* Meta row */
+.cc-meta{
+  display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.8rem;
+}
+.cc-meta-item{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:.78rem;color:var(--muted);
+  background:#f4f6f9;padding:.2rem .55rem;border-radius:20px;
+}
+.cc-meta-item i{color:var(--accent);font-size:.8rem}
+
+/* Price */
+.cc-price{margin-bottom:.6rem}
+.cc-price-old{text-decoration:line-through;color:var(--muted);font-size:.85rem;margin-right:.4rem}
+.cc-price-now{font-weight:700;color:var(--accent);font-size:1.1rem}
+.cc-fees{display:flex;gap:1rem;font-size:.82rem;color:#444;margin-bottom:.6rem}
+
+/* CTA link */
+.cc-cta{
+  margin-top:auto;
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-weight:600;font-size:.88rem;color:var(--primary);
+  text-decoration:none;transition:gap .2s ease,color .2s ease;
+}
+.cc-cta:hover{color:var(--accent);gap:.5rem}
+.cc-cta i{font-size:.85rem;transition:transform .2s ease}
+.cc-cta:hover i{transform:translateX(3px)}
+
+/* =============================================
+   HIGHLIGHTS SECTION (.hl-*)
+   ============================================= */
+.hl-section{
+  position:relative;
+  margin-top:-40px;
+  z-index:10;
+  padding-bottom:1.5rem;
+}
+.hl-row{justify-content:center}
+.hl-card{
+  display:flex;align-items:center;gap:1rem;
+  background:#fff;padding:1.2rem 1.4rem;border-radius:14px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.08);
+  transition:transform .2s ease,box-shadow .2s ease;
+  height:100%;
+}
+.hl-card:hover{transform:translateY(-4px);box-shadow:0 10px 32px rgba(0,0,0,0.12)}
+.hl-icon{
+  width:52px;height:52px;border-radius:12px;flex:0 0 52px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--hl-color,var(--primary));
+  color:#fff;font-size:1.3rem;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.hl-title{font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:.15rem}
+.hl-desc{font-size:.83rem;color:var(--muted);margin:0;line-height:1.4}
+
+/* =============================================
+   SECTION HEADERS (.section-header)
+   ============================================= */
+.section-header{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:1.8rem;padding-bottom:.8rem;
+  border-bottom:2px solid #f0f0f0;
+}
+.section-title{
+  font-size:1.6rem;font-weight:800;color:#1a1a2e;
+  margin-bottom:.15rem;position:relative;
+}
+.section-title::after{
+  content:'';display:block;margin-top:4px;
+  width:40px;height:3px;border-radius:3px;
+  background:var(--accent);
+}
+.section-subtitle{
+  font-size:.88rem;color:var(--muted);margin:0;
+}
+.section-link{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-weight:600;font-size:.9rem;color:var(--primary);
+  text-decoration:none;transition:gap .2s ease,color .2s ease;
+  white-space:nowrap;
+}
+.section-link:hover{color:var(--accent);gap:.5rem}
+
+/* Alternating section backgrounds */
+#carreras{background:#fff}
+#talleres{background:#f8f9fc}
+#informatica{background:#fff}
+#especiales{background:#f8f9fc}
+
+@media(max-width:767px){
+  .hl-section{margin-top:-24px}
+  .hl-card{padding:1rem}
+  .section-title{font-size:1.3rem}
+  .cc-body{padding:1rem}
+}
+
 

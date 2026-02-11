@@ -59,9 +59,12 @@ export default function Informatica(){
   return (
     <section id="informatica" className="section-padding">
       <div className="container">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3>Ofimática</h3>
-          <a href="#" className="link-primary">Ver todos</a>
+        <div className="section-header">
+          <div>
+            <h3 className="section-title">Ofimática</h3>
+            <p className="section-subtitle">Domina las herramientas digitales esenciales</p>
+          </div>
+          <a href="/cursos-informatica" className="section-link">Ver todos <i className="bi bi-arrow-right"></i></a>
         </div>
 
         <div className="row g-4">

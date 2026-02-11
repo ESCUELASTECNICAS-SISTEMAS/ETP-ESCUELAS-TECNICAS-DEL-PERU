@@ -15,7 +15,7 @@ export default function AdminCourses(){
   const [form, setForm] = useState({
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-    modalidad: '', temario: ''
+    modalidad: '', temario: '', modulos: ''
   })
 
 
@@ -95,6 +95,7 @@ export default function AdminCourses(){
         duration: form.duration || null,
         modalidad: form.modalidad || null,
         temario: parseTemarioInput(form.temario),
+        modulos: parseTemarioInput(form.modulos),
         grado: form.grado || null,
         registro: form.registro || null,
         perfil_egresado: form.perfil_egresado || null,
@@ -106,7 +107,7 @@ export default function AdminCourses(){
       setForm({ 
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-        modalidad: '', temario: ''
+        modalidad: '', temario: '', modulos: ''
       })
       await fetchCourses()
       await fetchMedia()
@@ -165,6 +166,7 @@ export default function AdminCourses(){
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
       modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
+      modulos: c.modulos ? renderTemarioToText(c.modulos) : '',
       // docentes and schedules removed from course edit form
     })
   }
@@ -176,7 +178,7 @@ export default function AdminCourses(){
     setForm({ 
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-      modalidad: '', temario: ''
+      modalidad: '', temario: '', modulos: ''
     }) 
   }
 
@@ -195,6 +197,7 @@ export default function AdminCourses(){
         duration: form.duration || null,
         modalidad: form.modalidad || null,
         temario: parseTemarioInput(form.temario),
+        modulos: parseTemarioInput(form.modulos),
         grado: form.grado || null,
         registro: form.registro || null,
         perfil_egresado: form.perfil_egresado || null,
@@ -342,6 +345,11 @@ export default function AdminCourses(){
                   <textarea className="form-control" rows={8} value={form.temario} onChange={e=>handleChange('temario', e.target.value)} placeholder={'INTRODUCCIÓN A LAS HOJAS DE CÁLCULO\n- ¿Qué es una hoja de cálculo?\n- Elementos de la Interfaz de Excel\n'} />
                   <small className="text-muted">También acepta JSON array o coma-separado.</small>
                 </div>
+                <div className="mb-3">
+                  <label className="form-label">Módulos (JSON o texto estructurado similar a Temario)</label>
+                  <textarea className="form-control" rows={4} value={form.modulos} onChange={e=>handleChange('modulos', e.target.value)} placeholder={'["Módulo 1","Módulo 2"]\n\nO:\nMódulo 1\n- Tema A\n- Tema B'} />
+                  <small className="text-muted">Puede ser un array JSON o texto estructurado.</small>
+                </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="d-flex gap-2">
                   <button className="btn btn-accent" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}</button>
@@ -405,6 +413,9 @@ export default function AdminCourses(){
                                 </div>
                               </div>
                               {c.perfil_egresado && <div className="mt-2"><strong>Perfil egresado:</strong> <div className="text-muted small">{c.perfil_egresado}</div></div>}
+                              {c.modulos && (
+                                <div className="mt-2"><strong>Módulos:</strong> <div className="text-muted small">{Array.isArray(c.modulos) ? c.modulos.map(m => (typeof m === 'string' ? m : (m.title || JSON.stringify(m)))).slice(0,5).join(', ') : String(c.modulos)}</div></div>
+                              )}
                             </div>
 
                             <div className="d-flex flex-column align-items-end">
