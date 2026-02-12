@@ -87,7 +87,12 @@ export default function CourseDetail() {
   return (
     <div className="cd-page">
       {/* ═══ HERO ═══ */}
-      <div className="cd-hero" style={img ? { backgroundImage: `url(${img})` } : {}}>
+      <div className="cd-hero">
+        <div className="bubble-1"></div>
+        <div className="bubble-2"></div>
+        <div className="bubble-3"></div>
+        <div className="bubble-4"></div>
+        <div className="bubble-5"></div>
         <div className="cd-hero-overlay">
           <div className="container">
             <button onClick={() => navigate(-1)} className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver</button>

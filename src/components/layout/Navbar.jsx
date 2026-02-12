@@ -79,7 +79,9 @@ export default function Navbar() {
               {/* Auth area */}
               {!user && (
                 <li className="nav-item ms-2">
-                  <Link className="btn btn-accent btn-sm" to="/login">Iniciar sesión</Link>
+                  <Link className="btn btn-login-nav" to="/login">
+                    <i className="bi bi-person-circle me-2"></i>Iniciar sesión
+                  </Link>
                 </li>
               )}
 
