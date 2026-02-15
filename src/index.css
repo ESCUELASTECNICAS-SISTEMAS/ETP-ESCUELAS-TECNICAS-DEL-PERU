@@ -765,14 +765,170 @@ footer{background:#212529;color:#fff}
 .cd-cta-card p{opacity:.85}
 .cd-cta-card .btn-accent{box-shadow:0 4px 16px rgba(253,113,15,0.3)}
 
+/* Hero Actions */
+.cd-hero-actions{
+  display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;
+  animation: fade-in-up 0.8s ease-out 0.6s backwards;
+}
+.cd-hero-actions .btn{
+  font-weight:600;padding:.65rem 1.4rem;border-radius:50px;
+  text-transform:none;letter-spacing:.3px;
+  transition:all .3s ease;box-shadow:0 4px 16px rgba(0,0,0,0.15);
+}
+.cd-hero-actions .btn-outline-light:hover{
+  background:#fff;color:var(--primary);transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(255,255,255,0.4);
+}
+.cd-hero-actions .btn-primary{
+  background:var(--accent);border-color:var(--accent);
+}
+.cd-hero-actions .btn-primary:hover{
+  background:#ff8533;transform:translateY(-2px);
+  box-shadow:0 6px 24px rgba(253,113,15,0.5);
+}
+
+/* Hero Image */
+.cd-hero-img-wrapper{
+  animation: bounce-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
+}
+.cd-hero-img{
+  width:100%;border-radius:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.2);
+  aspect-ratio:1/1;object-fit:cover;
+}
+
+/* Card Headers */
+.cd-card-header{
+  display:flex;align-items:center;gap:.8rem;
+  margin-bottom:1.2rem;padding-bottom:.8rem;
+  border-bottom:2px solid #f0f0f0;
+}
+.cd-card-header i{
+  font-size:1.6rem;color:var(--accent);
+}
+.cd-card-body{
+  font-size:.95rem;line-height:1.7;color:#444;
+}
+
+/* Special card types */
+.cd-card-description{
+  border-left:4px solid var(--primary);
+  background:linear-gradient(135deg,rgba(2,17,204,0.03),#fff);
+}
+.cd-card-highlight{
+  border-left:4px solid #ffd93d;
+  background:linear-gradient(135deg,rgba(255,217,61,0.08),#fff);
+}
+.cd-card-highlight .cd-card-header i{color:#ffb300}
+.cd-card-target{
+  border-left:4px solid #6bcf7f;
+  background:linear-gradient(135deg,rgba(107,207,127,0.08),#fff);
+}
+.cd-card-target .cd-card-header i{color:#4caf50}
+.cd-card-profile{
+  border-left:4px solid var(--accent);
+  background:linear-gradient(135deg,rgba(253,113,15,0.05),#fff);
+}
+.cd-card-curriculum{
+  background:linear-gradient(135deg,rgba(2,17,204,0.02),rgba(253,113,15,0.02));
+}
+.cd-curriculum-content{padding:.8rem 0}
+.cd-tema-block{
+  padding:.6rem .8rem;margin-bottom:.8rem;
+  background:#fff;border-radius:8px;
+  border-left:3px solid var(--accent);
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.cd-subtemas{padding-left:1rem;margin-top:.4rem}
+.cd-subtemas li{
+  position:relative;padding:.2rem 0 .2rem 1rem;
+  color:#666;line-height:1.5;
+}
+.cd-subtemas li::before{
+  content:'';position:absolute;left:0;top:.65rem;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);opacity:.6;
+}
+
+/* Bullet lists */
+.cd-list-bullets{
+  list-style:none;padding-left:0;margin:.5rem 0;
+}
+.cd-list-bullets li{
+  position:relative;padding:.3rem 0 .3rem 1.2rem;
+  font-size:.93rem;color:#444;line-height:1.6;
+}
+.cd-list-bullets li::before{
+  content:'';position:absolute;left:0;top:.7rem;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);opacity:.75;
+}
+
+/* Sticky Sidebar */
+.cd-sticky-sidebar{
+  position:sticky;top:90px;
+}
+
+/* Schedules */
+.cd-sidebar-schedules{
+  background:linear-gradient(135deg,rgba(2,17,204,0.04),#fff);
+  border-left:3px solid var(--primary);
+}
+.cd-schedules-list{font-size:.9rem}
+.cd-schedule-item{
+  margin-bottom:1rem;padding-bottom:.8rem;
+  border-bottom:1px solid #f0f0f0;
+}
+.cd-schedule-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cd-schedule-day{
+  font-weight:700;color:var(--primary);margin-bottom:.4rem;
+  font-size:.95rem;
+}
+.cd-schedule-times{display:flex;flex-direction:column;gap:.3rem}
+.cd-schedule-time{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.85rem;color:#555;line-height:1.5;
+}
+.cd-schedule-time .badge{
+  font-size:.7rem;padding:.2rem .5rem;font-weight:600;
+}
+.cd-schedule-time .time{font-weight:600;color:#333}
+.cd-schedule-time .aula{font-size:.8rem}
+
+/* Lists (convenios, docentes, etc) */
+.cd-convenios-list, .cd-docentes-list, .cd-certs-list, .cd-seminars-list{
+  display:flex;flex-direction:column;gap:.8rem;
+}
+.cd-convenio-item, .cd-docente-item, .cd-cert-item, .cd-seminar-item{
+  display:flex;align-items:flex-start;gap:.8rem;
+  padding:.6rem;border-radius:8px;
+  background:#f8f9fa;transition:all .2s ease;
+}
+.cd-convenio-item:hover, .cd-docente-item:hover, 
+.cd-cert-item:hover, .cd-seminar-item:hover{
+  background:#e9ecef;transform:translateX(4px);
+}
+.cd-convenio-info, .cd-docente-info{flex:1}
+.cd-convenio-info strong, .cd-docente-info strong,
+.cd-cert-item strong, .cd-seminar-item strong{
+  display:block;font-size:.9rem;color:#1a1a2e;margin-bottom:.15rem;
+}
+
 /* Responsive */
+@media(max-width:991px){
+  .cd-sticky-sidebar{position:relative;top:0}
+}
 @media(max-width:767px){
   .cd-hero{min-height:280px}
   .cd-hero-title{font-size:1.6rem}
   .cd-hero-subtitle{font-size:.95rem}
+  .cd-hero-actions{margin-top:1rem}
+  .cd-hero-actions .btn{padding:.55rem 1.1rem;font-size:.9rem}
   .cd-info-strip{margin-top:-20px;gap:.6rem}
   .cd-info-badge{padding:.6rem .8rem;min-width:120px}
   .cd-card{padding:1.2rem}
+  .cd-card-header{flex-direction:column;align-items:flex-start;gap:.4rem}
+  .cd-card-header i{font-size:1.3rem}
 }
 
 /* =============================================

@@ -15,13 +15,149 @@ export default function AdminCourses(){
   const [form, setForm] = useState({
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-    modalidad: '', temario: '', modulos: ''
+    razones_para_estudiar: '', publico_objetivo: '',
+    modalidad: '', temario: ''
   })
 
 
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
+  const [schedulesUploadLoading, setSchedulesUploadLoading] = useState(false)
+  const createEmptyGrid = () => {
+    const days = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+    const grid = {}
+    days.forEach(d => {
+      grid[d] = { manana: { ranges: [], aula: '' }, tarde: { ranges: [], aula: '' }, noche: { ranges: [], aula: '' } }
+    })
+    return grid
+  }
+  const [scheduleGrid, setScheduleGrid] = useState(createEmptyGrid())
+  const [temarioUnits, setTemarioUnits] = useState([]) // unidades didácticas structured
+
+  // helpers to manage unidades didácticas
+  const addUnit = () => setTemarioUnits(u => ([...u, { orden: u.length + 1, nivel: '', titulo: '', temas: [] }]))
+  const removeUnit = (idx) => setTemarioUnits(u => u.filter((_,i) => i !== idx).map((unit,i) => ({ ...unit, orden: i+1 })))
+  const updateUnitField = (idx, field, value) => setTemarioUnits(u => u.map((unit,i) => i===idx ? { ...unit, [field]: value } : unit))
+  const addTema = (unitIdx) => setTemarioUnits(u => u.map((unit,i) => i===unitIdx ? { ...unit, temas: [...(unit.temas||[]), { titulo: '', subtemas: [] }] } : unit))
+  const removeTema = (unitIdx, temaIdx) => setTemarioUnits(u => u.map((unit,i) => {
+    if (i!==unitIdx) return unit
+    const temas = (unit.temas||[]).filter((_,t) => t !== temaIdx)
+    return { ...unit, temas }
+  }))
+  const updateTemaField = (unitIdx, temaIdx, field, value) => setTemarioUnits(u => u.map((unit,i) => {
+    if (i!==unitIdx) return unit
+    const temas = (unit.temas||[]).map((t,ti) => ti===temaIdx ? { ...t, [field]: value } : t)
+    return { ...unit, temas }
+  }))
+  const addSubtema = (unitIdx, temaIdx) => setTemarioUnits(u => u.map((unit,i) => {
+    if (i!==unitIdx) return unit
+    const temas = (unit.temas||[]).map((t,ti) => ti===temaIdx ? { ...t, subtemas: [...(t.subtemas||[]), ''] } : t)
+    return { ...unit, temas }
+  }))
+  const updateSubtema = (unitIdx, temaIdx, subIdx, value) => setTemarioUnits(u => u.map((unit,i) => {
+    if (i!==unitIdx) return unit
+    const temas = (unit.temas||[]).map((t,ti) => {
+      if (ti!==temaIdx) return t
+      const subs = (t.subtemas||[]).map((s,si) => si===subIdx ? value : s)
+      return { ...t, subtemas: subs }
+    })
+    return { ...unit, temas }
+  }))
+  const removeSubtema = (unitIdx, temaIdx, subIdx) => setTemarioUnits(u => u.map((unit,i) => {
+    if (i!==unitIdx) return unit
+    const temas = (unit.temas||[]).map((t,ti) => {
+      if (ti!==temaIdx) return t
+      const subs = (t.subtemas||[]).filter((s,si) => si!==subIdx)
+      return { ...t, subtemas: subs }
+    })
+    return { ...unit, temas }
+  }))
+
+  const sanitizeTemarioForSend = (units) => {
+    if (!Array.isArray(units)) return []
+    return units.map(u => ({
+      orden: u.orden || null,
+      nivel: u.nivel || '',
+      titulo: u.titulo || '',
+      temas: Array.isArray(u.temas) ? u.temas.map(t => ({ titulo: t.titulo || '', subtemas: Array.isArray(t.subtemas) ? t.subtemas : [] })) : []
+    }))
+  }
+
+  const collectItemsFromGrid = () => {
+    const items = []
+    const days = Object.keys(scheduleGrid || {})
+    for (const day of days) {
+      for (const turno of ['manana','tarde','noche']) {
+        const cell = (scheduleGrid && scheduleGrid[day] && scheduleGrid[day][turno]) ? scheduleGrid[day][turno] : { ranges: [], aula: '' }
+        const ranges = Array.isArray(cell.ranges) ? cell.ranges : []
+        for (const r of ranges) {
+          const parts = String(r).split(/-|–|—/).map(p => p.trim())
+          const hora_inicio = parts[0] || ''
+          const hora_fin = parts[1] || ''
+          if (hora_inicio) items.push({ dia: day, turno: turno, hora_inicio, hora_fin, aula: cell.aula || '' })
+        }
+      }
+    }
+    return items
+  }
+
+  const deactivateExistingSchedules = async (courseId) => {
+    try{
+      const c = items.find(i => i.id === courseId)
+      if (!c || !Array.isArray(c.schedules)) return
+      await Promise.all((c.schedules||[]).map(s => {
+        if (!s.id) return Promise.resolve()
+        return axios.put(`${endpoints.COURSE_SCHEDULES(courseId)}/${s.id}`, { active: false }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      }))
+    }catch(e){ console.error('deactivateExistingSchedules', e) }
+  }
+
+  const uploadSchedulesForCourse = async (courseId) => {
+    const items = collectItemsFromGrid()
+    if (!items.length) return
+    try{
+      // normalize/transform items to expected server shape
+      const normalizeTime = (t) => {
+        if (!t) return null
+        const s = String(t).trim()
+        if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`
+        return s
+      }
+      const normalizeTurno = (v) => {
+        if (!v) return ''
+        const s = String(v).toLowerCase()
+        if (s.includes('man')) return 'Mañana'
+        if (s.includes('tar')) return 'Tarde'
+        if (s.includes('noc')) return 'Noche'
+        return v
+      }
+      const normalizeDia = (d) => {
+        if (!d) return d
+        const s = String(d).toLowerCase()
+        const map = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', miércoles: 'Miércoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sábado', sábado: 'Sábado', domingo: 'Domingo' }
+        return map[s] || (d.charAt(0).toUpperCase() + d.slice(1))
+      }
+      const transformed = items.map(it => ({
+        dia: normalizeDia(it.dia),
+        turno: normalizeTurno(it.turno),
+        hora_inicio: normalizeTime(it.hora_inicio),
+        hora_fin: normalizeTime(it.hora_fin),
+        aula: it.aula || ''
+      }))
+      console.log('uploadSchedulesForCourse payload', courseId, transformed)
+      try { console.log('uploadSchedulesForCourse payload json', JSON.stringify(transformed, null, 2)) } catch(e){}
+      // use batch endpoint when sending multiple schedules
+      const batchUrl = `${endpoints.COURSE_SCHEDULES(courseId)}/batch`
+      await axios.post(batchUrl, transformed, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+    }catch(e){
+      console.error('uploadSchedulesForCourse', e)
+      // try to show server validation details
+      const details = e && e.response ? (e.response.data || e.response) : e.message || String(e)
+      console.error('uploadSchedulesForCourse details', details)
+      setError(details && typeof details === 'object' ? (details.message || JSON.stringify(details)) : String(details) || 'No se pudieron subir horarios del curso')
+    }
+  }
 
   const token = localStorage.getItem('etp_token')
 
@@ -79,6 +215,36 @@ export default function AdminCourses(){
 
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
 
+  
+
+  const setGridCellAddRange = (day, turno, range) => {
+    setScheduleGrid(g => {
+      const copy = JSON.parse(JSON.stringify(g))
+      if (!copy[day]) return g
+      copy[day][turno].ranges.push(range)
+      return copy
+    })
+  }
+  const setGridCellRemoveRange = (day, turno, idx) => {
+    setScheduleGrid(g => {
+      const copy = JSON.parse(JSON.stringify(g))
+      if (!copy[day]) return g
+      copy[day][turno].ranges.splice(idx,1)
+      return copy
+    })
+  }
+  const setGridCellAula = (day, turno, aula) => setScheduleGrid(g => { const copy = JSON.parse(JSON.stringify(g)); if (!copy[day]) return g; copy[day][turno].aula = aula; return copy })
+
+  const promptAddRange = (day, turno) => {
+    const val = window.prompt(`Agregar rango para ${day} (${turno}) — formato HH:MM-HH:MM`, '08:00-10:00')
+    if (!val) return
+    // accept comma-separated multiple
+    const parts = val.split(',').map(p=>p.trim()).filter(Boolean)
+    parts.forEach(p => setGridCellAddRange(day, turno, p))
+  }
+
+  
+
   const handleCreate = async (e) => {
     e && e.preventDefault()
     setError(null); setSaving(true)
@@ -94,47 +260,55 @@ export default function AdminCourses(){
         hours: form.hours || null,
         duration: form.duration || null,
         modalidad: form.modalidad || null,
-        temario: parseTemarioInput(form.temario),
-        modulos: parseTemarioInput(form.modulos),
+          temario: (Array.isArray(temarioUnits) && temarioUnits.length) ? sanitizeTemarioForSend(temarioUnits) : parseTemarioInput(form.temario),
         grado: form.grado || null,
         registro: form.registro || null,
         perfil_egresado: form.perfil_egresado || null,
+        razones_para_estudiar: form.razones_para_estudiar || null,
+        publico_objetivo: form.publico_objetivo || null,
         mision: form.mision || null,
         vision: form.vision || null,
         // docentes and schedules removed from course payload (managed elsewhere)
       }
-      await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      const res = await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      const created = res && res.data ? res.data : null
+      // if grid has schedules, upload them for the new course
+      if (created && created.id) await uploadSchedulesForCourse(created.id)
       setForm({ 
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-        modalidad: '', temario: '', modulos: ''
+        razones_para_estudiar: '', publico_objetivo: '',
+        modalidad: '', temario: ''
       })
+        setTemarioUnits([])
       await fetchCourses()
       await fetchMedia()
-    }catch(err){ console.error('createCourse', err); setError('Error al crear curso') }
+    }catch(err){
+      console.error('createCourse', err)
+      const details = err && err.response ? err.response.data : (err && err.message ? err.message : err)
+      console.error('createCourse details', details)
+      setError(details && typeof details === 'object' ? (details.message || JSON.stringify(details)) : String(details) || 'Error al crear curso')
+    }
     finally{ setSaving(false) }
   }
 
-  // render temario array (strings or section objects) back to editable text
+  // render temario (prefer JSON for structured unidades didácticas)
   const renderTemarioToText = (arr) => {
     if (!arr) return ''
     if (!Array.isArray(arr)) return String(arr)
-    // if array of strings, render each as '- item' per line
+    // if array of strings, keep legacy simple format
     if (arr.every(x => typeof x === 'string')) {
       return arr.map(s => `- ${s}`).join('\n')
     }
-    // mixed or section objects
-    return arr.map(el => {
-      if (!el) return ''
-      if (typeof el === 'string') return `- ${el}`
-      if (el.title && Array.isArray(el.items)) {
-        return [el.title, ...el.items.map(i => `- ${i}`)].join('\n')
-      }
-      return JSON.stringify(el)
-    }).join('\n\n')
+    // if complex objects (unidades didácticas), render pretty JSON for editing
+    if (arr.length > 0 && typeof arr[0] === 'object') {
+      try { return JSON.stringify(arr, null, 2) } catch(e) { return String(arr) }
+    }
+    // fallback
+    return arr.map(el => typeof el === 'string' ? `- ${el}` : JSON.stringify(el)).join('\n\n')
   }
 
-  // parse temario input: try JSON, then structured text (subtitle + '- item'), then comma-separated
+  // parse temario input: try JSON first (for unidades didácticas), then legacy structured text, then comma-separated
   const parseTemarioInput = (txt) => {
     if (!txt) return []
     try { const v = JSON.parse(txt); return Array.isArray(v) ? v : [v] } catch (e) {}
@@ -165,10 +339,59 @@ export default function AdminCourses(){
       thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', slug: c.slug||'', published: !!c.published,
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
+      razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
       modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
-      modulos: c.modulos ? renderTemarioToText(c.modulos) : '',
       // docentes and schedules removed from course edit form
     })
+    // initialize schedule grid from course schedules
+    try{
+      const grid = createEmptyGrid()
+      if (Array.isArray(c.schedules)){
+        c.schedules.forEach(s => {
+          const day = s.dia || ''
+          // determine turno key
+          const turnoRaw = (s.turno || '').toString().toLowerCase()
+          let turnoKey = 'manana'
+          if (turnoRaw.includes('tar') || turnoRaw.includes('tarde')) turnoKey = 'tarde'
+          else if (turnoRaw.includes('noc') || turnoRaw.includes('noche')) turnoKey = 'noche'
+          else {
+            // infer by hour
+            const h = s.hora_inicio ? parseInt(s.hora_inicio.split(':')[0],10) : null
+            if (h !== null) {
+              if (h >= 6 && h < 12) turnoKey = 'manana'
+              else if (h >= 12 && h < 18) turnoKey = 'tarde'
+              else turnoKey = 'noche'
+            }
+          }
+          const dKey = (day && grid[day]) ? day : Object.keys(grid).find(k => k.toLowerCase().startsWith((day||'').toString().substring(0,3).toLowerCase())) || null
+          if (dKey) {
+            const range = s.hora_inicio && s.hora_fin ? `${s.hora_inicio.substring(0,5)} - ${s.hora_fin.substring(0,5)}` : ''
+            if (range) grid[dKey][turnoKey].ranges.push(range)
+            if (s.aula) grid[dKey][turnoKey].aula = s.aula
+          }
+        })
+      }
+      setScheduleGrid(grid)
+      // initialize temarioUnits from course temario if structured
+      try{
+        if (Array.isArray(c.temario) && c.temario.length > 0 && typeof c.temario[0] === 'object') {
+          setTemarioUnits(c.temario.map(u => ({
+            orden: u.orden || null,
+            nivel: u.nivel || '',
+            titulo: u.titulo || '',
+            temas: Array.isArray(u.temas) ? u.temas.map(t => ({ titulo: t.titulo || '', subtemas: Array.isArray(t.subtemas) ? t.subtemas : [] })) : []
+          })))
+        } else if (Array.isArray(c.temario) && c.temario.length > 0 && typeof c.temario[0] === 'string') {
+          // convert simple string list into a single unidad with temas
+          setTemarioUnits([{
+            orden: 1, nivel: '', titulo: 'Unidad 1',
+            temas: c.temario.map(t => ({ titulo: t, subtemas: [] }))
+          }])
+        } else {
+          setTemarioUnits([])
+        }
+      }catch(e){ console.error('init temarioUnits', e); setTemarioUnits([]) }
+    }catch(e){ console.error('init grid', e) }
   }
 
   
@@ -178,8 +401,11 @@ export default function AdminCourses(){
     setForm({ 
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
-      modalidad: '', temario: '', modulos: ''
+      razones_para_estudiar: '', publico_objetivo: '',
+      modalidad: '', temario: ''
     }) 
+    setScheduleGrid(createEmptyGrid())
+    setTemarioUnits([])
   }
 
   const saveEdit = async (id) => {
@@ -196,16 +422,20 @@ export default function AdminCourses(){
         hours: form.hours || null,
         duration: form.duration || null,
         modalidad: form.modalidad || null,
-        temario: parseTemarioInput(form.temario),
-        modulos: parseTemarioInput(form.modulos),
+          temario: (Array.isArray(temarioUnits) && temarioUnits.length) ? sanitizeTemarioForSend(temarioUnits) : parseTemarioInput(form.temario),
         grado: form.grado || null,
         registro: form.registro || null,
         perfil_egresado: form.perfil_egresado || null,
+        razones_para_estudiar: form.razones_para_estudiar || null,
+        publico_objetivo: form.publico_objetivo || null,
         mision: form.mision || null,
         vision: form.vision || null,
         // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      // deactivate existing schedules then upload new ones from grid
+      await deactivateExistingSchedules(id)
+      await uploadSchedulesForCourse(id)
       cancelEdit(); await fetchCourses(); await fetchMedia()
     }catch(err){ console.error('saveEdit', err); setError('Error al actualizar curso') }
     finally{ setSaving(false) }
@@ -257,13 +487,51 @@ export default function AdminCourses(){
                   <textarea className="form-control" rows={4} value={form.description} onChange={e=>handleChange('description', e.target.value)} />
                 </div>
                 <div className="row g-2 mb-3">
-                  <div className="col-6">
-                    <label className="form-label">Horas</label>
-                    <input className="form-control" value={form.hours} onChange={e=>handleChange('hours', e.target.value)} />
-                  </div>
-                  <div className="col-6">
+                  <div className="col-12 col-md-6">
                     <label className="form-label">Duración</label>
                     <input className="form-control" value={form.duration} onChange={e=>handleChange('duration', e.target.value)} />
+                  </div>
+                </div>
+                {/* Cuadrícula rápida colocada junto a Horas */}
+                <div className="mb-3">
+                  <label className="form-label">Cuadrícula rápida (crear por día/turno)</label>
+                  <div style={{overflowX:'auto'}}>
+                    <table className="table table-sm" style={{minWidth:640}}>
+                      <thead>
+                        <tr>
+                          <th>Día</th>
+                          <th>Mañana</th>
+                          <th>Tarde</th>
+                          <th>Noche</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.keys(scheduleGrid).map(day => (
+                          <tr key={day}>
+                            <td style={{verticalAlign:'top'}}><strong>{day}</strong></td>
+                            {['manana','tarde','noche'].map(turno => (
+                              <td key={turno} style={{verticalAlign:'top'}}>
+                                <div>
+                                  {(scheduleGrid[day][turno].ranges || []).map((r,idx) => (
+                                    <div key={idx} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                                      <small className="badge bg-light text-dark">{r}</small>
+                                      <button type="button" className="btn btn-sm btn-link text-danger" onClick={()=>setGridCellRemoveRange(day,turno,idx)}>x</button>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div style={{display:'flex',gap:8,marginTop:6}}>
+                                  <button type="button" className="btn btn-sm btn-outline-secondary" onClick={()=>promptAddRange(day,turno)}>Agregar rango</button>
+                                  <input className="form-control form-control-sm" placeholder="Aula" value={scheduleGrid[day][turno].aula} onChange={e=>setGridCellAula(day,turno,e.target.value)} />
+                                </div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-2">
+                    <small className="text-muted">Los horarios se cargarán en lote al guardar el curso.</small>
                   </div>
                 </div>
                 <div className="row g-2 mb-3">
@@ -287,6 +555,14 @@ export default function AdminCourses(){
                 <div className="mb-3">
                   <label className="form-label">Visión</label>
                   <textarea className="form-control" rows={2} value={form.vision} onChange={e=>handleChange('vision', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Razones para estudiar</label>
+                  <textarea className="form-control" rows={3} value={form.razones_para_estudiar} onChange={e=>handleChange('razones_para_estudiar', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Público objetivo</label>
+                  <textarea className="form-control" rows={2} value={form.publico_objetivo} onChange={e=>handleChange('publico_objetivo', e.target.value)} />
                 </div>
                 <div className="row g-2 mb-3">
                   <div className="col-12 col-md-6">
@@ -341,14 +617,62 @@ export default function AdminCourses(){
                 
                 
                 <div className="mb-3">
-                  <label className="form-label">Temario (Texto estructurado: subtítulo en una línea, luego líneas que comienzan con "- ")</label>
-                  <textarea className="form-control" rows={8} value={form.temario} onChange={e=>handleChange('temario', e.target.value)} placeholder={'INTRODUCCIÓN A LAS HOJAS DE CÁLCULO\n- ¿Qué es una hoja de cálculo?\n- Elementos de la Interfaz de Excel\n'} />
-                  <small className="text-muted">También acepta JSON array o coma-separado.</small>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Módulos (JSON o texto estructurado similar a Temario)</label>
-                  <textarea className="form-control" rows={4} value={form.modulos} onChange={e=>handleChange('modulos', e.target.value)} placeholder={'["Módulo 1","Módulo 2"]\n\nO:\nMódulo 1\n- Tema A\n- Tema B'} />
-                  <small className="text-muted">Puede ser un array JSON o texto estructurado.</small>
+                  <label className="form-label">Unidades didácticas</label>
+                  <div className="mb-2">
+                    <button type="button" className="btn btn-sm btn-outline-primary" onClick={addUnit}>+ Añadir unidad</button>
+                  </div>
+                  {temarioUnits.length === 0 && <div className="text-muted small mb-2">No hay unidades. Pulsa "Añadir unidad" para crear la primera.</div>}
+                  {temarioUnits.map((unit, ui) => (
+                    <div key={ui} className="card mb-2 p-2">
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <div style={{flex:1}}>
+                          <div className="row g-2">
+                            <div className="col-2">
+                              <input type="number" className="form-control" value={unit.orden || ui+1} onChange={e=>updateUnitField(ui,'orden', Number(e.target.value))} />
+                            </div>
+                            <div className="col-4">
+                              <input className="form-control" value={unit.nivel || ''} onChange={e=>updateUnitField(ui,'nivel', e.target.value)} placeholder="Nivel (ej. NIVEL I)" />
+                            </div>
+                            <div className="col-6">
+                              <input className="form-control" value={unit.titulo || ''} onChange={e=>updateUnitField(ui,'titulo', e.target.value)} placeholder="Título de la unidad" />
+                            </div>
+                          </div>
+                          {/* descripción eliminada: solo título y temas según requerimiento */}
+                        </div>
+                        <div className="ms-2">
+                          <button type="button" className="btn btn-sm btn-danger" onClick={()=>removeUnit(ui)}>Eliminar</button>
+                        </div>
+                      </div>
+                      <div>
+                        <strong className="small">Temas</strong>
+                        <div className="mt-2">
+                          {(unit.temas||[]).map((tema, ti) => (
+                            <div key={ti} className="mb-2 p-2 border rounded">
+                              <div className="d-flex gap-2">
+                                <input className="form-control" value={tema.titulo || ''} onChange={e=>updateTemaField(ui,ti,'titulo', e.target.value)} placeholder="Título del tema" />
+                                <button type="button" className="btn btn-sm btn-danger" onClick={()=>removeTema(ui,ti)}>Eliminar tema</button>
+                              </div>
+                              <div className="mt-2">
+                                <div className="small text-muted">Subtemas</div>
+                                {(tema.subtemas||[]).map((s,si) => (
+                                  <div key={si} className="d-flex gap-2 align-items-center mt-1">
+                                    <input className="form-control" value={s || ''} onChange={e=>updateSubtema(ui,ti,si, e.target.value)} placeholder="Subtema" />
+                                    <button type="button" className="btn btn-sm btn-link text-danger" onClick={()=>removeSubtema(ui,ti,si)}>x</button>
+                                  </div>
+                                ))}
+                                <div className="mt-2">
+                                  <button type="button" className="btn btn-sm btn-outline-secondary" onClick={()=>addSubtema(ui,ti)}>+ Añadir subtema</button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <div>
+                            <button type="button" className="btn btn-sm btn-outline-primary" onClick={()=>addTema(ui)}>+ Añadir tema</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="d-flex gap-2">
@@ -357,6 +681,12 @@ export default function AdminCourses(){
                 </div>
               </form>
             </div>
+            {editingId && (
+              <div className="card-footer">
+                <h6 className="mb-2">Horarios</h6>
+                <div className="text-muted small">Edita los horarios en la cuadrícula arriba; se subirán al guardar el curso.</div>
+              </div>
+            )}
           </div>
 
           
@@ -413,9 +743,9 @@ export default function AdminCourses(){
                                 </div>
                               </div>
                               {c.perfil_egresado && <div className="mt-2"><strong>Perfil egresado:</strong> <div className="text-muted small">{c.perfil_egresado}</div></div>}
-                              {c.modulos && (
-                                <div className="mt-2"><strong>Módulos:</strong> <div className="text-muted small">{Array.isArray(c.modulos) ? c.modulos.map(m => (typeof m === 'string' ? m : (m.title || JSON.stringify(m)))).slice(0,5).join(', ') : String(c.modulos)}</div></div>
-                              )}
+                              {c.razones_para_estudiar && <div className="mt-2"><strong>Razones para estudiar:</strong> <div className="text-muted small">{String(c.razones_para_estudiar)}</div></div>}
+                              {c.publico_objetivo && <div className="mt-2"><strong>Público objetivo:</strong> <div className="text-muted small">{String(c.publico_objetivo)}</div></div>}
+                              {/* Módulos eliminados: ahora use Unidades didácticas en el campo Unidades didácticas */}
                             </div>
 
                             <div className="d-flex flex-column align-items-end">
