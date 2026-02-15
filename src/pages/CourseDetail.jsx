@@ -525,17 +525,6 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Perfil egresado */}
-            {course.perfil_egresado && (
-              <div className="cd-card cd-card-profile">
-                <div className="cd-card-header">
-                  <i className="bi bi-person-check-fill"></i>
-                  <h4 className="cd-card-title mb-0">Perfil del Egresado</h4>
-                </div>
-                <div className="cd-card-body">{renderWithLeadingBold(course.perfil_egresado)}</div>
-              </div>
-            )}
-
             {/* Unidades didácticas (anteriormente 'Temario') */}
             {temario && (
               <div className="cd-card cd-card-curriculum">
@@ -549,50 +538,21 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Misión / Visión */}
-            {(course.mision || course.vision) && (
-              <div className="cd-card">
+            {/* Perfil egresado */}
+            {course.perfil_egresado && (
+              <div className="cd-card cd-card-profile">
                 <div className="cd-card-header">
-                  <i className="bi bi-bullseye"></i>
-                  <h4 className="cd-card-title mb-0">Misión y Visión</h4>
+                  <i className="bi bi-person-check-fill"></i>
+                  <h4 className="cd-card-title mb-0">Perfil del Egresado</h4>
                 </div>
-                <div className="row g-3 p-3">
-                  {course.mision && (
-                    <div className="col-12 col-md-6">
-                      <div className="cd-mv-box cd-mision">
-                        <h6><i className="bi bi-flag-fill me-2"></i>Misión</h6>
-                        <p>{course.mision}</p>
-                      </div>
-                    </div>
-                  )}
-                  {course.vision && (
-                    <div className="col-12 col-md-6">
-                      <div className="cd-mv-box cd-vision">
-                        <h6><i className="bi bi-eye-fill me-2"></i>Visión</h6>
-                        <p>{course.vision}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <div className="cd-card-body">{renderWithLeadingBold(course.perfil_egresado)}</div>
               </div>
             )}
           </div>
 
           {/* RIGHT COLUMN — sidebar */}
           <div className="col-12 col-lg-4">
-            {/* CTA destacado arriba */}
             <div className="cd-sticky-sidebar">
-              <div className="cd-sidebar-card cd-cta-card">
-                <h5><i className="bi bi-star-fill me-2"></i>¿Te interesa?</h5>
-                <p className="small mb-3">Obtén más información sobre matrícula, precios y beneficios.</p>
-                <button onClick={handleDownloadBrochure} className="btn btn-primary w-100 mb-2">
-                  <i className="bi bi-download me-2"></i>Descargar Brochure
-                </button>
-                <Link to="/contacto" className="btn btn-accent w-100">
-                  <i className="bi bi-envelope me-2"></i>Solicitar Información
-                </Link>
-              </div>
-
               {/* Horarios */}
               {schedules && schedules.length > 0 && (
                 <div className="cd-sidebar-card cd-sidebar-schedules">
@@ -612,6 +572,27 @@ export default function CourseDetail() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Misión / Visión */}
+              {(course.mision || course.vision) && (
+                <div className="cd-sidebar-card">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-bullseye me-2"></i>Misión y Visión</h5>
+                  <div className="cd-mv-sidebar">
+                    {course.mision && (
+                      <div className="cd-mv-item cd-mision-sidebar mb-3">
+                        <h6><i className="bi bi-flag-fill me-2"></i>Misión</h6>
+                        <p className="small mb-0">{course.mision}</p>
+                      </div>
+                    )}
+                    {course.vision && (
+                      <div className="cd-mv-item cd-vision-sidebar">
+                        <h6><i className="bi bi-eye-fill me-2"></i>Visión</h6>
+                        <p className="small mb-0">{course.vision}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

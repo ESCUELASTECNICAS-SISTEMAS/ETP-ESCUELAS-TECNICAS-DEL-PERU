@@ -747,6 +747,26 @@ footer{background:#212529;color:#fff}
 .cd-sidebar-title i{color:var(--accent)}
 .cd-sidebar-text{font-size:.9rem;line-height:1.6;color:#444;margin:0}
 
+/* Misión/Visión en sidebar */
+.cd-mv-sidebar{display:flex;flex-direction:column;gap:.8rem}
+.cd-mv-item{padding:.8rem;border-radius:8px;background:#f8f9fa}
+.cd-mv-item h6{
+  font-size:.9rem;font-weight:700;margin-bottom:.4rem;
+  display:flex;align-items:center;
+}
+.cd-mv-item h6 i{font-size:.85rem;margin-right:.4rem}
+.cd-mv-item p{font-size:.85rem;line-height:1.5;color:#555;margin:0}
+.cd-mision-sidebar{
+  border-left:3px solid var(--primary);
+  background:linear-gradient(135deg,rgba(2,17,204,0.06),#f8f9fa);
+}
+.cd-mision-sidebar h6{color:var(--primary)}
+.cd-vision-sidebar{
+  border-left:3px solid var(--accent);
+  background:linear-gradient(135deg,rgba(253,113,15,0.06),#f8f9fa);
+}
+.cd-vision-sidebar h6{color:var(--accent)}
+
 /* Convenios */
 .cd-convenio{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid #f5f5f5}
 .cd-convenio:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
