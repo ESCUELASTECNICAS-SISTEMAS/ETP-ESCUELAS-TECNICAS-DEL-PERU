@@ -671,6 +671,11 @@ footer{background:#212529;color:#fff}
   display:flex;align-items:center;gap:.6rem;
   background:#fff;padding:.8rem 1.2rem;border-radius:12px;
   box-shadow:0 4px 20px rgba(0,0,0,0.08);flex:1 1 140px;min-width:140px;
+  transition: all 0.3s ease;
+}
+.cd-info-badge:hover{
+  transform: translateY(-5px);
+  box-shadow:0 8px 28px rgba(0,0,0,0.15);
 }
 .cd-info-badge i{font-size:1.4rem;color:var(--accent)}
 .cd-info-badge small{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
@@ -683,6 +688,11 @@ footer{background:#212529;color:#fff}
 .cd-card{
   background:#fff;border-radius:14px;padding:1.8rem;
   box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:1.5rem;
+  transition: all 0.3s ease;
+}
+.cd-card:hover{
+  transform: translateY(-5px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
 }
 .cd-card-title{
   font-size:1.15rem;font-weight:700;color:var(--primary);
@@ -741,6 +751,11 @@ footer{background:#212529;color:#fff}
 .cd-sidebar-card{
   background:#fff;border-radius:14px;padding:1.4rem;
   box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:1.2rem;
+  transition: all 0.3s ease;
+}
+.cd-sidebar-card:hover{
+  transform: translateX(-5px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 .cd-sidebar-img{width:100%;border-radius:10px;object-fit:contain;aspect-ratio:1/1;background:#f8f9fa}
 .cd-sidebar-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:.8rem}

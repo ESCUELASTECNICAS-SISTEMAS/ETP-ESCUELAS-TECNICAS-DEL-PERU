@@ -9,6 +9,8 @@ export default function AdminCourses(){
   const [loadingMedia, setLoadingMedia] = useState(true)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const mediaPickerRef = useRef(null)
+  const [showHorariosPicker, setShowHorariosPicker] = useState(false)
+  const horariosPickerRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -16,7 +18,7 @@ export default function AdminCourses(){
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
     razones_para_estudiar: '', publico_objetivo: '',
-    modalidad: '', temario: ''
+    modalidad: '', temario: '', horarios_media_id: ''
   })
 
 
@@ -92,28 +94,88 @@ export default function AdminCourses(){
         const cell = (scheduleGrid && scheduleGrid[day] && scheduleGrid[day][turno]) ? scheduleGrid[day][turno] : { ranges: [], aula: '' }
         const ranges = Array.isArray(cell.ranges) ? cell.ranges : []
         for (const r of ranges) {
-          const parts = String(r).split(/-|–|—/).map(p => p.trim())
+          // r can be a string (legacy) or an object { text, id }
+          const raw = (typeof r === 'string') ? r : (r.text || r.range || '')
+          const parts = String(raw).split(/-|–|—/).map(p => p.trim())
           const hora_inicio = parts[0] || ''
           const hora_fin = parts[1] || ''
-          if (hora_inicio) items.push({ dia: day, turno: turno, hora_inicio, hora_fin, aula: cell.aula || '' })
+          const id = (typeof r === 'object' && r.id) ? r.id : undefined
+          if (hora_inicio) items.push({ id, dia: day, turno: turno, hora_inicio, hora_fin, aula: cell.aula || '' })
         }
       }
     }
     return items
   }
 
-  const deactivateExistingSchedules = async (courseId) => {
+  const deleteAllSchedulesForCourse = async (courseId) => {
     try{
-      const c = items.find(i => i.id === courseId)
-      if (!c || !Array.isArray(c.schedules)) return
-      await Promise.all((c.schedules||[]).map(s => {
-        if (!s.id) return Promise.resolve()
-        return axios.put(`${endpoints.COURSE_SCHEDULES(courseId)}/${s.id}`, { active: false }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
-      }))
-    }catch(e){ console.error('deactivateExistingSchedules', e) }
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      // 1) traer los horarios REALES del servidor (no del estado local que puede estar desactualizado)
+      const res = await axios.get(`${endpoints.COURSES}/${courseId}`, { headers })
+      const allSchedules = (res.data && Array.isArray(res.data.schedules)) ? res.data.schedules : []
+      // solo desactivar los que aún están activos
+      const serverSchedules = allSchedules.filter(s => s.active !== false)
+      console.log('deleteAllSchedulesForCourse: encontrados activos en servidor', serverSchedules.length, 'horarios')
+      if (!serverSchedules.length) return
+      // 2) borrar en paralelo (lotes de 20 para no saturar servidor)
+      const BATCH_SIZE = 20
+      const validSchedules = serverSchedules.filter(s => s.id)
+      for (let i = 0; i < validSchedules.length; i += BATCH_SIZE) {
+        const batch = validSchedules.slice(i, i + BATCH_SIZE)
+        await Promise.allSettled(batch.map(s =>
+          axios.delete(`${endpoints.COURSE_SCHEDULES(courseId)}/${s.id}`, { headers })
+            .then(() => console.log('deleted schedule', s.id))
+            .catch(e => console.error('delete schedule failed', s.id, e?.response?.status, e?.response?.data))
+        ))
+      }
+    }catch(e){ console.error('deleteAllSchedulesForCourse', e) }
   }
 
-  const uploadSchedulesForCourse = async (courseId) => {
+  // Subir SOLO horarios nuevos (sin id) — los que el usuario agregó en esta sesión de edición
+  const uploadOnlyNewSchedules = async (courseId) => {
+    const allItems = collectItemsFromGrid()
+    // filtrar: solo los que NO tienen id (nuevos, agregados via "Agregar rango")
+    const newItems = allItems.filter(it => !it.id)
+    if (!newItems.length) return
+    try{
+      const normalizeTime = (t) => {
+        if (!t) return null
+        const s = String(t).trim()
+        if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`
+        return s
+      }
+      const normalizeTurno = (v) => {
+        if (!v) return ''
+        const s = String(v).toLowerCase()
+        if (s.includes('man')) return 'Mañana'
+        if (s.includes('tar')) return 'Tarde'
+        if (s.includes('noc')) return 'Noche'
+        return v
+      }
+      const normalizeDia = (d) => {
+        if (!d) return d
+        const s = String(d).toLowerCase()
+        const map = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', miércoles: 'Miércoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sábado', sábado: 'Sábado', domingo: 'Domingo' }
+        return map[s] || (d.charAt(0).toUpperCase() + d.slice(1))
+      }
+      const transformed = newItems.map(it => ({
+        dia: normalizeDia(it.dia),
+        turno: normalizeTurno(it.turno),
+        hora_inicio: normalizeTime(it.hora_inicio),
+        hora_fin: normalizeTime(it.hora_fin),
+        aula: it.aula || ''
+      }))
+      console.log('uploadOnlyNewSchedules: subiendo', transformed.length, 'horarios nuevos', transformed)
+      const batchUrl = `${endpoints.COURSE_SCHEDULES(courseId)}/batch`
+      await axios.post(batchUrl, transformed, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+    }catch(e){
+      console.error('uploadOnlyNewSchedules', e)
+      const details = e && e.response ? (e.response.data || e.response) : e.message || String(e)
+      setError(details && typeof details === 'object' ? (details.message || JSON.stringify(details)) : String(details) || 'No se pudieron subir horarios nuevos')
+    }
+  }
+
+  const uploadSchedulesForCourse = async (courseId, opts = {}) => {
     const items = collectItemsFromGrid()
     if (!items.length) return
     try{
@@ -148,7 +210,8 @@ export default function AdminCourses(){
       console.log('uploadSchedulesForCourse payload', courseId, transformed)
       try { console.log('uploadSchedulesForCourse payload json', JSON.stringify(transformed, null, 2)) } catch(e){}
       // use batch endpoint when sending multiple schedules
-      const batchUrl = `${endpoints.COURSE_SCHEDULES(courseId)}/batch`
+      // if opts.replace === true, request server to replace/sync (deactivate schedules not present)
+      const batchUrl = `${endpoints.COURSE_SCHEDULES(courseId)}/batch${opts.replace ? '?replace=true' : ''}`
       await axios.post(batchUrl, transformed, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
     }catch(e){
       console.error('uploadSchedulesForCourse', e)
@@ -184,6 +247,25 @@ export default function AdminCourses(){
     return ''
   }
 
+    const getCourseHorarioUrl = (course) => {
+      if (!course) return null
+      if (course.horarios && course.horarios.url) return course.horarios.url
+      if (course.horarios_media_id) {
+        const m = findMediaById(course.horarios_media_id)
+        if (m && m.url) return m.url
+      }
+      return null
+    }
+    const getCourseHorarioAlt = (course) => {
+      if (!course) return ''
+      if (course.horarios && course.horarios.alt_text) return course.horarios.alt_text
+      if (course.horarios_media_id) {
+        const m = findMediaById(course.horarios_media_id)
+        if (m && m.alt_text) return m.alt_text
+      }
+      return ''
+    }
+
   const fetchCourses = async () => {
     setLoading(true); setError(null)
     try{
@@ -213,19 +295,36 @@ export default function AdminCourses(){
     return () => document.removeEventListener('mousedown', onDoc)
   }, [showMediaPicker])
 
+  // close horarios picker on outside click
+  useEffect(()=>{
+    if(!showHorariosPicker) return
+    const onDoc = (e) => { if(horariosPickerRef.current && !horariosPickerRef.current.contains(e.target)) setShowHorariosPicker(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [showHorariosPicker])
+
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
 
   
 
-  const setGridCellAddRange = (day, turno, range) => {
+  const setGridCellAddRange = (day, turno, range, id = null) => {
     setScheduleGrid(g => {
       const copy = JSON.parse(JSON.stringify(g))
       if (!copy[day]) return g
-      copy[day][turno].ranges.push(range)
+      // store as object to keep schedule id when present
+      copy[day][turno].ranges.push({ text: range, id })
       return copy
     })
   }
-  const setGridCellRemoveRange = (day, turno, idx) => {
+  const setGridCellRemoveRange = async (day, turno, idx) => {
+    // if the removed range has an id, attempt to delete it on the server
+    const current = scheduleGrid && scheduleGrid[day] && scheduleGrid[day][turno] ? scheduleGrid[day][turno].ranges : []
+    const item = current && current[idx]
+    if (item && typeof item === 'object' && item.id) {
+      try{
+        await axios.delete(`${endpoints.COURSE_SCHEDULES(editingId)}/${item.id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      }catch(e){ console.error('delete schedule', e) }
+    }
     setScheduleGrid(g => {
       const copy = JSON.parse(JSON.stringify(g))
       if (!copy[day]) return g
@@ -255,6 +354,7 @@ export default function AdminCourses(){
         description: form.description,
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
+        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : null,
         slug: form.slug,
         published: Boolean(form.published),
         hours: form.hours || null,
@@ -278,7 +378,7 @@ export default function AdminCourses(){
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
         razones_para_estudiar: '', publico_objetivo: '',
-        modalidad: '', temario: ''
+        modalidad: '', temario: '', horarios_media_id: ''
       })
         setTemarioUnits([])
       await fetchCourses()
@@ -336,18 +436,18 @@ export default function AdminCourses(){
     setEditingId(c.id)
     setForm({
       title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
-      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', slug: c.slug||'', published: !!c.published,
+      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_id: c.horarios_media_id || (c.horarios && c.horarios.id) || '', slug: c.slug||'', published: !!c.published,
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
       modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
       // docentes and schedules removed from course edit form
     })
-    // initialize schedule grid from course schedules
+    // initialize schedule grid from course schedules (solo activos)
     try{
       const grid = createEmptyGrid()
       if (Array.isArray(c.schedules)){
-        c.schedules.forEach(s => {
+        c.schedules.filter(s => s.active !== false).forEach(s => {
           const day = s.dia || ''
           // determine turno key
           const turnoRaw = (s.turno || '').toString().toLowerCase()
@@ -366,7 +466,7 @@ export default function AdminCourses(){
           const dKey = (day && grid[day]) ? day : Object.keys(grid).find(k => k.toLowerCase().startsWith((day||'').toString().substring(0,3).toLowerCase())) || null
           if (dKey) {
             const range = s.hora_inicio && s.hora_fin ? `${s.hora_inicio.substring(0,5)} - ${s.hora_fin.substring(0,5)}` : ''
-            if (range) grid[dKey][turnoKey].ranges.push(range)
+            if (range) grid[dKey][turnoKey].ranges.push({ text: range, id: s.id })
             if (s.aula) grid[dKey][turnoKey].aula = s.aula
           }
         })
@@ -402,7 +502,7 @@ export default function AdminCourses(){
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
       razones_para_estudiar: '', publico_objetivo: '',
-      modalidad: '', temario: ''
+      modalidad: '', temario: '', horarios_media_id: ''
     }) 
     setScheduleGrid(createEmptyGrid())
     setTemarioUnits([])
@@ -417,6 +517,7 @@ export default function AdminCourses(){
         description: form.description,
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
+        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : null,
         slug: form.slug,
         published: Boolean(form.published),
         hours: form.hours || null,
@@ -433,9 +534,9 @@ export default function AdminCourses(){
         // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
-      // deactivate existing schedules then upload new ones from grid
-      await deactivateExistingSchedules(id)
-      await uploadSchedulesForCourse(id)
+      // Solo subir horarios NUEVOS (los que no tienen id). Los existentes ya están en el servidor.
+      // Las eliminaciones ya se manejan en tiempo real con el botón "x".
+      await uploadOnlyNewSchedules(id)
       cancelEdit(); await fetchCourses(); await fetchMedia()
     }catch(err){ console.error('saveEdit', err); setError('Error al actualizar curso') }
     finally{ setSaving(false) }
@@ -512,12 +613,15 @@ export default function AdminCourses(){
                             {['manana','tarde','noche'].map(turno => (
                               <td key={turno} style={{verticalAlign:'top'}}>
                                 <div>
-                                  {(scheduleGrid[day][turno].ranges || []).map((r,idx) => (
-                                    <div key={idx} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                                      <small className="badge bg-light text-dark">{r}</small>
-                                      <button type="button" className="btn btn-sm btn-link text-danger" onClick={()=>setGridCellRemoveRange(day,turno,idx)}>x</button>
-                                    </div>
-                                  ))}
+                                  {(scheduleGrid[day][turno].ranges || []).map((r,idx) => {
+                                    const text = (typeof r === 'string') ? r : (r.text || r.range || '')
+                                    return (
+                                      <div key={idx} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                                        <small className="badge bg-light text-dark">{text}</small>
+                                        <button type="button" className="btn btn-sm btn-link text-danger" onClick={()=>setGridCellRemoveRange(day,turno,idx)}>x</button>
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                                 <div style={{display:'flex',gap:8,marginTop:6}}>
                                   <button type="button" className="btn btn-sm btn-outline-secondary" onClick={()=>promptAddRange(day,turno)}>Agregar rango</button>
@@ -597,6 +701,42 @@ export default function AdminCourses(){
                               {mediaList.filter(m=>m.active).map(m => (
                                 <div key={m.id} className="col-4">
                                   <button type="button" className="btn p-0 border-0" style={{width:'100%'}} onClick={()=>{ handleChange('thumbnail_media_id', m.id); setShowMediaPicker(false) }}>
+                                    <div style={{width:'100%',height:64,overflow:'hidden',borderRadius:6}}>
+                                      <img src={m.url} alt={m.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                    </div>
+                                    <div className="small text-truncate mt-1">{m.alt_text || m.id}</div>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Horario (media)</label>
+                  <div className="d-flex align-items-center gap-2">
+                      <div style={{position:'relative',width:'100%'}} ref={horariosPickerRef}>
+                        <button type="button" className="form-select d-flex align-items-center justify-content-between" onClick={()=>setShowHorariosPicker(v=>!v)}>
+                          <span>{getCourseHorarioUrl(form) ? (getCourseHorarioAlt(form) || (`ID ${form.horarios_media_id || ''}`)) : '-- Ninguno --'}</span>
+                          <span className="text-muted">▾</span>
+                        </button>
+                        <div style={{width:90,height:60,flex:'0 0 90px',position:'absolute',right:0,top:6,borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef',background:'#fff'}}>
+                          {form.horarios_media_id ? (
+                              <img src={(findMediaById(form.horarios_media_id)||{}).url} alt={(findMediaById(form.horarios_media_id)||{}).alt_text || 'preview'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                          ) : (
+                            <div style={{display:'grid',placeItems:'center',height:'100%'}}><small className="text-muted">Sin horario</small></div>
+                          )}
+                        </div>
+                        {showHorariosPicker && (
+                          <div style={{position:'absolute',zIndex:30,top:'48px',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #e9ecef',background:'#fff',padding:8,borderRadius:6,boxShadow:'0 6px 18px rgba(0,0,0,0.08)'}}>
+                            <div className="row g-2">
+                              {loadingMedia && <div className="col-12 text-center text-muted">Cargando medias...</div>}
+                              {!loadingMedia && mediaList.filter(m=>m.active).length === 0 && <div className="col-12 text-muted">No hay medias activas.</div>}
+                              {mediaList.filter(m=>m.active).map(m => (
+                                <div key={m.id} className="col-4">
+                                  <button type="button" className="btn p-0 border-0" style={{width:'100%'}} onClick={()=>{ handleChange('horarios_media_id', m.id); setShowHorariosPicker(false) }}>
                                     <div style={{width:'100%',height:64,overflow:'hidden',borderRadius:6}}>
                                       <img src={m.url} alt={m.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover'}} />
                                     </div>

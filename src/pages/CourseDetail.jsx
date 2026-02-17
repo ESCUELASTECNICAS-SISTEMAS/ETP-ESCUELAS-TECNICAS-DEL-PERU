@@ -402,8 +402,8 @@ export default function CourseDetail() {
 
   const img = resolveImage(course)
   const temario = parseJsonField(course.temario)
-  // prepare schedules grouped by day for display
-  const schedules = Array.isArray(course.schedules) ? course.schedules : []
+  // prepare schedules grouped by day for display (solo activos)
+  const schedules = Array.isArray(course.schedules) ? course.schedules.filter(s => s.active !== false) : []
   const schedulesByDay = schedules.reduce((acc, s) => {
     const d = s.dia || 'Sin día'
     if (!acc[d]) acc[d] = []
@@ -416,6 +416,7 @@ export default function CourseDetail() {
   }
 
   return (
+    <>
     <div className="cd-page">
       {/* ═══ HERO ═══ */}
       <div className="cd-hero">
@@ -426,20 +427,20 @@ export default function CourseDetail() {
         <div className="bubble-5"></div>
         <div className="cd-hero-overlay">
           <div className="container">
-            <button onClick={() => navigate(-1)} className="btn-back mb-3">
+            <button onClick={() => navigate(-1)} className="btn-back mb-3 btn btn-light shadow-sm rounded-pill">
               <i className="bi bi-arrow-left"></i> Volver
             </button>
             <div className="row align-items-center">
               <div className="col-lg-8">
                 <div className="cd-hero-content">
-                  {course.grado && <span className="cd-badge-grado">{course.grado}</span>}
+                  {course.grado && <span className="cd-badge-grado badge bg-warning text-dark shadow-sm">{course.grado}</span>}
                   <h1 className="cd-hero-title">{course.title}</h1>
                   {course.subtitle && <p className="cd-hero-subtitle">{course.subtitle}</p>}
                   <div className="cd-hero-actions mt-4">
-                    <button onClick={handleDownloadBrochure} className="btn btn-primary btn-lg me-3">
+                    <button onClick={handleDownloadBrochure} className="btn btn-primary btn-lg me-3 shadow">
                       <i className="bi bi-download me-2"></i>Descargar Brochure
                     </button>
-                    <Link to="/contacto" className="btn btn-outline-light btn-lg">
+                    <Link to="/contacto" className="btn btn-outline-light btn-lg shadow">
                       <i className="bi bi-envelope me-2"></i>Contactar
                     </Link>
                   </div>
@@ -448,7 +449,7 @@ export default function CourseDetail() {
               {img && (
                 <div className="col-lg-4 d-none d-lg-block">
                   <div className="cd-hero-img-wrapper">
-                    <img src={img} alt={course.title} className="cd-hero-img" />
+                    <img src={img} alt={course.title} className="cd-hero-img shadow-lg rounded-3 border border-3 border-white" />
                   </div>
                 </div>
               )}
@@ -461,26 +462,26 @@ export default function CourseDetail() {
       <div className="container">
         <div className="cd-info-strip">
           {course.hours && (
-            <div className="cd-info-badge">
-              <i className="bi bi-clock-fill"></i>
+            <div className="cd-info-badge shadow-sm border-0 rounded-pill">
+              <i className="bi bi-clock-fill text-primary"></i>
               <div><small>Horas</small><strong>{course.hours}</strong></div>
             </div>
           )}
           {course.duration && (
-            <div className="cd-info-badge">
-              <i className="bi bi-calendar3-fill"></i>
+            <div className="cd-info-badge shadow-sm border-0 rounded-pill">
+              <i className="bi bi-calendar3-fill text-success"></i>
               <div><small>Duración</small><strong>{course.duration}</strong></div>
             </div>
           )}
           {course.registro && (
-            <div className="cd-info-badge">
-              <i className="bi bi-award-fill"></i>
+            <div className="cd-info-badge shadow-sm border-0 rounded-pill">
+              <i className="bi bi-award-fill text-warning"></i>
               <div><small>Registro</small><strong>{course.registro}</strong></div>
             </div>
           )}
           {course.modalidad && (
-            <div className="cd-info-badge">
-              <i className="bi bi-laptop-fill"></i>
+            <div className="cd-info-badge shadow-sm border-0 rounded-pill">
+              <i className="bi bi-laptop-fill text-info"></i>
               <div><small>Modalidad</small><strong>{course.modalidad}</strong></div>
             </div>
           )}
@@ -492,10 +493,10 @@ export default function CourseDetail() {
         <div className="row g-4">
           {/* LEFT COLUMN — main content */}
           <div className="col-12 col-lg-8">
-            {/* Descripción */}
+            {/* Descripción General */}
             {course.description && (
-              <div className="cd-card cd-card-description">
-                <div className="cd-card-header">
+              <div className="cd-card cd-card-description shadow-sm border-0 rounded-3 mb-4">
+                <div className="cd-card-header rounded-top">
                   <i className="bi bi-info-circle-fill"></i>
                   <h4 className="cd-card-title mb-0">Descripción del Curso</h4>
                 </div>
@@ -503,33 +504,11 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Razones para estudiar - destacado */}
-            {course.razones_para_estudiar && (
-              <div className="cd-card cd-card-highlight">
-                <div className="cd-card-header">
-                  <i className="bi bi-lightbulb-fill"></i>
-                  <h4 className="cd-card-title mb-0">¿Por qué estudiar este curso?</h4>
-                </div>
-                <div className="cd-card-body">{renderTextWithLines(course.razones_para_estudiar)}</div>
-              </div>
-            )}
-
-            {/* Público objetivo */}
-            {course.publico_objetivo && (
-              <div className="cd-card cd-card-target">
-                <div className="cd-card-header">
-                  <i className="bi bi-people-fill"></i>
-                  <h4 className="cd-card-title mb-0">¿A quién va dirigido?</h4>
-                </div>
-                <div className="cd-card-body">{renderTextWithLines(course.publico_objetivo)}</div>
-              </div>
-            )}
-
-            {/* Unidades didácticas (anteriormente 'Temario') */}
-            {temario && (
-              <div className="cd-card cd-card-curriculum">
-                <div className="cd-card-header">
-                  <i className="bi bi-list-check"></i>
+            {/* Plan de Estudios - Contenido académico principal */}
+            {temario && temario.length > 0 && (
+              <div className="cd-card cd-card-curriculum shadow-sm border-0 rounded-3 mb-4">
+                <div className="cd-card-header rounded-top">
+                  <i className="bi bi-journal-text-fill"></i>
                   <h4 className="cd-card-title mb-0">Plan de Estudios</h4>
                 </div>
                 <div className="cd-curriculum-content">
@@ -538,10 +517,10 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Perfil egresado */}
+            {/* Perfil del Egresado */}
             {course.perfil_egresado && (
-              <div className="cd-card cd-card-profile">
-                <div className="cd-card-header">
+              <div className="cd-card cd-card-profile shadow-sm border-0 rounded-3 mb-4">
+                <div className="cd-card-header rounded-top">
                   <i className="bi bi-person-check-fill"></i>
                   <h4 className="cd-card-title mb-0">Perfil del Egresado</h4>
                 </div>
@@ -553,20 +532,49 @@ export default function CourseDetail() {
           {/* RIGHT COLUMN — sidebar */}
           <div className="col-12 col-lg-4">
             <div className="cd-sticky-sidebar">
-              {/* Horarios */}
+              {/* ¿Por qué elegir este curso? */}
+              {course.razones_para_estudiar && (
+                <div className="cd-sidebar-card cd-card-highlight shadow-sm border border-warning rounded-3 mb-3 bg-light">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-stars me-2 text-warning"></i>¿Por qué estudiar aquí?</h5>
+                  <div className="cd-card-body">{renderTextWithLines(course.razones_para_estudiar)}</div>
+                </div>
+              )}
+
+              {/* Público Objetivo */}
+              {course.publico_objetivo && (
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-people-fill me-2 text-primary"></i>Dirigido a</h5>
+                  <div className="small">{renderTextWithLines(course.publico_objetivo)}</div>
+                </div>
+              )}
+
+              {/* Imagen de Horarios */}
+              {course.horarios && course.horarios.url && (
+                <div className="cd-sidebar-card cd-sidebar-horario shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-calendar-week me-2 text-success"></i>Horarios</h5>
+                  <div className="text-center">
+                    <a href={course.horarios.url} target="_blank" rel="noopener noreferrer" className="d-block">
+                      <img src={course.horarios.url} alt={course.horarios.alt_text || 'Horario'} className="img-fluid rounded-3 shadow-sm border border-2 border-success border-opacity-25" style={{maxHeight:280,objectFit:'contain'}} />
+                      <small className="d-block mt-2 text-primary fw-bold"><i className="bi bi-zoom-in me-1"></i>Click para ampliar</small>
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Horarios Detallados */}
               {schedules && schedules.length > 0 && (
-                <div className="cd-sidebar-card cd-sidebar-schedules">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-clock-fill me-2"></i>Horarios Disponibles</h5>
+                <div className="cd-sidebar-card cd-sidebar-schedules shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-clock-fill me-2 text-info"></i>Turnos Disponibles</h5>
                   <div className="cd-schedules-list">
                     {Object.keys(schedulesByDay).map(day => (
-                      <div key={day} className="cd-schedule-item">
-                        <div className="cd-schedule-day">{day}</div>
+                      <div key={day} className="cd-schedule-item bg-light rounded-3 p-2 mb-2 border border-primary border-opacity-25">
+                        <div className="cd-schedule-day fw-bold text-primary">{day}</div>
                         <div className="cd-schedule-times">
                           {schedulesByDay[day].map((s, i) => (
-                            <div key={i} className="cd-schedule-time">
-                              <span className="badge bg-primary me-2">{s.turno || 'N/A'}</span>
+                            <div key={i} className="cd-schedule-time d-flex align-items-center flex-wrap">
+                              <span className="badge bg-primary me-2 shadow-sm">{s.turno || 'N/A'}</span>
                               <span className="time">{s.hora_inicio && s.hora_fin ? `${s.hora_inicio.substring(0,5)} - ${s.hora_fin.substring(0,5)}` : 'Consultar'}</span>
-                              {s.aula && <span className="aula text-muted ms-2">· Aula {s.aula}</span>}
+                              {s.aula && <span className="aula text-muted ms-2">· {s.aula}</span>}
                             </div>
                           ))}
                         </div>
@@ -576,20 +584,20 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Misión / Visión */}
+              {/* Misión y Visión */}
               {(course.mision || course.vision) && (
-                <div className="cd-sidebar-card">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-bullseye me-2"></i>Misión y Visión</h5>
-                  <div className="cd-mv-sidebar">
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-bullseye me-2 text-danger"></i>Misión y Visión</h5>
+                  <div>
                     {course.mision && (
-                      <div className="cd-mv-item cd-mision-sidebar mb-3">
-                        <h6><i className="bi bi-flag-fill me-2"></i>Misión</h6>
+                      <div className="mb-3">
+                        <h6 className="small fw-bold text-primary mb-1"><i className="bi bi-flag-fill me-1"></i>Misión</h6>
                         <p className="small mb-0">{course.mision}</p>
                       </div>
                     )}
                     {course.vision && (
-                      <div className="cd-mv-item cd-vision-sidebar">
-                        <h6><i className="bi bi-eye-fill me-2"></i>Visión</h6>
+                      <div>
+                        <h6 className="small fw-bold text-success mb-1"><i className="bi bi-eye-fill me-1"></i>Visión</h6>
                         <p className="small mb-0">{course.vision}</p>
                       </div>
                     )}
@@ -597,16 +605,76 @@ export default function CourseDetail() {
                 </div>
               )}
 
+              {/* Docentes */}
+              {course.docentes && course.docentes.length > 0 && (
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-person-workspace me-2 text-primary"></i>Docentes</h5>
+                  <div className="cd-docentes-list">
+                    {course.docentes.map((d, i) => (
+                      <div key={i} className="cd-docente-item bg-light rounded-3 p-2 mb-2 border border-primary border-opacity-10">
+                        {d.foto && <img src={d.foto} alt={d.nombre} className="cd-docente-foto rounded-circle shadow-sm" />}
+                        <div className="cd-docente-info">
+                          <strong className="small">{d.nombre}</strong>
+                          {d.especialidad && <div className="small text-muted">{d.especialidad}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Certificaciones */}
+              {course.certificados && course.certificados.length > 0 && (
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-patch-check-fill me-2 text-success"></i>Certificaciones</h5>
+                  <div className="cd-certs-list">
+                    {course.certificados.map((cert, i) => (
+                      <div key={i} className="cd-cert-item mb-2 bg-light rounded-2 p-2">
+                        <div className="d-flex align-items-start">
+                          <i className="bi bi-award text-warning me-2 mt-1 fs-5"></i>
+                          <div>
+                            <strong className="small d-block">{cert.titulo || cert.nombre || cert.title}</strong>
+                            {cert.descripcion && <div className="small text-muted">{cert.descripcion}</div>}
+                            {cert.institucion_emisora && <div className="small text-muted fst-italic">{cert.institucion_emisora}</div>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Seminarios */}
+              {course.seminarios && course.seminarios.length > 0 && (
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-mic-fill me-2 text-info"></i>Seminarios</h5>
+                  <div className="cd-seminars-list">
+                    {course.seminarios.map((s, i) => (
+                      <div key={i} className="cd-seminar-item mb-2 bg-light rounded-2 p-2">
+                        <div className="d-flex align-items-start">
+                          <i className="bi bi-calendar-event me-2 text-info mt-1 fs-5"></i>
+                          <div>
+                            <strong className="small d-block">{s.titulo || s.title}</strong>
+                            {s.fecha && <div className="small text-muted">{s.fecha}</div>}
+                            {s.duracion_horas && <div className="small text-muted">{s.duracion_horas} horas</div>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Convenios */}
               {course.convenios && course.convenios.length > 0 && (
-                <div className="cd-sidebar-card">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-handshake me-2"></i>Convenios</h5>
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-handshake me-2 text-warning"></i>Convenios</h5>
                   <div className="cd-convenios-list">
                     {course.convenios.map(conv => (
-                      <div key={conv.id} className="cd-convenio-item">
-                        {conv.logo && <img src={conv.logo} alt={conv.institucion} className="cd-convenio-logo" />}
+                      <div key={conv.id} className="cd-convenio-item mb-2 bg-light rounded-2 p-2 border border-warning border-opacity-25">
+                        {conv.logo && <img src={conv.logo} alt={conv.institucion} className="cd-convenio-logo rounded shadow-sm" style={{maxWidth:'60px',maxHeight:'60px'}} />}
                         <div className="cd-convenio-info">
-                          <strong>{conv.institucion}</strong>
+                          <strong className="small">{conv.institucion}</strong>
                           {conv.descripcion && <p className="mb-1 small text-muted">{conv.descripcion}</p>}
                           {conv.url && (
                             <a href={conv.url} target="_blank" rel="noopener noreferrer" className="small">
@@ -619,64 +687,11 @@ export default function CourseDetail() {
                   </div>
                 </div>
               )}
-
-              {/* Docentes */}
-              {course.docentes && course.docentes.length > 0 && (
-                <div className="cd-sidebar-card">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-mortarboard-fill me-2"></i>Docentes</h5>
-                  <div className="cd-docentes-list">
-                    {course.docentes.map((d, i) => (
-                      <div key={i} className="cd-docente-item">
-                        {d.foto && <img src={d.foto} alt={d.nombre} className="cd-docente-foto" />}
-                        <div className="cd-docente-info">
-                          <strong>{d.nombre}</strong>
-                          {d.especialidad && <div className="small text-muted">{d.especialidad}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Certificados */}
-              {course.certificados && course.certificados.length > 0 && (
-                <div className="cd-sidebar-card">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-patch-check-fill me-2"></i>Certificaciones</h5>
-                  <div className="cd-certs-list">
-                    {course.certificados.map((cert, i) => (
-                      <div key={i} className="cd-cert-item">
-                        <i className="bi bi-award text-warning me-2"></i>
-                        <div>
-                          <strong>{cert.nombre || cert.title}</strong>
-                          {cert.descripcion && <div className="small text-muted">{cert.descripcion}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Seminarios */}
-              {course.seminarios && course.seminarios.length > 0 && (
-                <div className="cd-sidebar-card">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-mic-fill me-2"></i>Seminarios</h5>
-                  <div className="cd-seminars-list">
-                    {course.seminarios.map((s, i) => (
-                      <div key={i} className="cd-seminar-item">
-                        <i className="bi bi-calendar-event me-2"></i>
-                        <div>
-                          <strong>{s.titulo || s.title}</strong>
-                          {s.fecha && <div className="small text-muted">{s.fecha}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
       </div>
     </div>
+    </>
   )
 }
