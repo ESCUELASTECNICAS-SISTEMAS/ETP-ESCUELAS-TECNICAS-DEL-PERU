@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export default function Footer() {
   return (
@@ -65,16 +65,7 @@ export default function Footer() {
               <i className="bi bi-map me-2 text-info"></i>
               Ubicación
             </h6>
-            <div className="ratio ratio-16x9 rounded overflow-hidden shadow-sm" style={{ maxHeight: '200px' }}>
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3868.7304519616844!2d-75.73450892469184!3d-14.069299086297398!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9110e2c1e5555555%3A0x5555555555555555!2sAv.%20San%20Mart%C3%ADn%20398%2C%20Ica%2011001!5e0!3m2!1ses!2spe!4v1234567890123!5m2!1ses!2spe"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Mapa de ubicación ETP"
-              ></iframe>
-            </div>
+            <MapEmbed />
           </div>
         </div>
         
@@ -87,5 +78,36 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  )
+}
+
+function MapEmbed(){
+  const [show, setShow] = useState(false)
+  const mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3868.7304519616844!2d-75.73450892469184!3d-14.069299086297398!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9110e2c1e5555555%3A0x5555555555555555!2sAv.%20San%20Mart%C3%ADn%20398%2C%20Ica%2011001!5e0!3m2!1ses!2spe!4v1234567890123!5m2!1ses!2spe"
+
+  if(show){
+    return (
+      <div className="ratio ratio-16x9 rounded overflow-hidden shadow-sm" style={{ maxHeight: '200px' }}>
+        <iframe 
+          src={mapUrl}
+          style={{ border: 0 }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="Mapa de ubicación ETP"
+        ></iframe>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border rounded p-3 d-flex flex-column align-items-center justify-content-center" style={{minHeight:160}}>
+      <i className="bi bi-pin-map-fill fs-1 text-info mb-2"></i>
+      <div className="text-center mb-2">
+        <div className="fw-semibold">Av San Martin Nº 398, Ica 11001</div>
+        <a href="https://maps.app.goo.gl/mJTJ4rQjkrrSQ6wJ7" target="_blank" rel="noopener noreferrer" className="small text-decoration-none">Abrir en Google Maps</a>
+      </div>
+      <button className="btn btn-outline-primary btn-sm" onClick={() => setShow(true)}>Cargar mapa</button>
+    </div>
   )
 }
