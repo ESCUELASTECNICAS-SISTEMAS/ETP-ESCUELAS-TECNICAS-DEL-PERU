@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 import MediaPicker from '../components/admin/MediaPicker'
-import Notification from '../components/ui/Notification'
 
 export default function AdminCourses(){
   const [items, setItems] = useState([])
@@ -742,7 +741,7 @@ export default function AdminCourses(){
                     </div>
                   ))}
                 </div>
-                <Notification message={error} />
+                {error && <div className="alert alert-danger py-2">{error}</div>}
                 <div className="d-flex gap-2">
                   <button className="btn btn-accent" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}</button>
                   {editingId && <button type="button" className="btn btn-outline-secondary" onClick={cancelEdit}>Cancelar</button>}
