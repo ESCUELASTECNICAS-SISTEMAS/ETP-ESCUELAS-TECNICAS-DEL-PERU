@@ -2,6 +2,14 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 export default function CourseCard({ item, showPrice = true }) {
+  const WHATSAPP_NUMBER = '51950340502' // Perú +51 950 340 502
+
+  const handleInscribirse = () => {
+    const nombre = item.titulo || item.title || 'este curso'
+    const msg = encodeURIComponent(`Buenas, vengo desde la página y me interesa el curso: ${nombre}`)
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank')
+  }
+
   const price = item.precio ?? item.pago_unico ?? null
   const matricula = item.matricula ?? item.matricula
   const pension = item.pension ?? item.pension_mensual ?? null
@@ -30,7 +38,7 @@ export default function CourseCard({ item, showPrice = true }) {
         )}
         <div className="cc-img-overlay">
           <Link to={detailUrl} className="btn btn-sm btn-light cc-overlay-btn"><i className="bi bi-eye me-1"></i>Ver más</Link>
-          <Link to="/contacto" className="btn btn-sm btn-accent cc-overlay-btn"><i className="bi bi-send me-1"></i>Inscribirme</Link>
+          <button type="button" onClick={handleInscribirse} className="btn btn-sm btn-success cc-overlay-btn" style={{backgroundColor:'#25D366',borderColor:'#25D366'}}><i className="bi bi-whatsapp me-1"></i>Inscribirme</button>
         </div>
         {grado && <span className="cc-badge-grado">{grado}</span>}
       </div>

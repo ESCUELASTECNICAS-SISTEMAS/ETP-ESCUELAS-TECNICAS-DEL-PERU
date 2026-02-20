@@ -1,9 +1,30 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { endpoints } from '../../utils/apiStatic'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState(null)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [courses, setCourses] = useState([])
+  const [showResults, setShowResults] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    axios.get(endpoints.COURSES).then(r => setCourses(r.data || [])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return }
+    const filtered = courses.filter(c => {
+      if (c.published === false) return false
+      const text = `${c.titulo||c.title||''} ${c.subtitle||c.descripcion||''}`.toLowerCase()
+      return text.includes(query.toLowerCase())
+    })
+    setResults(filtered.slice(0, 5))
+  }, [query, courses])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -71,6 +92,36 @@ export default function Navbar() {
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/noticias">Noticias</Link>
+              </li>
+              {/* Buscador compacto */}
+              <li className="nav-item ms-2 position-relative">
+                <div className="input-group input-group-sm" style={{width:180}}>
+                  <input
+                    type="search"
+                    className="form-control form-control-sm border-0"
+                    placeholder="Buscar..."
+                    value={query}
+                    onChange={e => { setQuery(e.target.value); setShowResults(true) }}
+                    onFocus={() => setShowResults(true)}
+                    onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                  />
+                  <span className="input-group-text bg-white border-0"><i className="bi bi-search"></i></span>
+                </div>
+                {showResults && results.length > 0 && (
+                  <div className="position-absolute bg-white shadow rounded mt-1 w-100" style={{zIndex:1050,maxHeight:240,overflowY:'auto'}}>
+                    {results.map(c => (
+                      <div
+                        key={c.id}
+                        className="px-3 py-2 border-bottom small"
+                        style={{cursor:'pointer'}}
+                        onMouseDown={() => { navigate(`/curso/${c.slug || c.id}`); setQuery(''); setShowResults(false) }}
+                      >
+                        <strong>{c.title || c.titulo}</strong>
+                        {c.subtitle && <div className="text-muted" style={{fontSize:'.75rem'}}>{c.subtitle}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </li>
               <li className="nav-item">
                 <a className="btn btn-accent ms-3 contact-btn" href="#contacto">Contacto</a>
