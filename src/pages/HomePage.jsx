@@ -3,6 +3,7 @@ import HeroCarousel from '../components/home/HeroCarousel'
 import Highlights from '../components/home/Highlights'
 import Carreras from '../components/sections/Carreras'
 import Talleres from '../components/sections/talleres'
+
 import Informatica from '../components/sections/informatica'
 
 export default function HomePage(){
