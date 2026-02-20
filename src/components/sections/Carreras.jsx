@@ -1,21 +1,46 @@
 import React, { useState, useEffect } from 'react'
 import carrerasLocal from '../../data/carreras.json'
-import noticias from '../../data/noticias.json'
-import CourseCard from '../UI/CourseCard'
+// Noticias will be loaded from API (published + active)
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
+import CourseCard from '../UI/CourseCard'
 
 export default function Carreras(){
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
   const [carreras, setCarreras] = useState(carrerasLocal)
+  const [noticias, setNoticias] = useState([])
 
   useEffect(() => {
     if(!noticias || noticias.length === 0) return
     if(paused) return
     const id = setInterval(() => setCurrent(i => (i + 1) % noticias.length), 3500)
     return () => clearInterval(id)
-  }, [paused])
+  }, [paused, noticias])
+
+  useEffect(() => {
+    let mounted = true
+    const loadNews = async () => {
+      try{
+        const res = await axios.get(endpoints.NEWS)
+        if(!mounted) return
+        const all = Array.isArray(res.data) ? res.data : []
+        // load media list to resolve featured images (best-effort)
+        let medias = []
+        try{ const mres = await axios.get(endpoints.MEDIA); medias = Array.isArray(mres.data)?mres.data:[] }catch(e){}
+        const visible = all.filter(n => n && (n.published === true) && (n.active !== false))
+        const mapped = visible.map(n => ({
+          ...n,
+          titulo: n.title || n.titulo || n.name,
+          resumen: n.summary || n.resumen || n.excerpt || '',
+          image: n.image || n.image_url || (n.featured_media_id ? ((medias.find(m => String(m.id) === String(n.featured_media_id))||{}).url) : (n.media && n.media.url)) || '/assets/images/Hero1.jpg'
+        }))
+        setNoticias(mapped)
+      }catch(err){ console.error('fetch noticias', err); setNoticias([]) }
+    }
+    loadNews()
+    return () => { mounted = false }
+  }, [])
 
   useEffect(() => {
     let mounted = true

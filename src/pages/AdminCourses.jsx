@@ -1,16 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
+import MediaPicker from '../components/admin/MediaPicker'
+import Notification from '../components/ui/Notification'
 
 export default function AdminCourses(){
   const [items, setItems] = useState([])
   const [mediaList, setMediaList] = useState([])
   const [loadingMedia, setLoadingMedia] = useState(true)
-  const [showMediaPicker, setShowMediaPicker] = useState(false)
-  const mediaPickerRef = useRef(null)
-  const [showHorariosPicker, setShowHorariosPicker] = useState(false)
-  const horariosPickerRef = useRef(null)
+  // media picker moved to separate component
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -25,6 +24,7 @@ export default function AdminCourses(){
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
+  const [showInactivePanel, setShowInactivePanel] = useState(false)
   const [schedulesUploadLoading, setSchedulesUploadLoading] = useState(false)
   const createEmptyGrid = () => {
     const days = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
@@ -283,25 +283,8 @@ export default function AdminCourses(){
     }catch(err){ console.error('fetchMedia', err) }
     finally{ setLoadingMedia(false) }
   }
-
   useEffect(()=>{ fetchCourses() }, [])
   useEffect(()=>{ fetchMedia() }, [])
-
-  // close media picker on outside click
-  useEffect(()=>{
-    if(!showMediaPicker) return
-    const onDoc = (e) => { if(mediaPickerRef.current && !mediaPickerRef.current.contains(e.target)) setShowMediaPicker(false) }
-    document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
-  }, [showMediaPicker])
-
-  // close horarios picker on outside click
-  useEffect(()=>{
-    if(!showHorariosPicker) return
-    const onDoc = (e) => { if(horariosPickerRef.current && !horariosPickerRef.current.contains(e.target)) setShowHorariosPicker(false) }
-    document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
-  }, [showHorariosPicker])
 
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
 
@@ -559,7 +542,8 @@ export default function AdminCourses(){
   
 
   return (
-    <div className="container section-padding">
+    <>
+      <div className="container section-padding">
       <Link to="/admin" className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver al Panel</Link>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3>Administrar Cursos</h3>
@@ -681,73 +665,17 @@ export default function AdminCourses(){
                 <div className="mb-3">
                   <label className="form-label">Miniatura (media)</label>
                   <div className="d-flex align-items-center gap-2">
-                      <div style={{position:'relative',width:'100%'}} ref={mediaPickerRef}>
-                        <button type="button" className="form-select d-flex align-items-center justify-content-between" onClick={()=>setShowMediaPicker(v=>!v)}>
-                          <span>{formPreviewUrl ? (formPreviewAlt || (`ID ${form.thumbnail_media_id || ''}`)) : '-- Ninguna --'}</span>
-                          <span className="text-muted">▾</span>
-                        </button>
-                        <div style={{width:90,height:60,flex:'0 0 90px',position:'absolute',right:0,top:6,borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef',background:'#fff'}}>
-                          {form.thumbnail_media_id ? (
-                              <img src={formPreviewUrl} alt={formPreviewAlt || 'preview'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                          ) : (
-                            <div style={{display:'grid',placeItems:'center',height:'100%'}}><small className="text-muted">Sin miniatura</small></div>
-                          )}
-                        </div>
-                        {showMediaPicker && (
-                          <div style={{position:'absolute',zIndex:30,top:'48px',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #e9ecef',background:'#fff',padding:8,borderRadius:6,boxShadow:'0 6px 18px rgba(0,0,0,0.08)'}}>
-                            <div className="row g-2">
-                              {loadingMedia && <div className="col-12 text-center text-muted">Cargando medias...</div>}
-                              {!loadingMedia && mediaList.filter(m=>m.active).length === 0 && <div className="col-12 text-muted">No hay medias activas.</div>}
-                              {mediaList.filter(m=>m.active).map(m => (
-                                <div key={m.id} className="col-4">
-                                  <button type="button" className="btn p-0 border-0" style={{width:'100%'}} onClick={()=>{ handleChange('thumbnail_media_id', m.id); setShowMediaPicker(false) }}>
-                                    <div style={{width:'100%',height:64,overflow:'hidden',borderRadius:6}}>
-                                      <img src={m.url} alt={m.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                                    </div>
-                                    <div className="small text-truncate mt-1">{m.alt_text || m.id}</div>
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    <div style={{position:'relative',width:'100%'}}>
+                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.thumbnail_media_id} onSelect={id=>handleChange('thumbnail_media_id', id)} label="miniatura" />
+                    </div>
                   </div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Horario (media)</label>
                   <div className="d-flex align-items-center gap-2">
-                      <div style={{position:'relative',width:'100%'}} ref={horariosPickerRef}>
-                        <button type="button" className="form-select d-flex align-items-center justify-content-between" onClick={()=>setShowHorariosPicker(v=>!v)}>
-                          <span>{getCourseHorarioUrl(form) ? (getCourseHorarioAlt(form) || (`ID ${form.horarios_media_id || ''}`)) : '-- Ninguno --'}</span>
-                          <span className="text-muted">▾</span>
-                        </button>
-                        <div style={{width:90,height:60,flex:'0 0 90px',position:'absolute',right:0,top:6,borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef',background:'#fff'}}>
-                          {form.horarios_media_id ? (
-                              <img src={(findMediaById(form.horarios_media_id)||{}).url} alt={(findMediaById(form.horarios_media_id)||{}).alt_text || 'preview'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                          ) : (
-                            <div style={{display:'grid',placeItems:'center',height:'100%'}}><small className="text-muted">Sin horario</small></div>
-                          )}
-                        </div>
-                        {showHorariosPicker && (
-                          <div style={{position:'absolute',zIndex:30,top:'48px',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #e9ecef',background:'#fff',padding:8,borderRadius:6,boxShadow:'0 6px 18px rgba(0,0,0,0.08)'}}>
-                            <div className="row g-2">
-                              {loadingMedia && <div className="col-12 text-center text-muted">Cargando medias...</div>}
-                              {!loadingMedia && mediaList.filter(m=>m.active).length === 0 && <div className="col-12 text-muted">No hay medias activas.</div>}
-                              {mediaList.filter(m=>m.active).map(m => (
-                                <div key={m.id} className="col-4">
-                                  <button type="button" className="btn p-0 border-0" style={{width:'100%'}} onClick={()=>{ handleChange('horarios_media_id', m.id); setShowHorariosPicker(false) }}>
-                                    <div style={{width:'100%',height:64,overflow:'hidden',borderRadius:6}}>
-                                      <img src={m.url} alt={m.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                                    </div>
-                                    <div className="small text-truncate mt-1">{m.alt_text || m.id}</div>
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    <div style={{position:'relative',width:'100%'}}>
+                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.horarios_media_id} onSelect={id=>handleChange('horarios_media_id', id)} label="horario" />
+                    </div>
                   </div>
                 </div>
                 <div className="form-check form-switch mb-3">
@@ -814,7 +742,7 @@ export default function AdminCourses(){
                     </div>
                   ))}
                 </div>
-                {error && <div className="alert alert-danger">{error}</div>}
+                <Notification message={error} />
                 <div className="d-flex gap-2">
                   <button className="btn btn-accent" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}</button>
                   {editingId && <button type="button" className="btn btn-outline-secondary" onClick={cancelEdit}>Cancelar</button>}
@@ -835,11 +763,11 @@ export default function AdminCourses(){
         <div className="col-12 col-md-7">
           <div className="card">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center mb-2">
+                <div className="d-flex justify-content-between align-items-center mb-2">
                 <h5 className="card-title mb-0">Cursos</h5>
                 <div>
                   <button className="btn btn-sm btn-outline-secondary me-2" onClick={()=>fetchCourses()}>Refrescar</button>
-                  <button className="btn btn-sm btn-outline-primary" onClick={()=>setShowInactive(v=>!v)}>{showInactive ? 'Ocultar desactivados' : `Ver desactivados (${inactiveItems.length})`}</button>
+                  <button className="btn btn-sm btn-outline-primary" onClick={()=>setShowInactivePanel(true)}>{`Ver desactivados (${inactiveItems.length})`}</button>
                 </div>
               </div>
 
@@ -898,30 +826,55 @@ export default function AdminCourses(){
                     ))}
                   </div>
 
-              {showInactive && (
-                <div className="mt-3">
-                  <h6>Desactivados</h6>
-                  <div className="list-group list-group-flush">
-                    {inactiveItems.map(c => (
-                      <div key={`inactive-${c.id}`} className="list-group-item" style={{opacity:0.6}}>
-                        <div className="d-flex align-items-center">
-                          <div style={{flex:1}}>
-                            <strong>{c.title}</strong>
-                            <div className="text-muted small">{c.subtitle}</div>
-                          </div>
-                          <div>
-                            <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>startEdit(c)}>Editar</button>
-                            <button className="btn btn-sm btn-outline-success" onClick={()=>togglePublished(c)}>Publicar</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* inactive list moved to side panel */}
 
             </div>
           </div>
+        </div>
+      </div>
+      </div>
+      {showInactivePanel && (
+        <InactivePanel
+          items={inactiveItems}
+          onClose={() => setShowInactivePanel(false)}
+          onEdit={(c) => { setShowInactivePanel(false); startEdit(c); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+          onPublish={(c) => { togglePublished(c); setShowInactivePanel(false) }}
+        />
+      )}
+    </>
+  )
+}
+
+// Side panel for inactive items
+function InactivePanel({ items = [], onClose = () => {}, onEdit = () => {}, onPublish = () => {} }){
+  return (
+    <div style={{position:'fixed',top:0,right:0,height:'100vh',width:420,background:'#fff',zIndex:1090,boxShadow:'-8px 0 24px rgba(0,0,0,0.12)'}}>
+      <div className="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div>
+          <h5 className="mb-0">Desactivados</h5>
+          <small className="text-muted">Cursos desactivados</small>
+        </div>
+        <div>
+          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>Cerrar</button>
+        </div>
+      </div>
+      <div style={{overflowY:'auto',height:'calc(100vh - 64px)'}} className="p-3">
+        {items.length === 0 && <div className="text-muted">No hay cursos desactivados.</div>}
+        <div className="list-group list-group-flush">
+          {items.map(c => (
+            <div key={`inactive-panel-${c.id}`} className="list-group-item" style={{opacity:0.95}}>
+              <div className="d-flex align-items-center">
+                <div style={{flex:1}}>
+                  <strong>{c.title}</strong>
+                  <div className="text-muted small">{c.subtitle}</div>
+                </div>
+                <div>
+                  <button className="btn btn-sm btn-outline-primary me-2" onClick={()=>onEdit(c)}>Editar</button>
+                  <button className="btn btn-sm btn-outline-success" onClick={()=>onPublish(c)}>Publicar</button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
