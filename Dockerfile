@@ -12,11 +12,11 @@ RUN npm run build
 
 # Production image
 FROM nginx:stable-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy build output from the build stage and set ownership to the nginx user
+COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
-# Remove default nginx config and optionally add a simple config
+# Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf || true
-COPY --chown=nginx:nginx /usr/share/nginx/html /usr/share/nginx/html
 
 EXPOSE 80
 CMD ["/bin/sh", "-c", "nginx -g 'daemon off;' "]
