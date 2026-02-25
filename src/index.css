@@ -20,7 +20,7 @@ body{
 a{color:var(--accent)}
 
 .hero-carousel{
-  height:var(--hero-height);
+  height:auto; /* allow image to keep its aspect ratio and show all content */
   object-fit:contain; /* show full image without cropping */
   width:100%;
   display:block;
@@ -36,7 +36,7 @@ main{padding-top:var(--navbar-height)}
 /* Responsive offsets: small adjustments to reduce gap but keep hero fully visible */
 @media (max-width: 575px){
   :root{--navbar-offset:4px; --hero-height:60vh}
-  .hero-carousel{object-fit:cover}
+  .hero-carousel{object-fit:contain} /* keep full image visible on small screens */
   /* Very small negative margin to reduce gap but keep hero visible */
   #inicio{margin-top:calc(-1 * var(--navbar-offset));}
 }
