@@ -17,8 +17,7 @@ export default function CardCurso({curso}){
       <div className="cc-body">
         <h5 className="cc-title">{curso.titulo || curso.title}</h5>
         <div className="cc-meta">
-          {curso.modalidad && <span className="cc-meta-item"><i className="bi bi-laptop"></i>{curso.modalidad}</span>}
-          {curso.duracion && <span className="cc-meta-item"><i className="bi bi-clock"></i>{curso.duracion}</span>}
+          {curso.duracion && <span className="cc-meta-item"><i className="bi bi-clock"></i>{String(curso.duracion).toUpperCase()}</span>}
         </div>
         <Link to={detailUrl} className="cc-cta">
           Ver detalles <i className="bi bi-arrow-right"></i>

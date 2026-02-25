@@ -159,9 +159,9 @@ const generateBrochurePDF = async (course, schedulesByDay) => {
   pdf.setTextColor(0, 0, 0)
   let xBadge = margin + 5
   const badgeData = [
-    { label: 'Horas', value: course.hours },
+    // { label: 'Horas', value: course.hours },
     { label: 'Duración', value: course.duration },
-    { label: 'Registro', value: course.registro },
+    // { label: 'Registro', value: course.registro },
     { label: 'Modalidad', value: course.modalidad }
   ].filter(b => b.value)
   
@@ -433,7 +433,7 @@ export default function CourseDetail() {
             <div className="row align-items-center">
               <div className="col-lg-8">
                 <div className="cd-hero-content">
-                  {course.grado && <span className="cd-badge-grado badge bg-warning text-dark shadow-sm">{course.grado}</span>}
+                  {course.grado && course.grado.toLowerCase() !== 'vacio' && course.grado.toLowerCase() !== 'vacío' && <span className="cd-badge-grado badge bg-warning text-dark shadow-sm">{course.grado}</span>}
                   <h1 className="cd-hero-title">{course.title}</h1>
                   {course.subtitle && <p className="cd-hero-subtitle">{course.subtitle}</p>}
                   <div className="cd-hero-actions mt-4">
@@ -461,7 +461,7 @@ export default function CourseDetail() {
       {/* ═══ INFO BADGES ═══ */}
       <div className="container">
         <div className="cd-info-strip">
-          {course.hours && (
+          {false && course.hours && (
             <div className="cd-info-badge shadow-sm border-0 rounded-pill">
               <i className="bi bi-clock-fill text-primary"></i>
               <div><small>Horas</small><strong>{course.hours}</strong></div>
@@ -471,12 +471,6 @@ export default function CourseDetail() {
             <div className="cd-info-badge shadow-sm border-0 rounded-pill">
               <i className="bi bi-calendar3-fill text-success"></i>
               <div><small>Duración</small><strong>{course.duration}</strong></div>
-            </div>
-          )}
-          {course.registro && (
-            <div className="cd-info-badge shadow-sm border-0 rounded-pill">
-              <i className="bi bi-award-fill text-warning"></i>
-              <div><small>Registro</small><strong>{course.registro}</strong></div>
             </div>
           )}
           {course.modalidad && (
@@ -606,7 +600,7 @@ export default function CourseDetail() {
               )}
 
               {/* Docentes */}
-              {course.docentes && course.docentes.length > 0 && (
+              {false && course.docentes && course.docentes.length > 0 && (
                 <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
                   <h5 className="cd-sidebar-title"><i className="bi bi-person-workspace me-2 text-primary"></i>Docentes</h5>
                   <div className="cd-docentes-list">
@@ -624,7 +618,7 @@ export default function CourseDetail() {
               )}
 
               {/* Certificaciones */}
-              {course.certificados && course.certificados.length > 0 && (
+              {false && course.certificados && course.certificados.length > 0 && (
                 <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
                   <h5 className="cd-sidebar-title"><i className="bi bi-patch-check-fill me-2 text-success"></i>Certificaciones</h5>
                   <div className="cd-certs-list">
@@ -645,7 +639,7 @@ export default function CourseDetail() {
               )}
 
               {/* Seminarios */}
-              {course.seminarios && course.seminarios.length > 0 && (
+              {false && course.seminarios && course.seminarios.length > 0 && (
                 <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
                   <h5 className="cd-sidebar-title"><i className="bi bi-mic-fill me-2 text-info"></i>Seminarios</h5>
                   <div className="cd-seminars-list">

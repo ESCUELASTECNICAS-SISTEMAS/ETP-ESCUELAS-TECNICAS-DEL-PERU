@@ -40,14 +40,13 @@ export default function CourseCard({ item, showPrice = true }) {
           <Link to={detailUrl} className="btn btn-sm btn-light cc-overlay-btn"><i className="bi bi-eye me-1"></i>Ver más</Link>
           <button type="button" onClick={handleInscribirse} className="btn btn-sm btn-success cc-overlay-btn" style={{backgroundColor:'#25D366',borderColor:'#25D366'}}><i className="bi bi-whatsapp me-1"></i>Inscribirme</button>
         </div>
-        {grado && <span className="cc-badge-grado">{grado}</span>}
+        {grado && grado.toLowerCase() !== 'vacio' && grado.toLowerCase() !== 'vacío' && <span className="cc-badge-grado">{grado}</span>}
       </div>
       <div className="cc-body">
         <h5 className="cc-title">{item.titulo || item.title}</h5>
         {subtitle && <p className="cc-subtitle">{subtitle.length > 80 ? subtitle.slice(0,80)+'…' : subtitle}</p>}
         <div className="cc-meta">
-          {modalidad && <span className="cc-meta-item"><i className="bi bi-laptop"></i>{modalidad}</span>}
-          {hoursVal && <span className="cc-meta-item"><i className="bi bi-clock"></i>{hoursVal} {typeof hoursVal === 'number' ? 'hrs' : ''}</span>}
+          {hoursVal && <span className="cc-meta-item"><i className="bi bi-clock"></i>{String(hoursVal).toUpperCase()} {typeof hoursVal === 'number' ? 'HRS' : ''}</span>}
         </div>
 
         {showPrice && price != null && (
