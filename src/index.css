@@ -1171,6 +1171,73 @@ footer{background:#212529;color:#fff}
 
 /* Alternating section backgrounds */
 #carreras{background:#fff}
+
+/* =============================================
+   INNER PAGES HERO & LAYOUT
+   ============================================= */
+.page-hero{
+  position:relative;
+  background:linear-gradient(135deg,#0211cc 0%,#0a1a8c 50%,#060d5e 100%);
+  overflow:hidden;
+  padding:4rem 0 3rem;
+}
+.page-hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.page-hero::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;height:60px;
+  background:#f8fafc;
+  clip-path:ellipse(55% 100% at 50% 100%);
+}
+.page-hero-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:#fff;
+  margin:0 auto 1.25rem;
+  border:2px solid rgba(255,255,255,0.25);
+  box-shadow:0 8px 32px rgba(0,0,0,0.2);
+}
+.page-hero-title{
+  font-size:2.6rem;font-weight:800;color:#fff;
+  margin-bottom:.6rem;letter-spacing:-0.03em;
+  text-shadow:0 2px 12px rgba(0,0,0,0.2);
+}
+.page-hero-subtitle{
+  font-size:1.05rem;color:rgba(255,255,255,0.8);
+  max-width:500px;margin:0 auto;line-height:1.6;
+}
+.page-hero-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.25);
+  color:#fff;font-size:.8rem;font-weight:600;
+  padding:.3rem .85rem;border-radius:50px;
+  backdrop-filter:blur(6px);margin-bottom:1.2rem;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.page-content{
+  background:#f8fafc;
+  padding:3rem 0 4rem;
+  min-height:50vh;
+}
+.page-results-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:2rem;padding-bottom:1rem;
+  border-bottom:2px solid #e2e8f0;
+}
+.page-results-count{
+  font-size:1rem;color:#64748b;font-weight:500;
+}
+.page-results-count strong{color:#1a1a2e;font-size:1.1rem}
+.page-empty{
+  text-align:center;padding:5rem 0;
+}
+.page-empty i{font-size:3.5rem;color:#cbd5e1}
+.page-empty h4{color:#64748b;margin-top:1rem;font-weight:600}
+.page-empty p{color:#94a3b8;font-size:.95rem}
 #talleres{background:#f8f9fc}
 #informatica{background:#fff}
 #especiales{background:#f8f9fc}

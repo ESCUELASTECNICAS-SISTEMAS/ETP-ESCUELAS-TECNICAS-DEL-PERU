@@ -58,10 +58,10 @@ export default function Navbar() {
     <>
       <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
-          <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Escuelas Técnicas del Perú">
+          <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="ETP - Escuelas Técnicas del Perú">
             <img src="/assets/images/logo.jpg" alt="ETP" className="me-2 brand-img" />
             <div className="brand-text">
-              <div className="brand-title">Escuelas Técnicas</div>
+              <div className="brand-title">ETP - Escuelas Técnicas</div>
               <div className="brand-subtitle">del Perú</div>
             </div>
           </Link>
@@ -81,14 +81,18 @@ export default function Navbar() {
               <li className="nav-item">
                 <Link className="nav-link active" aria-current="page" to="/">Inicio</Link>
               </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/cursos">Cursos</Link>
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" id="cursosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Cursos
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="cursosDropdown">
+                  <li><Link className="dropdown-item" to="/talleres">Cursos Talleres</Link></li>
+                  <li><Link className="dropdown-item" to="/cinco-meses">Cursos de 5 Meses</Link></li>
+                  <li><Link className="dropdown-item" to="/cursos-informatica">Ofimática</Link></li>
+                </ul>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/cursos-informatica">Ofimática</Link>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="#carreras">Carreras</a>
+                <Link className="nav-link" to="/programas">Carreras</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/noticias">Noticias</Link>

@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage'
 import CursosPage from './pages/CursosPage'
 import CarrerasPage from './pages/CarrerasPage'
 import CursosInformatica from './pages/TalleresInformatica'
+import TalleresPage from './pages/TalleresPage'
+import CincoMesesPage from './pages/CincoMesesPage'
 import CourseDetail from './pages/CourseDetail'
 import NoticiasPage from './pages/NoticiasPage'
 import NoticiaDetail from './pages/NoticiaDetail'
@@ -35,6 +37,9 @@ export default function App(){
           <Route path="/" element={<HomePage />} />
           <Route path="/cursos" element={<CursosPage />} />
           <Route path="/programas" element={<CarrerasPage />} />
+          <Route path="/talleres" element={<TalleresPage />} />
+          <Route path="/cinco-meses" element={<CincoMesesPage />} />
+          <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/noticias" element={<NoticiasPage />} />
           <Route path="/noticia/:id" element={<NoticiaDetail />} />
           <Route path="/login" element={<LoginPage />} />
@@ -49,7 +54,6 @@ export default function App(){
             <Route path="/admin/seminarios" element={<AdminRoute><AdminSeminarios /></AdminRoute>} />
             <Route path="/admin/noticias" element={<AdminRoute><AdminNoticias /></AdminRoute>} />
             <Route path="/admin/social" element={<AdminRoute><AdminSocialLinks /></AdminRoute>} />
-          <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/curso/:id" element={<CourseDetail />} />
           <Route path="/programa/:id" element={<CourseDetail />} />
         </Routes>
@@ -71,7 +75,7 @@ export default function App(){
         {waOpen && (
           <div className="d-flex flex-column gap-2 align-items-end">
             <a
-              href="https://wa.me/51950340502?text=Hola%20quiero%20m%C3%A1s%20info"
+              href="https://wa.me/51950340502?text=Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A"
               target="_blank" rel="noopener noreferrer"
               className="btn btn-success rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2"
               aria-label="WhatsApp 950 340 502"
@@ -80,7 +84,7 @@ export default function App(){
               <span className="small fw-semibold">950 340 502</span>
             </a>
             <a
-              href="https://wa.me/51962324393?text=Hola%20quiero%20m%C3%A1s%20info"
+              href="https://wa.me/51962324393?text=Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A"
               target="_blank" rel="noopener noreferrer"
               className="btn btn-success rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2"
               aria-label="WhatsApp 962 324 393"

@@ -3,8 +3,8 @@ import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 import CourseCard from '../components/UI/CourseCard'
 
-export default function CarrerasPage(){
-  const [carreras, setCarreras] = useState([])
+export default function CincoMesesPage() {
+  const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -20,14 +20,18 @@ export default function CarrerasPage(){
           try {
             const mres = await axios.get(endpoints.MEDIA)
             media = Array.isArray(mres.data) ? mres.data : []
-          } catch (e) {}
+          } catch (e) {
+            console.warn('media fetch failed', e)
+          }
         }
         const mapped = apiCursos.map(c => ({
           ...c,
           titulo: c.title || c.titulo || c.name,
+          modalidad: c.modalidad || c.mode || c.modality || '',
+          descripcion: c.description || c.descripcion || c.subtitle || '',
           image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
         }))
-        if (mapped.length) setCarreras(mapped)
+        if (mapped.length) setCursos(mapped)
       } catch (err) {
         console.warn('fetch courses failed', err)
       } finally {
@@ -38,10 +42,9 @@ export default function CarrerasPage(){
     return () => { mounted = false }
   }, [])
 
-  // Filtrar solo carreras/programas (excluir talleres, informatica, cinco_meses)
-  const carrerasAuxiliares = carreras.filter(c => {
-    const tipo = (c.type || c.tipo || '').toLowerCase()
-    return tipo !== 'cursos_talleres' && tipo !== 'ofimatica' && tipo !== 'cinco_meses' && tipo !== 'cinco meses' && tipo !== '5_meses' && tipo !== '5 meses' && tipo !== 'curso' && tipo !== 'cursos'
+  const cincoMeses = cursos.filter(c => {
+    const tipo = (c.tipo || c.type || '').toLowerCase()
+    return tipo === 'cinco_meses' || tipo === 'cinco meses' || tipo === '5_meses' || tipo === '5 meses'
   })
 
   return (
@@ -50,14 +53,14 @@ export default function CarrerasPage(){
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Cargando...</span></div>
         </div>
-      ) : carrerasAuxiliares.length === 0 ? (
+      ) : cincoMeses.length === 0 ? (
         <div className="text-center py-5">
           <i className="bi bi-inbox fs-1 text-muted"></i>
-          <h4 className="mt-3 text-muted">No hay carreras disponibles</h4>
+          <h4 className="mt-3 text-muted">No hay cursos disponibles</h4>
         </div>
       ) : (
         <div className="row g-4">
-          {carrerasAuxiliares.map((c, i) => (
+          {cincoMeses.map((c, i) => (
             <div className="col-12 col-md-6 col-lg-4" key={i}>
               <CourseCard item={c} showPrice={false} />
             </div>
@@ -67,4 +70,3 @@ export default function CarrerasPage(){
     </div>
   )
 }
-

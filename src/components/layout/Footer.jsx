@@ -8,7 +8,7 @@ export default function Footer() {
           <div className="col-lg-3 col-md-6">
             <h5 className="fw-bold mb-3">
               <i className="bi bi-mortarboard-fill me-2 text-primary"></i>
-              Escuelas Técnicas del Perú
+              ETP - Escuelas Técnicas del Perú
             </h5>
             <p className="text-light opacity-75 mb-0">
               Formando profesionales técnicos para el desarrollo del país.
@@ -73,7 +73,7 @@ export default function Footer() {
         
         <div className="text-center">
           <small className="opacity-75">
-            © {new Date().getFullYear()} Escuelas Técnicas del Perú. Todos los derechos reservados.
+            © {new Date().getFullYear()} ETP - Escuelas Técnicas del Perú. Todos los derechos reservados.
           </small>
         </div>
       </div>
