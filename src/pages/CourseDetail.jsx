@@ -440,9 +440,7 @@ export default function CourseDetail() {
                     <button onClick={handleDownloadBrochure} className="btn btn-primary btn-lg me-3 shadow">
                       <i className="bi bi-download me-2"></i>Descargar Brochure
                     </button>
-                    <Link to="/contacto" className="btn btn-outline-light btn-lg shadow">
-                      <i className="bi bi-envelope me-2"></i>Contactar
-                    </Link>
+
                   </div>
                 </div>
               </div>
