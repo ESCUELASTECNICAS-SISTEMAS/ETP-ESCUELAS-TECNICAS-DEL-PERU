@@ -127,10 +127,6 @@ export default function Navbar() {
                   </div>
                 )}
               </li>
-              <li className="nav-item">
-                <a className="btn btn-accent ms-3 contact-btn" href="#contacto">Contacto</a>
-              </li>
-
               {/* Auth area */}
               {!user && (
                 <li className="nav-item ms-2">
