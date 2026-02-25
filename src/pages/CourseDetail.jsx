@@ -107,251 +107,339 @@ const renderSections = (arr) => {
 }
 
 /* ── PDF Generator ── */
-const generateBrochurePDF = async (course, schedulesByDay) => {
-  const pdf = new jsPDF('p', 'mm', 'a4')
-  const pageWidth = pdf.internal.pageSize.getWidth()
-  const pageHeight = pdf.internal.pageSize.getHeight()
-  const margin = 15
-  let yPos = margin
+const loadImageAsBase64 = (url) =>
+  new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'Anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/jpeg', 0.85))
+    }
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
 
-  // Helper to add new page if needed
-  const checkPageBreak = (neededHeight) => {
-    if (yPos + neededHeight > pageHeight - margin) {
+const generateBrochurePDF = async (course, schedulesByDay) => {
+  // ── Brand colors (match site CSS variables)
+  const PRIMARY  = [2, 17, 204]     // #0211CC
+  const P_DARK   = [2, 15, 153]     // #020f99
+  const ACCENT   = [253, 113, 15]   // #FD710F
+  const WHITE    = [255, 255, 255]
+  const DARK     = [25, 25, 45]
+  const MUTED    = [100, 105, 130]
+  const LIGHT_BG = [244, 246, 255]
+  const BORDER   = [210, 215, 245]
+
+  const pdf = new jsPDF('p', 'mm', 'a4')
+  const W = pdf.internal.pageSize.getWidth()
+  const H = pdf.internal.pageSize.getHeight()
+  const M = 14
+  let y = 0
+
+  const setFill   = ([r,g,b]) => pdf.setFillColor(r,g,b)
+  const setStroke = ([r,g,b]) => pdf.setDrawColor(r,g,b)
+  const setTxt    = ([r,g,b]) => pdf.setTextColor(r,g,b)
+
+  const drawPageBg = () => {
+    setFill([250, 251, 255])
+    pdf.rect(0, 0, W, H, 'F')
+    // Subtle left stripe
+    setFill([240, 242, 255])
+    pdf.rect(0, 0, 4, H, 'F')
+  }
+
+  const checkBreak = (need) => {
+    if (y + need > H - 18) {
       pdf.addPage()
-      yPos = margin
+      drawPageBg()
+      y = 18
       return true
     }
     return false
   }
 
-  // Header with institution name
-  pdf.setFillColor(41, 128, 185)
-  pdf.rect(0, 0, pageWidth, 35, 'F')
-  pdf.setTextColor(255, 255, 255)
-  pdf.setFontSize(20)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text('ESCUELAS TÉCNICAS DEL PERÚ', pageWidth / 2, 15, { align: 'center' })
-  
-  yPos = 40
+  // ── Load course image ──────────────────────────────────────────────────
+  const imgUrl = course.image || course.imagen || course.foto || course.img || null
+  let imgData = null
+  if (imgUrl) {
+    try { imgData = await loadImageAsBase64(imgUrl) } catch(e) {}
+  }
 
-  // Course Title
-  pdf.setTextColor(0, 0, 0)
-  pdf.setFontSize(18)
-  pdf.setFont('helvetica', 'bold')
-  const titleLines = pdf.splitTextToSize(course.title || 'Sin título', pageWidth - 2 * margin)
-  pdf.text(titleLines, margin, yPos)
-  yPos += titleLines.length * 8 + 5
+  // ══════════════════════════════════════════════════════════════════════
+  // PAGE 1
+  // ══════════════════════════════════════════════════════════════════════
+  drawPageBg()
 
-  // Subtitle
+  // ── HEADER ─────────────────────────────────────────────────────────────
+  const HDR = 52
+  // Background gradient (2 rects)
+  setFill(P_DARK)
+  pdf.rect(0, 0, W, HDR * 0.55, 'F')
+  setFill(PRIMARY)
+  pdf.rect(0, HDR * 0.55, W, HDR * 0.45, 'F')
+  // Orange left accent
+  setFill(ACCENT)
+  pdf.rect(0, 0, 5, HDR, 'F')
+  // Orange bottom accent line
+  setFill(ACCENT)
+  pdf.rect(0, HDR, W, 3, 'F')
+
+  // Brand text
+  setTxt(ACCENT)
+  pdf.setFontSize(24)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('ETP', 11, 20)
+
+  setTxt(WHITE)
+  pdf.setFontSize(12)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('Escuelas Tecnicas del Peru', 11, 30)
+
+  pdf.setFontSize(8)
+  pdf.setFont('helvetica', 'normal')
+  setTxt([200, 210, 255])
+  pdf.text('Formacion tecnica de calidad  |  www.escuelastecnicas.pe', 11, 38)
+
+  // "BROCHURE" tag top-right
+  setFill(ACCENT)
+  pdf.roundedRect(W - 42, 6, 34, 10, 2, 2, 'F')
+  setTxt(WHITE)
+  pdf.setFontSize(8)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('BROCHURE', W - 25, 13, { align: 'center' })
+
+  y = HDR + 3 + 5
+
+  // ── COURSE IMAGE (right-floating) ──────────────────────────────────────
+  const IMG_W = 68, IMG_H = 50
+  const IMG_X = W - M - IMG_W
+  const TXT_W = W - 2 * M - IMG_W - 8
+
+  if (imgData) {
+    try {
+      // Shadow effect (dark rect offset)
+      setFill([180, 185, 220])
+      pdf.roundedRect(IMG_X + 2, y + 2, IMG_W, IMG_H, 3, 3, 'F')
+      // Image
+      pdf.addImage(imgData, 'JPEG', IMG_X, y, IMG_W, IMG_H, undefined, 'MEDIUM')
+      // White border
+      setStroke(WHITE)
+      pdf.setLineWidth(1)
+      pdf.roundedRect(IMG_X, y, IMG_W, IMG_H, 3, 3, 'S')
+      // Orange bottom accent on image
+      setFill(ACCENT)
+      pdf.rect(IMG_X, y + IMG_H - 3, IMG_W, 3, 'F')
+    } catch(e) {}
+  }
+
+  const contentW = imgData ? TXT_W : W - 2 * M
+
+  // ── GRADO BADGE ─────────────────────────────────────────────────────────
+  if (course.grado && course.grado.toLowerCase() !== 'vacio' && course.grado.toLowerCase() !== 'vacío') {
+    setFill(ACCENT)
+    pdf.roundedRect(M, y, 44, 7, 2, 2, 'F')
+    setTxt(WHITE)
+    pdf.setFontSize(7.5)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(String(course.grado).toUpperCase(), M + 22, y + 4.8, { align: 'center' })
+    y += 10
+  }
+
+  // ── COURSE TITLE ──────────────────────────────────────────────────────
+  setTxt(PRIMARY)
+  pdf.setFontSize(19)
+  pdf.setFont('helvetica', 'bold')
+  const titleLines = pdf.splitTextToSize(course.title || 'Sin titulo', contentW)
+  pdf.text(titleLines, M, y)
+  y += titleLines.length * 8.5 + 3
+
+  // ── SUBTITLE ─────────────────────────────────────────────────────────
   if (course.subtitle) {
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(100, 100, 100)
-    const subtitleLines = pdf.splitTextToSize(course.subtitle, pageWidth - 2 * margin)
-    pdf.text(subtitleLines, margin, yPos)
-    yPos += subtitleLines.length * 6 + 8
-  }
-
-  // Info badges
-  pdf.setFillColor(240, 240, 240)
-  pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 25, 3, 3, 'F')
-  pdf.setFontSize(9)
-  pdf.setTextColor(0, 0, 0)
-  let xBadge = margin + 5
-  const badgeData = [
-    // { label: 'Horas', value: course.hours },
-    { label: 'Duración', value: course.duration },
-    // { label: 'Registro', value: course.registro },
-    { label: 'Modalidad', value: course.modalidad }
-  ].filter(b => b.value)
-  
-  badgeData.forEach((badge, idx) => {
-    pdf.setFont('helvetica', 'bold')
-    pdf.text(badge.label + ':', xBadge, yPos + 8)
-    pdf.setFont('helvetica', 'normal')
-    pdf.text(badge.value, xBadge, yPos + 14)
-    xBadge += 45
-  })
-  yPos += 30
-
-  // Description
-  if (course.description) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('Descripción', margin, yPos)
-    yPos += 7
+    setTxt(MUTED)
     pdf.setFontSize(10)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(0, 0, 0)
-    const descLines = pdf.splitTextToSize(course.description, pageWidth - 2 * margin)
-    descLines.forEach(line => {
-      checkPageBreak(6)
-      pdf.text(line, margin, yPos)
-      yPos += 5
-    })
-    yPos += 5
+    pdf.setFont('helvetica', 'italic')
+    const subLines = pdf.splitTextToSize(course.subtitle, contentW)
+    pdf.text(subLines, M, y)
+    y += subLines.length * 5.5 + 4
   }
 
-  // Perfil del Egresado
-  if (course.perfil_egresado) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('Perfil del Egresado', margin, yPos)
-    yPos += 7
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(0, 0, 0)
-    const perfilText = String(course.perfil_egresado)
-    const perfilLines = perfilText.split(/\r?\n/).filter(Boolean)
-    perfilLines.forEach((line, idx) => {
-      checkPageBreak(5)
-      if (idx === 0) pdf.setFont('helvetica', 'bold')
-      else pdf.setFont('helvetica', 'normal')
-      const wrapped = pdf.splitTextToSize('• ' + line.trim(), pageWidth - 2 * margin - 5)
-      wrapped.forEach(w => {
-        pdf.text(w, margin + 3, yPos)
-        yPos += 4.5
-      })
-    })
-    yPos += 5
-  }
+  // ── INFO BADGES ───────────────────────────────────────────────────────
+  const badges = [
+    course.duration  && { label: 'DURACION',  val: String(course.duration).toUpperCase()  },
+    course.modalidad && { label: 'MODALIDAD', val: String(course.modalidad).toUpperCase() },
+  ].filter(Boolean)
 
-  // Razones para estudiar
-  if (course.razones_para_estudiar) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('¿Por qué estudiar este curso?', margin, yPos)
-    yPos += 7
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(0, 0, 0)
-    const razonesText = String(course.razones_para_estudiar)
-    const razonesLines = razonesText.includes('•') 
-      ? razonesText.split('•').map(l => l.trim()).filter(Boolean)
-      : razonesText.split(/\r?\n/).filter(Boolean)
-    razonesLines.forEach(line => {
-      checkPageBreak(5)
-      const wrapped = pdf.splitTextToSize('• ' + line.trim(), pageWidth - 2 * margin - 5)
-      wrapped.forEach(w => {
-        pdf.text(w, margin + 3, yPos)
-        yPos += 4.5
-      })
-    })
-    yPos += 5
-  }
-
-  // Público objetivo
-  if (course.publico_objetivo) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('Público Objetivo', margin, yPos)
-    yPos += 7
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(0, 0, 0)
-    const publicoText = String(course.publico_objetivo)
-    const publicoLines = publicoText.includes('•') 
-      ? publicoText.split('•').map(l => l.trim()).filter(Boolean)
-      : publicoText.split(/\r?\n/).filter(Boolean)
-    publicoLines.forEach(line => {
-      checkPageBreak(5)
-      const wrapped = pdf.splitTextToSize('• ' + line.trim(), pageWidth - 2 * margin - 5)
-      wrapped.forEach(w => {
-        pdf.text(w, margin + 3, yPos)
-        yPos += 4.5
-      })
-    })
-    yPos += 5
-  }
-
-  // Horarios
-  if (schedulesByDay && Object.keys(schedulesByDay).length > 0) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('Horarios', margin, yPos)
-    yPos += 7
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(0, 0, 0)
-    Object.keys(schedulesByDay).forEach(day => {
-      checkPageBreak(8)
+  if (badges.length > 0) {
+    const bW = 58, bH = 17, bGap = 5
+    const startY = imgData ? Math.max(y, HDR + 3 + IMG_H + 10) : y + 5
+    y = startY
+    checkBreak(bH + 10)
+    badges.forEach((b, i) => {
+      const bx = M + i * (bW + bGap)
+      setFill(LIGHT_BG)
+      setStroke(BORDER)
+      pdf.setLineWidth(0.4)
+      pdf.roundedRect(bx, y, bW, bH, 2, 2, 'FD')
+      // Left accent bar
+      setFill(PRIMARY)
+      pdf.roundedRect(bx, y, 3.5, bH, 1, 1, 'F')
+      setTxt(MUTED)
+      pdf.setFontSize(6.5)
       pdf.setFont('helvetica', 'bold')
-      pdf.text(day + ':', margin + 3, yPos)
-      yPos += 5
-      schedulesByDay[day].forEach(s => {
-        checkPageBreak(5)
-        pdf.setFont('helvetica', 'normal')
-        const schedText = `  ${s.turno || ''} · ${s.hora_inicio?.substring(0,5) || ''} - ${s.hora_fin?.substring(0,5) || ''}${s.aula ? ' · Aula: ' + s.aula : ''}`
-        pdf.text(schedText, margin + 5, yPos)
-        yPos += 4.5
-      })
+      pdf.text(b.label, bx + 7, y + 5.5)
+      setTxt(DARK)
+      pdf.setFontSize(9)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(b.val, bx + 7, y + 13)
     })
-    yPos += 5
+    y += bH + 10
+  } else {
+    if (imgData) y = Math.max(y, HDR + 3 + IMG_H + 10)
+    y += 5
   }
 
-  // Unidades didácticas
+  // ── DIVIDER ───────────────────────────────────────────────────────────
+  setFill(BORDER)
+  pdf.rect(M, y, W - 2 * M, 0.6, 'F')
+  y += 8
+
+  // ── SECTION HELPERS ───────────────────────────────────────────────────
+  const drawSectionHeader = (title) => {
+    checkBreak(16)
+    setFill(PRIMARY)
+    pdf.roundedRect(M, y, 4, 9, 1, 1, 'F')
+    setTxt(PRIMARY)
+    pdf.setFontSize(11)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(title, M + 8, y + 6.5)
+    y += 13
+  }
+
+  const drawBulletSection = (title, rawText) => {
+    if (!rawText) return
+    const txt = String(rawText).trim()
+    if (!txt) return
+    drawSectionHeader(title)
+    const lines = txt.includes('•')
+      ? txt.split('•').map(l => l.trim()).filter(Boolean)
+      : txt.split(/\r?\n/).filter(Boolean)
+    setTxt(DARK)
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'normal')
+    lines.forEach(line => {
+      const wrapped = pdf.splitTextToSize('• ' + line.trim(), W - 2 * M - 8)
+      wrapped.forEach(w => {
+        checkBreak(6); pdf.text(w, M + 5, y); y += 5
+      })
+    })
+    y += 5
+  }
+
+  const drawPlainSection = (title, rawText) => {
+    if (!rawText) return
+    const txt = String(rawText).trim()
+    if (!txt) return
+    drawSectionHeader(title)
+    setTxt(DARK)
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'normal')
+    const wrapped = pdf.splitTextToSize(txt, W - 2 * M - 8)
+    wrapped.forEach(w => {
+      checkBreak(6); pdf.text(w, M + 5, y); y += 5
+    })
+    y += 5
+  }
+
+  // ── CONTENT SECTIONS ──────────────────────────────────────────────────
+  drawPlainSection('Descripcion', course.description)
+  drawBulletSection('Perfil del Egresado', course.perfil_egresado)
+  drawBulletSection('Por que estudiar este curso', course.razones_para_estudiar)
+  drawBulletSection('Publico Objetivo', course.publico_objetivo)
+
+  // ── SCHEDULES ─────────────────────────────────────────────────────────
+  if (schedulesByDay && Object.keys(schedulesByDay).length > 0) {
+    drawSectionHeader('Horarios')
+    Object.keys(schedulesByDay).forEach(day => {
+      checkBreak(12)
+      setFill(LIGHT_BG)
+      pdf.roundedRect(M, y - 1, W - 2 * M, 8, 1.5, 1.5, 'F')
+      setTxt(P_DARK)
+      pdf.setFontSize(9)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(day, M + 4, y + 4.5)
+      y += 9
+      schedulesByDay[day].forEach(s => {
+        checkBreak(6)
+        setTxt(DARK)
+        pdf.setFontSize(8.5)
+        pdf.setFont('helvetica', 'normal')
+        const t = `    ${s.turno || ''}  ·  ${s.hora_inicio?.substring(0,5)||''} - ${s.hora_fin?.substring(0,5)||''}${s.aula ? '  ·  Aula: '+s.aula : ''}`
+        pdf.text(t, M + 4, y); y += 5
+      })
+      y += 2
+    })
+    y += 4
+  }
+
+  // ── TEMARIO ───────────────────────────────────────────────────────────
   const temario = parseJsonField(course.temario)
   if (temario && temario.length > 0) {
-    checkPageBreak(20)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(41, 128, 185)
-    pdf.text('Unidades Didácticas', margin, yPos)
-    yPos += 7
-    pdf.setFontSize(9)
-    
-    temario.forEach((unidad, idx) => {
-      checkPageBreak(10)
+    drawSectionHeader('Unidades Didacticas')
+    temario.forEach((unidad) => {
+      checkBreak(14)
+      // Unidad header
+      setFill(PRIMARY)
+      pdf.roundedRect(M, y - 1, W - 2 * M, 9, 2, 2, 'F')
+      setTxt(WHITE)
+      pdf.setFontSize(9)
       pdf.setFont('helvetica', 'bold')
-      pdf.setTextColor(0, 0, 0)
-      const unidadTitle = `${unidad.nivel || ''} — ${unidad.titulo || ''}`
-      pdf.text(unidadTitle, margin + 3, yPos)
-      yPos += 5
-      
+      const uTitle = (unidad.nivel ? unidad.nivel + ' — ' : '') + (unidad.titulo || '')
+      pdf.text(pdf.splitTextToSize(uTitle, W - 2*M - 8)[0], M + 5, y + 5.5)
+      y += 11
       if (Array.isArray(unidad.temas)) {
         unidad.temas.forEach(tema => {
-          checkPageBreak(6)
+          checkBreak(8)
+          setTxt(P_DARK)
+          pdf.setFontSize(8.5)
           pdf.setFont('helvetica', 'bold')
-          pdf.text('  • ' + tema.titulo, margin + 5, yPos)
-          yPos += 4.5
+          const temaW = pdf.splitTextToSize('  > ' + tema.titulo, W - 2*M - 10)
+          temaW.forEach(tw => { pdf.text(tw, M+5, y); y += 5 })
           if (Array.isArray(tema.subtemas)) {
             tema.subtemas.forEach(sub => {
-              checkPageBreak(5)
+              checkBreak(5)
+              setTxt(MUTED)
+              pdf.setFontSize(8)
               pdf.setFont('helvetica', 'normal')
-              const subWrapped = pdf.splitTextToSize('    - ' + sub, pageWidth - 2 * margin - 10)
-              subWrapped.forEach(sw => {
-                pdf.text(sw, margin + 7, yPos)
-                yPos += 4
-              })
+              pdf.splitTextToSize('    - ' + sub, W - 2*M - 16).forEach(s => { pdf.text(s, M+8, y); y += 4.5 })
             })
           }
         })
       }
-      yPos += 3
+      y += 4
     })
   }
 
-  // Footer
+  // ── FOOTER on every page ───────────────────────────────────────────────
   const totalPages = pdf.internal.pages.length - 1
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i)
-    pdf.setFontSize(8)
-    pdf.setTextColor(150, 150, 150)
-    pdf.text('Escuelas Técnicas del Perú - www.escuelastecnicas.pe', pageWidth / 2, pageHeight - 10, { align: 'center' })
-    pdf.text(`Página ${i} de ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' })
+    setFill(P_DARK)
+    pdf.rect(0, H - 13, W, 13, 'F')
+    setFill(ACCENT)
+    pdf.rect(0, H - 13, 5, 13, 'F')
+    setTxt(WHITE)
+    pdf.setFontSize(7.5)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text('ETP - Escuelas Tecnicas del Peru  ·  www.escuelastecnicas.pe', W/2, H-5.5, { align: 'center' })
+    setTxt(ACCENT)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(`${i} / ${totalPages}`, W - M, H-5.5, { align: 'right' })
   }
 
-  // Save PDF
   const fileName = `Brochure_${course.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'Curso'}.pdf`
   pdf.save(fileName)
 }
