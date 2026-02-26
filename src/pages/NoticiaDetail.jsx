@@ -77,6 +77,10 @@ export default function NoticiaDetail(){
 
   const mediaUrl = media ? resolveMediaUrl(media) : (noticia.image || noticia.image_url || noticia.featured_media_url || noticia.media?.url || null)
 
+  // Build a stable absolute URL to this news item so shared links always point to the detail page
+  const shareId = noticia.id ?? noticia.ID ?? noticia._id ?? noticia.slug ?? noticia.slugified ?? noticia.slug_name
+  const shareUrl = `${window.location.origin}/noticia/${shareId}`
+
   return (
     <section className="py-5">
       <div className="container">
@@ -112,8 +116,8 @@ export default function NoticiaDetail(){
 
                 <div className="mt-3 mt-md-0">
                   <div className="share-buttons d-flex gap-2">
-                    <a className="btn btn-outline-primary btn-sm" href={`mailto:?subject=${encodeURIComponent(titleText)}&body=${encodeURIComponent(window.location.href)}`} aria-label="Compartir por email">✉️ Email</a>
-                    <a className="btn btn-outline-success btn-sm" href={`https://wa.me/?text=${encodeURIComponent(titleText + ' ' + window.location.href)}`} target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
+                    <a className="btn btn-outline-primary btn-sm" href={`mailto:?subject=${encodeURIComponent(titleText)}&body=${encodeURIComponent(shareUrl)}`} aria-label="Compartir por email">✉️ Email</a>
+                    <a className="btn btn-outline-success btn-sm" href={`https://wa.me/?text=${encodeURIComponent(titleText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
                   </div>
                 </div>
               </div>
