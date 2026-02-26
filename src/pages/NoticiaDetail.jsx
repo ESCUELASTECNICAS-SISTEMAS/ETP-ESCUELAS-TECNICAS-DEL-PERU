@@ -85,7 +85,7 @@ export default function NoticiaDetail(){
     <section className="py-5">
       <div className="container">
         <div className="mb-3">
-          <Link to="/noticias" className="btn btn-link">← Volver a Noticias</Link>
+          <Link to="/noticia" className="btn btn-link">← Volver a Noticias</Link>
         </div>
 
         {mediaUrl ? (
