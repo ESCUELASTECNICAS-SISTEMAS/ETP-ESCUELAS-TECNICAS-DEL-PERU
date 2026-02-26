@@ -78,8 +78,15 @@ export default function NoticiaDetail(){
   const mediaUrl = media ? resolveMediaUrl(media) : (noticia.image || noticia.image_url || noticia.featured_media_url || noticia.media?.url || null)
 
   // Build a stable absolute URL to this news item so shared links always point to the detail page
-  const shareId = noticia.id ?? noticia.ID ?? noticia._id ?? noticia.slug ?? noticia.slugified ?? noticia.slug_name
-  const shareUrl = `${window.location.origin}/noticia/${shareId}`
+  let shareId = noticia.id ?? noticia.ID ?? noticia._id
+  if (!shareId) {
+    const raw = (noticia.slug || noticia.slugified || noticia.slug_name || '') + ''
+    const cleaned = raw.replace(/^\/+|\/+$/g, '') // remove leading/trailing slashes
+    const parts = cleaned.split('/').filter(Boolean)
+    shareId = parts.length ? parts.pop() : cleaned
+  }
+  if (!shareId) shareId = noticia.id ?? noticia.ID ?? noticia._id ?? '0'
+  const shareUrl = `${window.location.origin}/noticia/${encodeURIComponent(shareId)}`
 
   return (
     <section className="py-5">
