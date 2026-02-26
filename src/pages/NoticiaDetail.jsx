@@ -86,13 +86,14 @@ export default function NoticiaDetail(){
     shareId = parts.length ? parts.pop() : cleaned
   }
   if (!shareId) shareId = noticia.id ?? noticia.ID ?? noticia._id ?? '0'
-  const shareUrl = `${window.location.origin}/noticia/${encodeURIComponent(shareId)}`
+  // Use URL to avoid accidental double slashes when joining origin + path
+  const shareUrl = new URL(`/noticia/${encodeURIComponent(shareId)}`, window.location.origin).toString()
 
   return (
     <section className="py-5">
       <div className="container">
         <div className="mb-3">
-          <Link to="/noticia" className="btn btn-link">← Volver a Noticias</Link>
+          <Link to="/noticias" className="btn btn-link">← Volver a Noticias</Link>
         </div>
 
         {mediaUrl ? (
