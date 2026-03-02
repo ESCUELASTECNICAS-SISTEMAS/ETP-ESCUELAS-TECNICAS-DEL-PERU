@@ -653,28 +653,6 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Convenios */}
-              {course.convenios && course.convenios.length > 0 && (
-                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-handshake me-2 text-warning"></i>Convenios</h5>
-                  <div className="cd-convenios-list">
-                    {course.convenios.map(conv => (
-                      <div key={conv.id} className="cd-convenio-item mb-2 bg-light rounded-2 p-2 border border-warning border-opacity-25">
-                        {conv.logo && <img src={conv.logo} alt={conv.institucion} className="cd-convenio-logo rounded shadow-sm" style={{maxWidth:'60px',maxHeight:'60px'}} />}
-                        <div className="cd-convenio-info">
-                          <strong className="small">{conv.institucion}</strong>
-                          {conv.descripcion && <p className="mb-1 small text-muted">{conv.descripcion}</p>}
-                          {conv.url && (
-                            <a href={conv.url} target="_blank" rel="noopener noreferrer" className="small">
-                              Ver más <i className="bi bi-box-arrow-up-right"></i>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
