@@ -22,7 +22,6 @@ export default function CourseCard({ item, showPrice = true }) {
 
   const modalidad = item.modalidad || item.mode || item.modality || item.modalidad_tipo || ''
   const hoursVal = item.duration || item.hours || item.horas || null
-  const grado = item.grado || null
   const subtitle = item.subtitle || item.descripcion || ''
   const detailUrl = item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`
 
@@ -40,7 +39,6 @@ export default function CourseCard({ item, showPrice = true }) {
           <Link to={detailUrl} className="btn btn-sm btn-light cc-overlay-btn"><i className="bi bi-eye me-1"></i>Ver más</Link>
           <button type="button" onClick={handleInscribirse} className="btn btn-sm btn-success cc-overlay-btn" style={{backgroundColor:'#25D366',borderColor:'#25D366'}}><i className="bi bi-whatsapp me-1"></i>Inscribirme</button>
         </div>
-        {grado && grado.toLowerCase() !== 'vacio' && grado.toLowerCase() !== 'vacío' && <span className="cc-badge-grado">{grado}</span>}
       </div>
       <div className="cc-body">
         <h5 className="cc-title">{item.titulo || item.title}</h5>

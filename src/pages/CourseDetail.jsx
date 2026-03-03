@@ -147,17 +147,6 @@ const generateBrochurePDF = async (course, schedulesByDay) => {
   // ═══════════════════════════════════════════════════════════════════
   // COURSE TITLE
   // ═══════════════════════════════════════════════════════════════════
-  // Grado badge
-  if (course.grado && course.grado.toLowerCase() !== 'vacio' && course.grado.toLowerCase() !== 'vacío') {
-    pdf.setFillColor(...ACCENT)
-    pdf.roundedRect(M, y, 50, 8, 2, 2, 'F')
-    pdf.setTextColor(...WHITE)
-    pdf.setFontSize(8)
-    pdf.setFont('helvetica', 'bold')
-    pdf.text(String(course.grado).toUpperCase(), M + 25, y + 5.5, { align: 'center' })
-    y += 14
-  }
-
   // Title
   pdf.setTextColor(...PRIMARY)
   pdf.setFontSize(20)
@@ -407,8 +396,11 @@ export default function CourseDetail() {
     return acc
   }, {})
 
-  const handleDownloadBrochure = () => {
-    generateBrochurePDF(course, schedulesByDay)
+  const handleExplorarPlan = () => {
+    const element = document.getElementById('cd-plan-estudios')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   return (
@@ -429,12 +421,11 @@ export default function CourseDetail() {
             <div className="row align-items-center">
               <div className="col-lg-8">
                 <div className="cd-hero-content">
-                  {course.grado && course.grado.toLowerCase() !== 'vacio' && course.grado.toLowerCase() !== 'vacío' && <span className="cd-badge-grado badge bg-warning text-dark shadow-sm">{course.grado}</span>}
                   <h1 className="cd-hero-title">{course.title}</h1>
                   {course.subtitle && <p className="cd-hero-subtitle">{course.subtitle}</p>}
                   <div className="cd-hero-actions mt-4">
-                    <button onClick={handleDownloadBrochure} className="btn btn-primary btn-lg me-3 shadow">
-                      <i className="bi bi-download me-2"></i>Descargar Brochure
+                    <button onClick={handleExplorarPlan} className="btn btn-primary btn-lg me-3 shadow">
+                      <i className="bi bi-book-fill me-2"></i>Explora el Plan de Estudios
                     </button>
 
                   </div>
@@ -494,7 +485,7 @@ export default function CourseDetail() {
 
             {/* Plan de Estudios - Contenido académico principal */}
             {temario && temario.length > 0 && (
-              <div className="cd-card cd-card-curriculum shadow-sm border-0 rounded-3 mb-4">
+              <div id="cd-plan-estudios" className="cd-card cd-card-curriculum shadow-sm border-0 rounded-3 mb-4">
                 <div className="cd-card-header rounded-top">
                   <i className="bi bi-journal-text-fill"></i>
                   <h4 className="cd-card-title mb-0">Plan de Estudios</h4>

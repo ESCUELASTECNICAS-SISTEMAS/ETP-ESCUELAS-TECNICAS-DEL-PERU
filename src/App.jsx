@@ -11,6 +11,7 @@ import CincoMesesPage from './pages/CincoMesesPage'
 import CourseDetail from './pages/CourseDetail'
 import NoticiasPage from './pages/NoticiasPage'
 import NoticiaDetail from './pages/NoticiaDetail'
+import NosoatrosPage from './pages/NosoatrosPage'
 import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminCarousel from './pages/AdminCarousel'
@@ -42,6 +43,7 @@ export default function App(){
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/noticias" element={<NoticiasPage />} />
           <Route path="/noticia/:id" element={<NoticiaDetail />} />
+          <Route path="/nosotros" element={<NosoatrosPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/carousel" element={<AdminRoute><AdminCarousel /></AdminRoute>} />

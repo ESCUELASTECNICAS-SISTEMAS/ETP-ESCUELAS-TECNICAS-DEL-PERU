@@ -95,6 +95,9 @@ export default function Navbar() {
                 <Link className="nav-link" to="/programas">Carreras</Link>
               </li>
               <li className="nav-item">
+                <Link className="nav-link" to="/nosotros">Nosotros</Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/noticias">Noticias</Link>
               </li>
               {/* Buscador compacto */}
