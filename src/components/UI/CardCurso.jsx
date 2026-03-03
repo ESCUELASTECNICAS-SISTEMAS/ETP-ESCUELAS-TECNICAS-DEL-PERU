@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 export default function CardCurso({curso}){
   const imgSrc = curso.image || curso.imagen || (curso.thumbnail && curso.thumbnail.url) || '/assets/images/cursos/curso-1.jpg'
   const detailUrl = `/curso/${curso.id}`
+  const subtitle = curso.subtitle || curso.descripcion || ''
 
   return (
     <div className="cc-card">
@@ -16,6 +17,7 @@ export default function CardCurso({curso}){
       </div>
       <div className="cc-body">
         <h5 className="cc-title">{curso.titulo || curso.title}</h5>
+        {subtitle && <p className="cc-subtitle">{subtitle.length > 80 ? subtitle.slice(0,80)+'…' : subtitle}</p>}
         <div className="cc-meta">
           {curso.duracion && <span className="cc-meta-item"><i className="bi bi-clock"></i>{String(curso.duracion).toUpperCase()}</span>}
         </div>

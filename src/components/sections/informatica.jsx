@@ -67,6 +67,13 @@ export default function Informatica(){
           <a href="/cursos-informatica" className="section-link">Ver todos <i className="bi bi-arrow-right"></i></a>
         </div>
 
+        {/* Subtítulos: lista de cursos (p. ej. Excel, Power BI) */}
+        <div className="mb-3">
+          {(info?.cursos || []).map((s, i) => (
+            <span key={i} className="badge bg-secondary bg-opacity-10 text-dark me-2 mb-2">{s}</span>
+          ))}
+        </div>
+
         <div className="row g-4">
           {cursos.map(c => (
             <div className="col-12 col-sm-6 col-md-4" key={c.id || c.titulo}>
