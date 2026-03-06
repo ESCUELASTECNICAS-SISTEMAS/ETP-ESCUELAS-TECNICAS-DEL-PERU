@@ -25,13 +25,15 @@ export default function Talleres(){
         const needsMedia = apiCursos.some(c => c.thumbnail_media_id)
         let media = []
         if(needsMedia){ try{ const mres = await axios.get(endpoints.MEDIA); media = Array.isArray(mres.data)?mres.data:[] }catch(e){}} 
-        const mapped = apiCursos.map(c => ({
-          ...c,
-          titulo: c.title || c.titulo || c.name,
-          modalidad: c.modalidad || c.mode || c.modality || '',
-          descripcion: c.description || c.descripcion || c.subtitle || '',
-          image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
-        }))
+        const mapped = apiCursos
+          .filter(c => c.published !== false)
+          .map(c => ({
+            ...c,
+            titulo: c.title || c.titulo || c.name,
+            modalidad: c.modalidad || c.mode || c.modality || '',
+            descripcion: c.description || c.descripcion || c.subtitle || '',
+            image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
+          }))
         if(mapped.length) setCursos(mapped)
         else setCursos(cursosLocal.filter(isCursoOTaller))
       }catch(err){ setCursos(cursosLocal.filter(isCursoOTaller)) }
@@ -42,7 +44,7 @@ export default function Talleres(){
   }, [])
 
   const talleres = cursos.filter(isCursoOTaller)
-  if(loading && talleres.length === 0) return null
+  if(talleres.length === 0) return null
 
   return (
     <section id="talleres" className="section-padding">
@@ -57,7 +59,7 @@ export default function Talleres(){
         <div className="row g-4">
           {talleres.map((t,i) => (
             <div className="col-12 col-md-4" key={i}>
-              <CourseCard item={t} showPrice={false} />
+              <CourseCard item={t} />
             </div>
           ))}
         </div>

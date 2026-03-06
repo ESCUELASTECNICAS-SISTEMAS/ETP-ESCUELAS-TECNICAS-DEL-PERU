@@ -70,7 +70,7 @@ export default function CursosPage(){
             <div className="row g-4">
               {cursosGenerales.map((c, i) => (
                 <div className="col-12 col-md-6 col-lg-4" key={i}>
-                  <CourseCard item={c} showPrice={false} />
+                  <CourseCard item={c} />
                 </div>
               ))}
             </div>

@@ -16,7 +16,8 @@ export default function AdminCourses(){
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
     razones_para_estudiar: '', publico_objetivo: '',
-    modalidad: '', temario: '', horarios_media_id: ''
+    modalidad: '', temario: '', horarios_media_id: '',
+    precio: '', descuento: '', oferta: false, matricula: '', pension: ''
   })
 
 
@@ -350,6 +351,11 @@ export default function AdminCourses(){
         publico_objetivo: form.publico_objetivo || null,
         mision: form.mision || null,
         vision: form.vision || null,
+        precio: form.precio === '' ? null : Number(form.precio),
+        descuento: form.descuento === '' ? null : Number(form.descuento),
+        oferta: Boolean(form.oferta),
+        matricula: form.matricula === '' ? null : Number(form.matricula),
+        pension: form.pension === '' ? null : Number(form.pension),
         // docentes and schedules removed from course payload (managed elsewhere)
       }
       const res = await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
@@ -360,7 +366,8 @@ export default function AdminCourses(){
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
         razones_para_estudiar: '', publico_objetivo: '',
-        modalidad: '', temario: '', horarios_media_id: ''
+        modalidad: '', temario: '', horarios_media_id: '',
+        precio: '', descuento: '', oferta: false, matricula: '', pension: ''
       })
         setTemarioUnits([])
       await fetchCourses()
@@ -423,6 +430,8 @@ export default function AdminCourses(){
       perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
       modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
+      precio: c.precio ?? '', descuento: c.descuento ?? '', oferta: !!c.oferta,
+      matricula: c.matricula ?? '', pension: c.pension ?? '',
       // docentes and schedules removed from course edit form
     })
     // initialize schedule grid from course schedules (solo activos)
@@ -484,7 +493,8 @@ export default function AdminCourses(){
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
       razones_para_estudiar: '', publico_objetivo: '',
-      modalidad: '', temario: '', horarios_media_id: ''
+      modalidad: '', temario: '', horarios_media_id: '',
+      precio: '', descuento: '', oferta: false, matricula: '', pension: ''
     }) 
     setScheduleGrid(createEmptyGrid())
     setTemarioUnits([])
@@ -513,6 +523,11 @@ export default function AdminCourses(){
         publico_objetivo: form.publico_objetivo || null,
         mision: form.mision || null,
         vision: form.vision || null,
+        precio: form.precio === '' ? null : Number(form.precio),
+        descuento: form.descuento === '' ? null : Number(form.descuento),
+        oferta: Boolean(form.oferta),
+        matricula: form.matricula === '' ? null : Number(form.matricula),
+        pension: form.pension === '' ? null : Number(form.pension),
         // docentes and schedules removed from course payload (managed elsewhere)
       }
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
@@ -574,6 +589,71 @@ export default function AdminCourses(){
                   <div className="col-12 col-md-6">
                     <label className="form-label">Duración</label>
                     <input className="form-control" value={form.duration} onChange={e=>handleChange('duration', e.target.value)} />
+                  </div>
+                </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-3">
+                    <label className="form-label">Precio</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="form-control"
+                      value={form.precio}
+                      onChange={e=>handleChange('precio', e.target.value)}
+                      placeholder="Ej: 350"
+                    />
+                  </div>
+                  <div className="col-12 col-md-3">
+                    <label className="form-label">Matrícula</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="form-control"
+                      value={form.matricula}
+                      onChange={e=>handleChange('matricula', e.target.value)}
+                      placeholder="Ej: 50"
+                    />
+                  </div>
+                  <div className="col-12 col-md-3">
+                    <label className="form-label">Mensualidad (Pensión)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="form-control"
+                      value={form.pension}
+                      onChange={e=>handleChange('pension', e.target.value)}
+                      placeholder="Ej: 180"
+                    />
+                  </div>
+                </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Descuento (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      className="form-control"
+                      value={form.descuento}
+                      onChange={e=>handleChange('descuento', e.target.value)}
+                      placeholder="Ej: 15"
+                    />
+                  </div>
+                  <div className="col-12 col-md-6 d-flex align-items-end">
+                    <div className="form-check form-switch mb-1">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="ofertaSwitch"
+                        checked={form.oferta}
+                        onChange={e=>handleChange('oferta', e.target.checked)}
+                      />
+                      <label className="form-check-label" htmlFor="ofertaSwitch">En oferta</label>
+                    </div>
                   </div>
                 </div>
                 {/* Cuadrícula rápida colocada junto a Horas */}
@@ -807,6 +887,22 @@ export default function AdminCourses(){
                                   <div className="text-muted small">Tipo: {c.type}</div>
                                   <div className="text-muted small">Slug: {c.slug}</div>
                                   {c.registro && <div className="text-muted small">Registro: {c.registro}</div>}
+                                  {c.precio != null && (
+                                    <div className="text-muted small">
+                                      Precio: S/ {Number(c.precio).toFixed(2)}
+                                      {c.oferta && c.descuento != null ? ` (Oferta: -${c.descuento}%)` : ''}
+                                    </div>
+                                  )}
+                                  {c.matricula != null && (
+                                    <div className="text-muted small">
+                                      Matrícula: S/ {Number(c.matricula).toFixed(2)}
+                                    </div>
+                                  )}
+                                  {c.pension != null && (
+                                    <div className="text-muted small">
+                                      Mensualidad: S/ {Number(c.pension).toFixed(2)}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               {c.perfil_egresado && <div className="mt-2"><strong>Perfil egresado:</strong> <div className="text-muted small">{c.perfil_egresado}</div></div>}

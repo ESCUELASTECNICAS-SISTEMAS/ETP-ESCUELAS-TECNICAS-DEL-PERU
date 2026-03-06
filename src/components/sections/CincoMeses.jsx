@@ -25,13 +25,15 @@ export default function CincoMeses(){
             console.warn('media fetch failed', e)
           }
         }
-        const mapped = apiCursos.map(c => ({
-          ...c,
-          titulo: c.title || c.titulo || c.name,
-          modalidad: c.modalidad || c.mode || c.modality || '',
-          descripcion: c.description || c.descripcion || c.subtitle || '',
-          image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
-        }))
+        const mapped = apiCursos
+          .filter(c => c.published !== false)
+          .map(c => ({
+            ...c,
+            titulo: c.title || c.titulo || c.name,
+            modalidad: c.modalidad || c.mode || c.modality || '',
+            descripcion: c.description || c.descripcion || c.subtitle || '',
+            image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
+          }))
         if(mapped.length) setCursos(mapped)
         else setCursos(cursosLocal.filter(c => c.tipo && c.tipo.toLowerCase() === 'cinco_meses'))
       }catch(err){ 
@@ -50,7 +52,7 @@ export default function CincoMeses(){
     return tipo === 'cinco_meses' || tipo === 'cinco meses' || tipo === '5_meses' || tipo === '5 meses'
   })
 
-  if(loading && cincoMeses.length === 0) return null
+  if(cincoMeses.length === 0) return null
 
   return (
     <section id="cinco-meses" className="section-padding bg-light">
@@ -65,7 +67,7 @@ export default function CincoMeses(){
         <div className="row g-4">
           {cincoMeses.map((c,i) => (
             <div className="col-12 col-md-4" key={i}>
-              <CourseCard item={c} showPrice={false} />
+              <CourseCard item={c} />
             </div>
           ))}
         </div>

@@ -13,7 +13,7 @@ const buildLocalCursos = () => (info?.cursos || []).map((titulo, i) => ({
 }))
 
 export default function Informatica(){
-  const [cursos, setCursos] = useState(buildLocalCursos())
+  const [cursos, setCursos] = useState([])
 
   useEffect(() => {
     let mounted = true
@@ -33,13 +33,15 @@ export default function Informatica(){
           }catch(e){ /* keep placeholder image */ }
         }
 
-        const mapped = apiCursos.map(c => ({
-          ...c,
-          titulo: c.title || c.titulo || c.name,
-          modalidad: c.modalidad || c.mode || c.modality || 'Modalidad flexible',
-          duracion: c.duracion || c.duration || '40 horas',
-          image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
-        }))
+        const mapped = apiCursos
+          .filter(c => c.published !== false)
+          .map(c => ({
+            ...c,
+            titulo: c.title || c.titulo || c.name,
+            modalidad: c.modalidad || c.mode || c.modality || 'Modalidad flexible',
+            duracion: c.duracion || c.duration || '40 horas',
+            image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
+          }))
 
         const ofimatica = mapped.filter(c => {
           const tipo = (c.type || c.tipo || '').toLowerCase()
@@ -47,14 +49,15 @@ export default function Informatica(){
         })
 
         if(!mounted) return
-        if(ofimatica.length) setCursos(ofimatica)
-        else fallback()
+        setCursos(ofimatica.length > 0 ? ofimatica : [])
       }catch(err){ fallback() }
     }
 
     load()
     return () => { mounted = false }
   }, [])
+
+  if(cursos.length === 0) return null
 
   return (
     <section id="informatica" className="section-padding">

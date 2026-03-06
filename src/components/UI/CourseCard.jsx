@@ -10,13 +10,19 @@ export default function CourseCard({ item, showPrice = true }) {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank')
   }
 
-  const price = item.precio ?? item.pago_unico ?? null
-  const matricula = item.matricula ?? item.matricula
+  const price = item.precio ?? item.price ?? item.pago_unico ?? null
+  const matricula = item.matricula ?? item.enrollment ?? null
   const pension = item.pension ?? item.pension_mensual ?? null
+  const isOffer = Boolean(item.oferta ?? item.en_oferta)
+  const discountPct = item.descuento ?? item.descuento_pct ?? null
 
-  const discountedPrice = item.descuento_pct
-    ? Math.round((price * (100 - item.descuento_pct)) / 100)
-    : null
+  const applyDiscount = (amount) => {
+    if (!isOffer || discountPct == null || amount == null) return null
+    return Math.round((Number(amount) * (100 - Number(discountPct))) / 100)
+  }
+
+  const discountedPrice = applyDiscount(price)
+  const discountedPension = applyDiscount(pension)
 
   const imgSrc = item.image || item.imagen || item.image_url || item.url || (item.thumbnail && item.thumbnail.url) || (item.media && item.media.url) || item.foto || null
 
@@ -53,6 +59,7 @@ export default function CourseCard({ item, showPrice = true }) {
               <>
                 <span className="cc-price-old">S/ {price}</span>
                 <span className="cc-price-now">S/ {discountedPrice}</span>
+                <span className="badge bg-danger ms-2">-{discountPct}%</span>
               </>
             ) : (
               <span className="cc-price-now">S/ {price}</span>
@@ -60,10 +67,35 @@ export default function CourseCard({ item, showPrice = true }) {
           </div>
         )}
 
-        {showPrice && matricula != null && pension != null && (
+        {showPrice && (matricula != null || pension != null) && (
           <div className="cc-fees">
-            <span>Matrícula: <strong>S/ {matricula}</strong></span>
-            <span>Pensión: <strong>S/ {pension}</strong></span>
+            {matricula != null && (
+              <span>
+                Matrícula: 
+                <strong className="ms-1">S/ {matricula}</strong>
+              </span>
+            )}
+            {pension != null && (
+              <span>
+                Mensualidad: 
+                {discountedPension != null ? (
+                  <>
+                    <span className="cc-price-old ms-1">S/ {pension}</span>
+                    <strong className="ms-1">S/ {discountedPension}</strong>
+                  </>
+                ) : (
+                  <strong className="ms-1">S/ {pension}</strong>
+                )}
+              </span>
+            )}
+            <span
+              className="text-muted"
+              title="Matrícula única. La mensualidad se paga por unidad, módulo o mes según el curso o carrera."
+              aria-label="Información de matrícula y mensualidad"
+              style={{ cursor: 'help' }}
+            >
+              <i className="bi bi-info-circle"></i>
+            </span>
           </div>
         )}
 

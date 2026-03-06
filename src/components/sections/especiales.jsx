@@ -50,7 +50,7 @@ export default function Especiales(){
         <div className="row g-4">
           {especiales.map((e,i) => (
             <div className="col-12 col-md-4" key={i}>
-              <CourseCard item={e} showPrice={false} />
+              <CourseCard item={e} />
             </div>
           ))}
         </div>
