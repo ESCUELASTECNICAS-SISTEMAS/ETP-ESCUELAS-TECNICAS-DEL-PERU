@@ -396,6 +396,12 @@ export default function CourseDetail() {
     return acc
   }, {})
 
+  // Detectar carrera de Reparación y Mantenimiento de Computadoras (NO curso)
+  const title = (course.title || '').toLowerCase()
+  const tipo = (course.type || course.tipo || '').toLowerCase()
+  const isCurso = tipo === 'cursos_talleres' || tipo === 'ofimatica' || tipo === 'cinco_meses' || tipo === 'cinco meses' || tipo === '5_meses' || tipo === '5 meses' || tipo === 'taller'
+  const isReparacionComputadoras = !isCurso && title.includes('reparaci') && title.includes('mantenimiento') && (title.includes('computadora') || title.includes('laptop'))
+
   const handleExplorarPlan = () => {
     const element = document.getElementById('cd-plan-estudios')
     if (element) {
@@ -423,6 +429,14 @@ export default function CourseDetail() {
                 <div className="cd-hero-content">
                   <h1 className="cd-hero-title">{course.title}</h1>
                   {course.subtitle && <p className="cd-hero-subtitle">{course.subtitle}</p>}
+                  {isReparacionComputadoras && (
+                    <div className="mt-3 p-3 bg-light bg-opacity-75 rounded-3 border border-primary border-opacity-25">
+                      <p className="mb-0 text-dark">
+                        <i className="bi bi-info-circle-fill me-2 text-primary"></i>
+                        <strong>Certificado:</strong> El título se emitirá como <strong>"Soporte Técnico y Operación de Centros de Cómputo"</strong>
+                      </p>
+                    </div>
+                  )}
                   <div className="cd-hero-actions mt-4">
                     <button onClick={handleExplorarPlan} className="btn btn-primary btn-lg me-3 shadow">
                       <i className="bi bi-book-fill me-2"></i>Explora el Plan de Estudios

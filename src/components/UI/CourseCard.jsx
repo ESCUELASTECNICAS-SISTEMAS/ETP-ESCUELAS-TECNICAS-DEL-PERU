@@ -23,6 +23,9 @@ export default function CourseCard({ item, showPrice = true }) {
 
   const discountedPrice = applyDiscount(price)
   const discountedPension = applyDiscount(pension)
+  const hasMatricula = matricula != null && Number(matricula) > 0
+  const hasPension = pension != null && Number(pension) > 0
+  const isPackageSinglePayment = showPrice && price != null && !hasMatricula && !hasPension
 
   const imgSrc = item.image || item.imagen || item.image_url || item.url || (item.thumbnail && item.thumbnail.url) || (item.media && item.media.url) || item.foto || null
 
@@ -67,15 +70,15 @@ export default function CourseCard({ item, showPrice = true }) {
           </div>
         )}
 
-        {showPrice && (matricula != null || pension != null) && (
+        {showPrice && (hasMatricula || hasPension) && (
           <div className="cc-fees">
-            {matricula != null && (
+            {hasMatricula && (
               <span>
                 Matrícula: 
                 <strong className="ms-1">S/ {matricula}</strong>
               </span>
             )}
-            {pension != null && (
+            {hasPension && (
               <span>
                 Mensualidad: 
                 {discountedPension != null ? (
@@ -95,6 +98,14 @@ export default function CourseCard({ item, showPrice = true }) {
               style={{ cursor: 'help' }}
             >
               <i className="bi bi-info-circle"></i>
+            </span>
+          </div>
+        )}
+
+        {isPackageSinglePayment && (
+          <div className="mt-2">
+            <span className="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+              Paquete completo pago unico
             </span>
           </div>
         )}

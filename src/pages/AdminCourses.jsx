@@ -503,39 +503,62 @@ export default function AdminCourses(){
   const saveEdit = async (id) => {
     setSaving(true); setError(null)
     try{
+      const editingCourse = items.find(i => String(i.id) === String(id)) || {}
+      const toNumberOrUndefined = (v) => {
+        if (v === '' || v === null || v === undefined) return undefined
+        const n = Number(v)
+        return Number.isFinite(n) ? n : undefined
+      }
+      const temarioPayload = (Array.isArray(temarioUnits) && temarioUnits.length)
+        ? sanitizeTemarioForSend(temarioUnits)
+        : parseTemarioInput(form.temario)
+
       const payload = {
-        title: form.title,
-        subtitle: form.subtitle,
-        description: form.description,
-        type: form.type,
-        thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
-        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : null,
-        slug: form.slug,
+        title: (form.title || '').trim(),
+        subtitle: form.subtitle ? form.subtitle.trim() : undefined,
+        description: form.description ? form.description.trim() : undefined,
+        type: (form.type || editingCourse.type || editingCourse.tipo || '').trim() || undefined,
+        thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : undefined,
+        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : undefined,
+        slug: form.slug ? form.slug.trim() : undefined,
         published: Boolean(form.published),
-        hours: form.hours || null,
-        duration: form.duration || null,
-        modalidad: form.modalidad || null,
-          temario: (Array.isArray(temarioUnits) && temarioUnits.length) ? sanitizeTemarioForSend(temarioUnits) : parseTemarioInput(form.temario),
-        grado: form.grado || null,
-        registro: form.registro || null,
-        perfil_egresado: form.perfil_egresado || null,
-        razones_para_estudiar: form.razones_para_estudiar || null,
-        publico_objetivo: form.publico_objetivo || null,
-        mision: form.mision || null,
-        vision: form.vision || null,
-        precio: form.precio === '' ? null : Number(form.precio),
-        descuento: form.descuento === '' ? null : Number(form.descuento),
+        hours: form.hours ? form.hours.trim() : undefined,
+        duration: form.duration ? form.duration.trim() : undefined,
+        modalidad: form.modalidad ? form.modalidad.trim() : undefined,
+        temario: (Array.isArray(temarioPayload) && temarioPayload.length > 0) ? temarioPayload : undefined,
+        grado: form.grado ? form.grado.trim() : undefined,
+        registro: form.registro ? form.registro.trim() : undefined,
+        perfil_egresado: form.perfil_egresado ? form.perfil_egresado.trim() : undefined,
+        razones_para_estudiar: form.razones_para_estudiar ? form.razones_para_estudiar.trim() : undefined,
+        publico_objetivo: form.publico_objetivo ? form.publico_objetivo.trim() : undefined,
+        mision: form.mision ? form.mision.trim() : undefined,
+        vision: form.vision ? form.vision.trim() : undefined,
+        precio: toNumberOrUndefined(form.precio),
+        descuento: toNumberOrUndefined(form.descuento),
         oferta: Boolean(form.oferta),
-        matricula: form.matricula === '' ? null : Number(form.matricula),
-        pension: form.pension === '' ? null : Number(form.pension),
+        matricula: toNumberOrUndefined(form.matricula),
+        pension: toNumberOrUndefined(form.pension),
         // docentes and schedules removed from course payload (managed elsewhere)
       }
+
+      Object.keys(payload).forEach((k) => {
+        if (payload[k] === undefined) delete payload[k]
+      })
+
+      if (!payload.title) throw new Error('El título es obligatorio')
+      if (!payload.type) throw new Error('El tipo es obligatorio')
+
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       // Solo subir horarios NUEVOS (los que no tienen id). Los existentes ya están en el servidor.
       // Las eliminaciones ya se manejan en tiempo real con el botón "x".
       await uploadOnlyNewSchedules(id)
       cancelEdit(); await fetchCourses(); await fetchMedia()
-    }catch(err){ console.error('saveEdit', err); setError('Error al actualizar curso') }
+    }catch(err){
+      console.error('saveEdit', err)
+      const details = err && err.response ? err.response.data : (err && err.message ? err.message : err)
+      console.error('saveEdit details', details)
+      setError(details && typeof details === 'object' ? (details.message || JSON.stringify(details)) : String(details) || 'Error al actualizar curso')
+    }
     finally{ setSaving(false) }
   }
 

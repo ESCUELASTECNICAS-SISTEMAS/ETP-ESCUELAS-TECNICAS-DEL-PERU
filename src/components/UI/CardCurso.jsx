@@ -18,6 +18,9 @@ export default function CardCurso({curso}){
 
   const discountedPrice = applyDiscount(price)
   const discountedPension = applyDiscount(pension)
+  const hasMatricula = matricula != null && Number(matricula) > 0
+  const hasPension = pension != null && Number(pension) > 0
+  const isPackageSinglePayment = price != null && !hasMatricula && !hasPension
 
   return (
     <div className="cc-card">
@@ -47,15 +50,15 @@ export default function CardCurso({curso}){
             )}
           </div>
         )}
-        {(matricula != null || pension != null) && (
+        {(hasMatricula || hasPension) && (
           <div className="cc-fees">
-            {matricula != null && (
+            {hasMatricula && (
               <span>
                 Matrícula: 
                 <strong className="ms-1">S/ {matricula}</strong>
               </span>
             )}
-            {pension != null && (
+            {hasPension && (
               <span>
                 Mensualidad: 
                 {discountedPension != null ? (
@@ -75,6 +78,13 @@ export default function CardCurso({curso}){
               style={{ cursor: 'help' }}
             >
               <i className="bi bi-info-circle"></i>
+            </span>
+          </div>
+        )}
+        {isPackageSinglePayment && (
+          <div className="mt-2">
+            <span className="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+              Paquete completo pago unico
             </span>
           </div>
         )}
