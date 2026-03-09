@@ -13,6 +13,19 @@ const resolveImage = (c) => {
   return c.image || c.imagen || c.image_url || c.url || c.foto || null
 }
 
+const resolveSectionImage = (course, key) => {
+  if (!course) return null
+  const relation = course[`${key}_media`]
+  if (relation && relation.url) return relation.url
+
+  const raw = course[key]
+  if (typeof raw === 'string') {
+    const s = raw.trim()
+    if (/^https?:\/\//i.test(s) || s.startsWith('/')) return s
+  }
+  return null
+}
+
 const parseJsonField = (v) => {
   if (!v) return null
   if (Array.isArray(v)) return v
@@ -386,6 +399,8 @@ export default function CourseDetail() {
   )
 
   const img = resolveImage(course)
+  const misionImage = resolveSectionImage(course, 'mision')
+  const visionImage = resolveSectionImage(course, 'vision')
   const temario = parseJsonField(course.temario)
   // prepare schedules grouped by day for display (solo activos)
   const schedules = Array.isArray(course.schedules) ? course.schedules.filter(s => s.active !== false) : []
@@ -491,7 +506,7 @@ export default function CourseDetail() {
               <div className="cd-card cd-card-description shadow-sm border-0 rounded-3 mb-4">
                 <div className="cd-card-header rounded-top">
                   <i className="bi bi-info-circle-fill"></i>
-                  <h4 className="cd-card-title mb-0">Descripción del Curso</h4>
+                  <h4 className="cd-card-title mb-0">Descripción del Programa de Estudios</h4>
                 </div>
                 <p className="cd-description">{course.description}</p>
               </div>
@@ -528,7 +543,7 @@ export default function CourseDetail() {
               {/* ¿Por qué elegir este curso? */}
               {course.razones_para_estudiar && (
                 <div className="cd-sidebar-card cd-card-highlight shadow-sm border border-warning rounded-3 mb-3 bg-light">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-stars me-2 text-warning"></i>¿Por qué estudiar aquí?</h5>
+                  <h5 className="cd-sidebar-title"><i className="bi bi-stars me-2 text-warning"></i>¿Por qué estudiar en ETP?</h5>
                   <div className="cd-card-body">{renderTextWithLines(course.razones_para_estudiar)}</div>
                 </div>
               )}
@@ -578,20 +593,20 @@ export default function CourseDetail() {
               )}
 
               {/* Misión y Visión */}
-              {(course.mision || course.vision) && (
+              {(misionImage || visionImage) && (
                 <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
                   <h5 className="cd-sidebar-title"><i className="bi bi-bullseye me-2 text-danger"></i>Misión y Visión</h5>
                   <div>
-                    {course.mision && (
+                    {misionImage && (
                       <div className="mb-3">
                         <h6 className="small fw-bold text-primary mb-1"><i className="bi bi-flag-fill me-1"></i>Misión</h6>
-                        <p className="small mb-0">{course.mision}</p>
+                        <img src={misionImage} alt="Misión" className="img-fluid rounded-3 border" />
                       </div>
                     )}
-                    {course.vision && (
+                    {visionImage && (
                       <div>
                         <h6 className="small fw-bold text-success mb-1"><i className="bi bi-eye-fill me-1"></i>Visión</h6>
-                        <p className="small mb-0">{course.vision}</p>
+                        <img src={visionImage} alt="Visión" className="img-fluid rounded-3 border" />
                       </div>
                     )}
                   </div>

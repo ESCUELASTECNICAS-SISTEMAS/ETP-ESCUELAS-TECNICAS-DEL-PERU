@@ -14,7 +14,7 @@ export default function AdminCourses(){
 
   const [form, setForm] = useState({
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
-    hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+    hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision_media_id: '', vision_media_id: '',
     razones_para_estudiar: '', publico_objetivo: '',
     modalidad: '', temario: '', horarios_media_id: '',
     precio: '', descuento: '', oferta: false, matricula: '', pension: ''
@@ -226,6 +226,10 @@ export default function AdminCourses(){
 
   // helpers to resolve media objects/urls from different possible API shapes
   const findMediaById = (id) => mediaList.find(x => String(x.id) === String(id))
+  const getMediaUrlById = (id) => {
+    const m = findMediaById(id)
+    return m && m.url ? m.url : null
+  }
   const getCourseMediaUrl = (course) => {
     if (!course) return null
     if (course.thumbnail && course.thumbnail.url) return course.thumbnail.url
@@ -349,8 +353,10 @@ export default function AdminCourses(){
         perfil_egresado: form.perfil_egresado || null,
         razones_para_estudiar: form.razones_para_estudiar || null,
         publico_objetivo: form.publico_objetivo || null,
-        mision: form.mision || null,
-        vision: form.vision || null,
+        mision_media_id: form.mision_media_id ? Number(form.mision_media_id) : null,
+        vision_media_id: form.vision_media_id ? Number(form.vision_media_id) : null,
+        mision: form.mision_media_id ? getMediaUrlById(form.mision_media_id) : null,
+        vision: form.vision_media_id ? getMediaUrlById(form.vision_media_id) : null,
         precio: form.precio === '' ? null : Number(form.precio),
         descuento: form.descuento === '' ? null : Number(form.descuento),
         oferta: Boolean(form.oferta),
@@ -364,7 +370,7 @@ export default function AdminCourses(){
       if (created && created.id) await uploadSchedulesForCourse(created.id)
       setForm({ 
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
-        hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+        hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision_media_id: '', vision_media_id: '',
         razones_para_estudiar: '', publico_objetivo: '',
         modalidad: '', temario: '', horarios_media_id: '',
         precio: '', descuento: '', oferta: false, matricula: '', pension: ''
@@ -427,7 +433,9 @@ export default function AdminCourses(){
       title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
       thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_id: c.horarios_media_id || (c.horarios && c.horarios.id) || '', slug: c.slug||'', published: !!c.published,
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
-      perfil_egresado: c.perfil_egresado || '', mision: c.mision || '', vision: c.vision || '',
+      perfil_egresado: c.perfil_egresado || '',
+      mision_media_id: c.mision_media_id || (c.mision_media && c.mision_media.id) || ((typeof c.mision === 'string' && mediaList.find(m => m.url === c.mision)) ? mediaList.find(m => m.url === c.mision).id : ''),
+      vision_media_id: c.vision_media_id || (c.vision_media && c.vision_media.id) || ((typeof c.vision === 'string' && mediaList.find(m => m.url === c.vision)) ? mediaList.find(m => m.url === c.vision).id : ''),
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
       modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
       precio: c.precio ?? '', descuento: c.descuento ?? '', oferta: !!c.oferta,
@@ -491,7 +499,7 @@ export default function AdminCourses(){
     setEditingId(null); 
     setForm({ 
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
-      hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision: '', vision: '',
+      hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', mision_media_id: '', vision_media_id: '',
       razones_para_estudiar: '', publico_objetivo: '',
       modalidad: '', temario: '', horarios_media_id: '',
       precio: '', descuento: '', oferta: false, matricula: '', pension: ''
@@ -531,8 +539,10 @@ export default function AdminCourses(){
         perfil_egresado: form.perfil_egresado ? form.perfil_egresado.trim() : undefined,
         razones_para_estudiar: form.razones_para_estudiar ? form.razones_para_estudiar.trim() : undefined,
         publico_objetivo: form.publico_objetivo ? form.publico_objetivo.trim() : undefined,
-        mision: form.mision ? form.mision.trim() : undefined,
-        vision: form.vision ? form.vision.trim() : undefined,
+        mision_media_id: form.mision_media_id ? Number(form.mision_media_id) : undefined,
+        vision_media_id: form.vision_media_id ? Number(form.vision_media_id) : undefined,
+        mision: form.mision_media_id ? getMediaUrlById(form.mision_media_id) : undefined,
+        vision: form.vision_media_id ? getMediaUrlById(form.vision_media_id) : undefined,
         precio: toNumberOrUndefined(form.precio),
         descuento: toNumberOrUndefined(form.descuento),
         oferta: Boolean(form.oferta),
@@ -739,12 +749,20 @@ export default function AdminCourses(){
                   <textarea className="form-control" rows={2} value={form.perfil_egresado} onChange={e=>handleChange('perfil_egresado', e.target.value)} />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Misión</label>
-                  <textarea className="form-control" rows={2} value={form.mision} onChange={e=>handleChange('mision', e.target.value)} />
+                  <label className="form-label">Imagen de Misión (media)</label>
+                  <div className="d-flex align-items-center gap-2">
+                    <div style={{position:'relative',width:'100%'}}>
+                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.mision_media_id} onSelect={id=>handleChange('mision_media_id', id)} label="imagen misión" />
+                    </div>
+                  </div>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Visión</label>
-                  <textarea className="form-control" rows={2} value={form.vision} onChange={e=>handleChange('vision', e.target.value)} />
+                  <label className="form-label">Imagen de Visión (media)</label>
+                  <div className="d-flex align-items-center gap-2">
+                    <div style={{position:'relative',width:'100%'}}>
+                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.vision_media_id} onSelect={id=>handleChange('vision_media_id', id)} label="imagen visión" />
+                    </div>
+                  </div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Razones para estudiar</label>

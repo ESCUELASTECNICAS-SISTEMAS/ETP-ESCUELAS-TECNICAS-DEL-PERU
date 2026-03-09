@@ -71,9 +71,27 @@ export default function Carreras(){
   const prev = () => setCurrent(i => (i - 1 + noticias.length) % noticias.length)
   const next = () => setCurrent(i => (i + 1) % noticias.length)
 
+  const normalize = (s = '') => String(s)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+
+  const getCarreraOrder = (c) => {
+    const t = normalize(c.title || c.titulo || c.name || '')
+    if (t.includes('apoyo') && t.includes('administrativo')) return 1
+    if (t.includes('asistencia') && t.includes('contabilidad')) return 2
+    if (t.includes('reparacion') && t.includes('mantenimiento') && (t.includes('computadora') || t.includes('laptop'))) return 3
+    return 99
+  }
+
   const carrerasAuxiliares = carreras.filter(c => {
     const tipo = (c.type || c.tipo || '').toLowerCase()
     return tipo !== 'cursos_talleres' && tipo !== 'ofimatica' && tipo !== 'cinco_meses' && tipo !== 'cinco meses' && tipo !== '5_meses' && tipo !== '5 meses'
+  }).sort((a, b) => {
+    const orderA = getCarreraOrder(a)
+    const orderB = getCarreraOrder(b)
+    if (orderA !== orderB) return orderA - orderB
+    return (a.title || a.titulo || '').localeCompare(b.title || b.titulo || '', 'es')
   })
 
   if(carrerasAuxiliares.length === 0) return null
