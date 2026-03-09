@@ -517,28 +517,33 @@ export default function AdminCourses(){
         const n = Number(v)
         return Number.isFinite(n) ? n : undefined
       }
+      const toTrimmedOrUndefined = (v) => {
+        if (v === '' || v === null || v === undefined) return undefined
+        const s = String(v).trim()
+        return s ? s : undefined
+      }
       const temarioPayload = (Array.isArray(temarioUnits) && temarioUnits.length)
         ? sanitizeTemarioForSend(temarioUnits)
         : parseTemarioInput(form.temario)
 
       const payload = {
         title: (form.title || '').trim(),
-        subtitle: form.subtitle ? form.subtitle.trim() : undefined,
-        description: form.description ? form.description.trim() : undefined,
+        subtitle: toTrimmedOrUndefined(form.subtitle),
+        description: toTrimmedOrUndefined(form.description),
         type: (form.type || editingCourse.type || editingCourse.tipo || '').trim() || undefined,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : undefined,
         horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : undefined,
-        slug: form.slug ? form.slug.trim() : undefined,
+        slug: toTrimmedOrUndefined(form.slug),
         published: Boolean(form.published),
-        hours: form.hours ? form.hours.trim() : undefined,
-        duration: form.duration ? form.duration.trim() : undefined,
-        modalidad: form.modalidad ? form.modalidad.trim() : undefined,
+        hours: toTrimmedOrUndefined(form.hours),
+        duration: toTrimmedOrUndefined(form.duration),
+        modalidad: toTrimmedOrUndefined(form.modalidad),
         temario: (Array.isArray(temarioPayload) && temarioPayload.length > 0) ? temarioPayload : undefined,
-        grado: form.grado ? form.grado.trim() : undefined,
-        registro: form.registro ? form.registro.trim() : undefined,
-        perfil_egresado: form.perfil_egresado ? form.perfil_egresado.trim() : undefined,
-        razones_para_estudiar: form.razones_para_estudiar ? form.razones_para_estudiar.trim() : undefined,
-        publico_objetivo: form.publico_objetivo ? form.publico_objetivo.trim() : undefined,
+        grado: toTrimmedOrUndefined(form.grado),
+        registro: toTrimmedOrUndefined(form.registro),
+        perfil_egresado: toTrimmedOrUndefined(form.perfil_egresado),
+        razones_para_estudiar: toTrimmedOrUndefined(form.razones_para_estudiar),
+        publico_objetivo: toTrimmedOrUndefined(form.publico_objetivo),
         mision_media_id: form.mision_media_id ? Number(form.mision_media_id) : undefined,
         vision_media_id: form.vision_media_id ? Number(form.vision_media_id) : undefined,
         mision: form.mision_media_id ? getMediaUrlById(form.mision_media_id) : undefined,
