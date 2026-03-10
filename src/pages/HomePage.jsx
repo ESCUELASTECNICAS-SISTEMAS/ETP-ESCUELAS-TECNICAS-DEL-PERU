@@ -50,44 +50,51 @@ export default function HomePage(){
 
       <section className="py-3 bg-white border-top border-bottom">
         <div className="container">
-          <div className="d-flex flex-wrap align-items-center justify-content-center gap-2">
-            {/* Divider label */}
-            <span className="text-muted small fw-semibold me-1">
-              <i className="bi bi-geo-alt-fill text-success me-1"></i>Sede:
-            </span>
-            {principalSucursales.map((sucursal) => {
-              const isActive = String(selectedSucursalId) === String(sucursal.id)
-              return (
+          <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-2 gap-md-3">
+            <div className="w-100 d-flex flex-column flex-sm-row align-items-center justify-content-center gap-2">
+              <span className="text-muted small fw-semibold">
+                <i className="bi bi-geo-alt-fill text-success me-1"></i>Sede:
+              </span>
+              <div className="d-flex flex-wrap justify-content-center gap-2">
+                {principalSucursales.map((sucursal) => {
+                  const isActive = String(selectedSucursalId) === String(sucursal.id)
+                  return (
+                    <button
+                      key={sucursal.id}
+                      type="button"
+                      className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${isActive ? 'btn-success shadow-sm' : 'btn-outline-success'}`}
+                      onClick={() => setSelectedSucursalId(sucursal.id)}
+                    >
+                      {sucursal.nombre}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <span className="vr mx-1 d-none d-md-block" style={{ opacity: 0.2, height: '2rem' }}></span>
+
+            <div className="w-100 d-flex flex-column flex-sm-row align-items-center justify-content-center gap-2">
+              <span className="text-muted small fw-semibold">
+                <i className="bi bi-laptop text-primary me-1"></i>Modalidad:
+              </span>
+              <div className="d-flex flex-wrap justify-content-center gap-2">
                 <button
-                  key={sucursal.id}
                   type="button"
-                  className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${isActive ? 'btn-success shadow-sm' : 'btn-outline-success'}`}
-                  onClick={() => setSelectedSucursalId(isActive ? null : sucursal.id)}
+                  className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${selectedModalidad === 'virtual' ? 'btn-primary shadow-sm' : 'btn-outline-primary'}`}
+                  onClick={() => setSelectedModalidad('virtual')}
                 >
-                  {sucursal.nombre}
+                  Ver modalidad virtual
                 </button>
-              )
-            })}
-
-            <span className="vr mx-2 d-none d-sm-block" style={{ opacity: .25 }}></span>
-
-            <span className="text-muted small fw-semibold me-1">
-              <i className="bi bi-laptop text-primary me-1"></i>Modalidad:
-            </span>
-            <button
-              type="button"
-              className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${selectedModalidad === 'virtual' ? 'btn-primary shadow-sm' : 'btn-outline-primary'}`}
-              onClick={() => setSelectedModalidad('virtual')}
-            >
-              Ver modalidad virtual
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${selectedModalidad == null ? 'btn-dark shadow-sm' : 'btn-outline-dark'}`}
-              onClick={() => setSelectedModalidad(null)}
-            >
-              Ver todos
-            </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${selectedModalidad == null ? 'btn-dark shadow-sm' : 'btn-outline-dark'}`}
+                  onClick={() => setSelectedModalidad(null)}
+                >
+                  Ver todos
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
