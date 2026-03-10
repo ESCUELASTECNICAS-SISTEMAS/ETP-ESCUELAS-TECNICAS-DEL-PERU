@@ -22,14 +22,6 @@ export default function MediaPicker({ mediaList = [], loading = false, selectedI
         <span className="text-muted">▾</span>
       </button>
 
-      <div style={{width:90,height:60,flex:'0 0 90px',position:'absolute',right:0,top:6,borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef',background:'#fff'}}>
-        {selected ? (
-          <img src={selected.url} alt={selected.alt_text||'preview'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-        ) : (
-          <div style={{display:'grid',placeItems:'center',height:'100%'}}><small className="text-muted">Sin media</small></div>
-        )}
-      </div>
-
       {open && (
         <div style={{position:'absolute',zIndex:30,top:'48px',left:0,right:0,maxHeight:320,overflowY:'auto',border:'1px solid #e9ecef',background:'#fff',padding:8,borderRadius:6,boxShadow:'0 6px 18px rgba(0,0,0,0.08)'}}>
           <div className="d-flex align-items-center justify-content-between mb-2">

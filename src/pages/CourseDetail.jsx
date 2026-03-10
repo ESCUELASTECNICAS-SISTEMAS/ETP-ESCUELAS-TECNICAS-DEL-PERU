@@ -399,8 +399,13 @@ export default function CourseDetail() {
   )
 
   const img = resolveImage(course)
-  const misionImage = resolveSectionImage(course, 'mision')
-  const visionImage = resolveSectionImage(course, 'vision')
+  const extraImageUrl = (course.extraImage && course.extraImage.url)
+    || (course.extra_media && course.extra_media.url)
+    || (course.extra_image && typeof course.extra_image === 'string' ? course.extra_image : null)
+    || null
+  const extraImageAlt = (course.extraImage && course.extraImage.alt_text)
+    || (course.extra_media && course.extra_media.alt_text)
+    || 'Imagen complementaria del curso'
   const temario = parseJsonField(course.temario)
   // prepare schedules grouped by day for display (solo activos)
   const schedules = Array.isArray(course.schedules) ? course.schedules.filter(s => s.active !== false) : []
@@ -556,6 +561,20 @@ export default function CourseDetail() {
                 </div>
               )}
 
+              {/* Imagen extra debajo de Dirigido a */}
+              {extraImageUrl && (
+                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                  <div className="text-center">
+                    <img
+                      src={extraImageUrl}
+                      alt={extraImageAlt}
+                      className="img-fluid w-100 rounded-4 border border-2 border-primary-subtle shadow-sm bg-white p-1"
+                      style={{height:'auto'}}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Imagen de Horarios */}
               {course.horarios && course.horarios.url && (
                 <div className="cd-sidebar-card cd-sidebar-horario shadow-sm border-0 rounded-3 mb-3">
@@ -588,27 +607,6 @@ export default function CourseDetail() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Misión y Visión */}
-              {(misionImage || visionImage) && (
-                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-bullseye me-2 text-danger"></i>Misión y Visión</h5>
-                  <div>
-                    {misionImage && (
-                      <div className="mb-3">
-                        <h6 className="small fw-bold text-primary mb-1"><i className="bi bi-flag-fill me-1"></i>Misión</h6>
-                        <img src={misionImage} alt="Misión" className="img-fluid rounded-3 border" />
-                      </div>
-                    )}
-                    {visionImage && (
-                      <div>
-                        <h6 className="small fw-bold text-success mb-1"><i className="bi bi-eye-fill me-1"></i>Visión</h6>
-                        <img src={visionImage} alt="Visión" className="img-fluid rounded-3 border" />
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
