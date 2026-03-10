@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 import { useNavigate } from 'react-router-dom'
@@ -8,10 +8,41 @@ export default function LoginPage(){
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [sucursalId, setSucursalId] = useState('')
+  const [sucursales, setSucursales] = useState([])
+  const [loadingSucursales, setLoadingSucursales] = useState(false)
+  const [sucursalesError, setSucursalesError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isRegister) return
+
+    let mounted = true
+    const fetchSucursales = async () => {
+      setLoadingSucursales(true)
+      setSucursalesError(null)
+      try {
+        const res = await axios.get(endpoints.SUCURSALES)
+        const list = Array.isArray(res.data) ? res.data : []
+        const activeList = list.filter(s => s && s.active !== false)
+        if (!mounted) return
+        setSucursales(activeList)
+      } catch (err) {
+        if (!mounted) return
+        console.error('fetch sucursales', err)
+        setSucursales([])
+        setSucursalesError('No se pudieron cargar las sucursales')
+      } finally {
+        if (mounted) setLoadingSucursales(false)
+      }
+    }
+
+    fetchSucursales()
+    return () => { mounted = false }
+  }, [isRegister])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -21,12 +52,14 @@ export default function LoginPage(){
     
     try {
       if (isRegister) {
-        await axios.post(endpoints.REGISTER, { name, email, password }, { headers: { 'Content-Type': 'application/json' } })
+        const payload = { name, email, password, sucursal_id: Number(sucursalId) }
+        await axios.post(endpoints.REGISTER, payload, { headers: { 'Content-Type': 'application/json' } })
         setSuccess('Usuario creado correctamente. Ahora puedes iniciar sesión.')
         setIsRegister(false)
         setName('')
         setEmail('')
         setPassword('')
+        setSucursalId('')
       } else {
         const res = await axios.post(endpoints.LOGIN, { email, password }, { headers: { 'Content-Type': 'application/json' } })
         const data = res.data
@@ -110,19 +143,42 @@ export default function LoginPage(){
                     <form onSubmit={submit}>
                       
                       {isRegister && (
-                        <div className="mb-3">
-                          <label className="form-label fw-semibold small text-secondary">
-                            <i className="bi bi-person me-2"></i>Nombre completo
-                          </label>
-                          <input 
-                            type="text" 
-                            className="form-control form-control-lg border-2 rounded-3" 
-                            value={name} 
-                            onChange={e => setName(e.target.value)} 
-                            placeholder="Ingresa tu nombre completo"
-                            required 
-                          />
-                        </div>
+                        <>
+                          <div className="mb-3">
+                            <label className="form-label fw-semibold small text-secondary">
+                              <i className="bi bi-person me-2"></i>Nombre completo
+                            </label>
+                            <input 
+                              type="text" 
+                              className="form-control form-control-lg border-2 rounded-3" 
+                              value={name} 
+                              onChange={e => setName(e.target.value)} 
+                              placeholder="Ingresa tu nombre completo"
+                              required 
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label fw-semibold small text-secondary">
+                              <i className="bi bi-geo-alt me-2"></i>Sucursal
+                            </label>
+                            <select
+                              className="form-select form-select-lg border-2 rounded-3"
+                              value={sucursalId}
+                              onChange={e => setSucursalId(e.target.value)}
+                              required
+                              disabled={loadingSucursales}
+                            >
+                              <option value="">Selecciona una sucursal</option>
+                              {sucursales.map(s => (
+                                <option key={s.id} value={s.id}>
+                                  {s.nombre}{s.ciudad ? ` - ${s.ciudad}` : ''}
+                                </option>
+                              ))}
+                            </select>
+                            {loadingSucursales && <small className="text-muted d-block mt-1">Cargando sucursales...</small>}
+                            {sucursalesError && <small className="text-danger d-block mt-1">{sucursalesError}</small>}
+                          </div>
+                        </>
                       )}
                       
                       <div className="mb-3">

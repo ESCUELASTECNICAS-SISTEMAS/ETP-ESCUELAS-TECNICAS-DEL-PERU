@@ -964,6 +964,7 @@ export default function AdminCourses(){
                     ))}
                   </div>
 
+
               {/* inactive list moved to side panel */}
 
             </div>
