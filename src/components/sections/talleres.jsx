@@ -11,7 +11,7 @@ const isCursoOTaller = curso => {
   return val === 'taller' || val === 'cursos_talleres'
 }
 
-export default function Talleres(){
+export default function Talleres({ selectedSucursalId = null, selectedModalidad = null }){
   const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -43,7 +43,25 @@ export default function Talleres(){
     return () => { mounted = false }
   }, [])
 
-  const talleres = cursos.filter(isCursoOTaller)
+  const talleres = cursos.filter(curso => {
+    const rawModalidad = String(curso.modalidad || curso.mode || curso.modality || '').trim().toLowerCase()
+    const modalidadText = rawModalidad.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const hasVirtualWord = modalidadText.includes('virtual')
+    const hasPresencialWord = modalidadText.includes('presencial')
+    const isMixedText = modalidadText.includes('hibrid') || modalidadText.includes('mixto') || modalidadText.includes('semi')
+    const isVirtual = Boolean(curso.is_virtual) || hasVirtualWord || isMixedText
+    const isPresencial = Boolean(curso.is_presencial) || hasPresencialWord || isMixedText
+
+    if (selectedModalidad === 'virtual' && !isVirtual) return false
+    if (selectedModalidad === 'presencial' && !isPresencial) return false
+
+    if (selectedSucursalId != null && selectedModalidad !== 'virtual') {
+      const sucursales = Array.isArray(curso.sucursales) ? curso.sucursales : []
+      const belongsToSucursal = sucursales.some(s => String(s.id) === String(selectedSucursalId))
+      if (!belongsToSucursal) return false
+    }
+    return isCursoOTaller(curso)
+  })
   if(talleres.length === 0) return null
 
   return (

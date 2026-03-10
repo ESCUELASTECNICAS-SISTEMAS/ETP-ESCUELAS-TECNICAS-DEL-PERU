@@ -64,14 +64,7 @@ export default function Highlights() {
   }, [animateYears])
 
   const items = [
-    {
-      title: 'Sedes',
-      text: sucursalesText,
-      icon: 'bi-geo-alt-fill',
-      iconBg: 'bg-success',
-      badgeCls: 'text-bg-success',
-      ring: 'border-success',
-    },
+
     {
       title: `+${years} años`,
       text: 'De experiencia capacitando a miles de estudiantes',
@@ -125,19 +118,22 @@ export default function Highlights() {
                   <div className="flex-grow-1 overflow-hidden">
                     <div className="d-flex align-items-center gap-2 mb-1">
                       <h6 className="fw-bold mb-0 text-truncate">{it.title}</h6>
-                      <span className={`badge rounded-pill ${it.badgeCls} ms-auto flex-shrink-0`}>ETP</span>
+                      {it.title !== 'Sedes' && <span className={`badge rounded-pill px-3 py-2 fw-semibold ${it.badgeCls} ms-auto flex-shrink-0`}>ETP</span>}
                     </div>
                     {it.title === 'Sedes' ? (
                       sucursalesNames.length > 0 ? (
-                        <div className="d-flex flex-wrap gap-1 mt-1">
-                          {sucursalesNames.slice(0, 4).map((name) => (
-                            <span key={name} className="badge rounded-pill border border-success-subtle text-success-emphasis bg-success-subtle fw-semibold px-2 py-1">
-                              <i className="bi bi-geo-alt-fill me-1"></i>{name}
-                            </span>
-                          ))}
-                          {sucursalesNames.length > 4 && (
-                            <span className="badge rounded-pill text-bg-light border">+{sucursalesNames.length - 4}</span>
-                          )}
+                        <div className="mt-2 text-center">
+                          <div className="d-flex flex-wrap justify-content-center gap-2 mb-2">
+                            {sucursalesNames.slice(0, 2).map((name) => (
+                              <span key={name} className="badge rounded-pill border border-success-subtle text-success-emphasis bg-success-subtle fw-semibold px-2 py-1">
+                                <i className="bi bi-geo-alt-fill me-1"></i>{name}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="mb-0 small text-success-emphasis fw-semibold">
+                            <i className="bi bi-building me-1"></i>
+                            Selecciona una sede en el filtro central
+                          </p>
                         </div>
                       ) : (
                         <p className="text-secondary mb-0 small lh-sm">{sucursalesText}</p>

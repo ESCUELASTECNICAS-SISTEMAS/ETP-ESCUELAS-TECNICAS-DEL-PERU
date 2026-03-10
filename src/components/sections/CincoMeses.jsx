@@ -4,7 +4,7 @@ import CourseCard from '../UI/CourseCard'
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
 
-export default function CincoMeses(){
+export default function CincoMeses({ selectedSucursalId = null, selectedModalidad = null }){
   const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -48,6 +48,22 @@ export default function CincoMeses(){
   }, [])
 
   const cincoMeses = cursos.filter(c => {
+    const rawModalidad = String(c.modalidad || c.mode || c.modality || '').trim().toLowerCase()
+    const modalidadText = rawModalidad.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const hasVirtualWord = modalidadText.includes('virtual')
+    const hasPresencialWord = modalidadText.includes('presencial')
+    const isMixedText = modalidadText.includes('hibrid') || modalidadText.includes('mixto') || modalidadText.includes('semi')
+    const isVirtual = Boolean(c.is_virtual) || hasVirtualWord || isMixedText
+    const isPresencial = Boolean(c.is_presencial) || hasPresencialWord || isMixedText
+
+    if (selectedModalidad === 'virtual' && !isVirtual) return false
+    if (selectedModalidad === 'presencial' && !isPresencial) return false
+
+    if (selectedSucursalId != null && selectedModalidad !== 'virtual') {
+      const sucursales = Array.isArray(c.sucursales) ? c.sucursales : []
+      const belongsToSucursal = sucursales.some(s => String(s.id) === String(selectedSucursalId))
+      if (!belongsToSucursal) return false
+    }
     const tipo = (c.tipo || c.type || '').toLowerCase()
     return tipo === 'cinco_meses' || tipo === 'cinco meses' || tipo === '5_meses' || tipo === '5 meses'
   })

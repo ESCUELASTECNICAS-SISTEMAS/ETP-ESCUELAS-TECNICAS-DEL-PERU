@@ -35,12 +35,12 @@ const getCourseRank = (course) => {
   return match ? match.rank : 999
 }
 
-export default function Informatica(){
-  const [cursos, setCursos] = useState([])
+export default function Informatica({ selectedSucursalId = null, selectedModalidad = null }){
+  const [allCursos, setAllCursos] = useState([])
 
   useEffect(() => {
     let mounted = true
-    const fallback = () => { if(mounted) setCursos(buildLocalCursos()) }
+    const fallback = () => { if(mounted) setAllCursos(buildLocalCursos()) }
 
     const load = async () => {
       try{
@@ -66,23 +66,40 @@ export default function Informatica(){
             image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
           }))
 
-        const ofimatica = mapped.filter(c => {
-          const tipo = (c.type || c.tipo || '').toLowerCase()
-          return tipo === 'ofimatica' || tipo === 'ofimática' || tipo === 'informatica' || tipo === 'informática'
-        }).sort((a, b) => {
-          const rankDiff = getCourseRank(a) - getCourseRank(b)
-          if (rankDiff !== 0) return rankDiff
-          return String(a.titulo || a.title || '').localeCompare(String(b.titulo || b.title || ''), 'es')
-        })
-
         if(!mounted) return
-        setCursos(ofimatica.length > 0 ? ofimatica : [])
+        setAllCursos(mapped.length > 0 ? mapped : buildLocalCursos())
       }catch(err){ fallback() }
     }
 
     load()
     return () => { mounted = false }
   }, [])
+
+  const cursos = allCursos.filter(c => {
+    const rawModalidad = String(c.modalidad || c.mode || c.modality || '').trim().toLowerCase()
+    const modalidadText = rawModalidad.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const hasVirtualWord = modalidadText.includes('virtual')
+    const hasPresencialWord = modalidadText.includes('presencial')
+    const isMixedText = modalidadText.includes('hibrid') || modalidadText.includes('mixto') || modalidadText.includes('semi')
+    const isVirtual = Boolean(c.is_virtual) || hasVirtualWord || isMixedText
+    const isPresencial = Boolean(c.is_presencial) || hasPresencialWord || isMixedText
+
+    if (selectedModalidad === 'virtual' && !isVirtual) return false
+    if (selectedModalidad === 'presencial' && !isPresencial) return false
+
+    if (selectedSucursalId != null && selectedModalidad !== 'virtual') {
+      const sucursales = Array.isArray(c.sucursales) ? c.sucursales : []
+      const belongsToSucursal = sucursales.some(s => String(s.id) === String(selectedSucursalId))
+      if (!belongsToSucursal) return false
+    }
+
+    const tipo = (c.type || c.tipo || '').toLowerCase()
+    return tipo === 'ofimatica' || tipo === 'ofimática' || tipo === 'informatica' || tipo === 'informática'
+  }).sort((a, b) => {
+    const rankDiff = getCourseRank(a) - getCourseRank(b)
+    if (rankDiff !== 0) return rankDiff
+    return String(a.titulo || a.title || '').localeCompare(String(b.titulo || b.title || ''), 'es')
+  })
 
   if(cursos.length === 0) return null
 
