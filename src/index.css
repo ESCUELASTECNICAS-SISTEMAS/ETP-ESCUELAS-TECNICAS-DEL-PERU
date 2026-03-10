@@ -1131,6 +1131,45 @@ footer{background:#212529;color:#fff}
   border-color:#bfe8d2;
 }
 
+/* Sedes chips */
+.cc-sedes{
+  display:flex;
+  align-items:flex-start;
+  gap:.45rem;
+  margin:-.1rem 0 .8rem;
+}
+.cc-sedes-label{
+  font-size:.72rem;
+  color:#64748b;
+  font-weight:700;
+  letter-spacing:.02em;
+  padding-top:.2rem;
+}
+.cc-sedes-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.35rem;
+}
+.cc-sede-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:.25rem;
+  padding:.2rem .56rem;
+  border-radius:999px;
+  font-size:.7rem;
+  font-weight:700;
+  color:#0f5132;
+  background:#e9f7ef;
+  border:1px solid #b7e4c7;
+  line-height:1;
+}
+.cc-sede-chip i{font-size:.66rem}
+.cc-sede-chip-more{
+  color:#1e3a8a;
+  background:#eaf1ff;
+  border-color:#c9dcff;
+}
+
 /* Price */
 .cc-price{margin-bottom:.6rem}
 .cc-price-old{text-decoration:line-through;color:var(--muted);font-size:.85rem;margin-right:.4rem}
@@ -1171,6 +1210,7 @@ footer{background:#212529;color:#fff}
   width:40px;height:3px;border-radius:3px;
   background:var(--accent);
 }
+
 .section-subtitle{
   font-size:.88rem;color:var(--muted);margin:0;
 }

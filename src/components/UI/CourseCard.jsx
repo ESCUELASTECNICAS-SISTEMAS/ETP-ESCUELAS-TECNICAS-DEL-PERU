@@ -33,6 +33,11 @@ export default function CourseCard({ item, showPrice = true }) {
   const normalizedModalidad = String(rawModalidad || '').trim().toLowerCase()
   const isVirtual = Boolean(item.is_virtual) || normalizedModalidad === 'virtual' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
   const isPresencial = Boolean(item.is_presencial) || normalizedModalidad === 'presencial' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
+  const sucursalNames = Array.isArray(item.sucursales)
+    ? item.sucursales.map((s) => s && s.nombre).filter(Boolean)
+    : []
+  const visibleSucursales = sucursalNames.slice(0, 3)
+  const extraSucursales = Math.max(sucursalNames.length - visibleSucursales.length, 0)
   const hoursVal = item.duration || item.hours || item.horas || null
   const subtitle = item.subtitle || item.descripcion || ''
   const detailUrl = item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`
@@ -71,6 +76,20 @@ export default function CourseCard({ item, showPrice = true }) {
                 <i className="bi bi-building me-1"></i>Presencial
               </span>
             )}
+          </div>
+        )}
+
+        {sucursalNames.length > 0 && (
+          <div className="cc-sedes">
+            <span className="cc-sedes-label">Sedes:</span>
+            <div className="cc-sedes-list">
+              {visibleSucursales.map((name) => (
+                <span key={name} className="cc-sede-chip">
+                  <i className="bi bi-geo-alt-fill"></i>{name}
+                </span>
+              ))}
+              {extraSucursales > 0 && <span className="cc-sede-chip cc-sede-chip-more">+{extraSucursales}</span>}
+            </div>
           </div>
         )}
 

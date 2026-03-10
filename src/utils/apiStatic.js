@@ -10,6 +10,7 @@ export const endpoints = {
   DOCENTES: `${BASE_API}/docentes`,
   CONVENIOS_FOR_COURSE: (courseId) => `${BASE_API}/courses/${courseId}/convenios`,
   COURSE_DOCENTES: (courseId) => `${BASE_API}/courses/${courseId}/docentes`
+  ,COURSE_SUCURSALES: (courseId) => `${BASE_API}/courses/${courseId}/sucursales`
   ,COURSE_SCHEDULES: (courseId) => `${BASE_API}/courses/${courseId}/schedules`
   ,COURSE_SEMINARIOS: (courseId) => `${BASE_API}/courses/${courseId}/seminarios`
   ,NEWS: `${BASE_API}/noticias`

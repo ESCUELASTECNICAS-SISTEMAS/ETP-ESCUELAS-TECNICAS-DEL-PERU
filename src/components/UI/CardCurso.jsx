@@ -9,6 +9,11 @@ export default function CardCurso({curso}){
   const normalizedModalidad = String(rawModalidad || '').trim().toLowerCase()
   const isVirtual = Boolean(curso.is_virtual) || normalizedModalidad === 'virtual' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
   const isPresencial = Boolean(curso.is_presencial) || normalizedModalidad === 'presencial' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
+  const sucursalNames = Array.isArray(curso.sucursales)
+    ? curso.sucursales.map((s) => s && s.nombre).filter(Boolean)
+    : []
+  const visibleSucursales = sucursalNames.slice(0, 3)
+  const extraSucursales = Math.max(sucursalNames.length - visibleSucursales.length, 0)
   const price = curso.precio ?? curso.price ?? curso.pago_unico ?? null
   const matricula = curso.matricula ?? curso.enrollment ?? null
   const pension = curso.pension ?? curso.pension_mensual ?? null
@@ -53,6 +58,19 @@ export default function CardCurso({curso}){
                 <i className="bi bi-building me-1"></i>Presencial
               </span>
             )}
+          </div>
+        )}
+        {sucursalNames.length > 0 && (
+          <div className="cc-sedes">
+            <span className="cc-sedes-label">Sedes:</span>
+            <div className="cc-sedes-list">
+              {visibleSucursales.map((name) => (
+                <span key={name} className="cc-sede-chip">
+                  <i className="bi bi-geo-alt-fill"></i>{name}
+                </span>
+              ))}
+              {extraSucursales > 0 && <span className="cc-sede-chip cc-sede-chip-more">+{extraSucursales}</span>}
+            </div>
           </div>
         )}
         {price != null && (

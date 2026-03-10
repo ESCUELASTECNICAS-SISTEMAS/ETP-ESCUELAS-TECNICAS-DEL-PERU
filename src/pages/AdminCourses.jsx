@@ -12,6 +12,9 @@ export default function AdminCourses(){
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const [sucursalesList, setSucursalesList] = useState([])
+  const [selectedSucursalIds, setSelectedSucursalIds] = useState([])
+
   const [form, setForm] = useState({
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
@@ -289,6 +292,11 @@ export default function AdminCourses(){
   }
   useEffect(()=>{ fetchCourses() }, [])
   useEffect(()=>{ fetchMedia() }, [])
+  useEffect(() => {
+    axios.get(endpoints.SUCURSALES, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => setSucursalesList(Array.isArray(r.data) ? r.data.filter(s => s.active !== false) : []))
+      .catch(e => console.error('fetchSucursales', e))
+  }, [])
 
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
   const normalizeModalidad = (value) => {
@@ -397,8 +405,12 @@ export default function AdminCourses(){
       }
       const res = await axios.post(endpoints.COURSES, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       const created = res && res.data ? res.data : null
-      // if grid has schedules, upload them for the new course
-      if (created && created.id) await uploadSchedulesForCourse(created.id)
+      if (created && created.id) {
+        await uploadSchedulesForCourse(created.id)
+        if (selectedSucursalIds.length > 0) {
+          await axios.put(endpoints.COURSE_SUCURSALES(created.id), { sucursal_ids: selectedSucursalIds }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+        }
+      }
       setForm({ 
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
@@ -406,6 +418,7 @@ export default function AdminCourses(){
         modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
         precio: '', descuento: '', oferta: false, matricula: '', pension: ''
       })
+      setSelectedSucursalIds([])
         setTemarioUnits([])
       await fetchCourses()
       await fetchMedia()
@@ -470,8 +483,8 @@ export default function AdminCourses(){
       modalidad: modalidadFields.modalidad || '', is_virtual: modalidadFields.is_virtual, is_presencial: modalidadFields.is_presencial, temario: c.temario ? renderTemarioToText(c.temario) : '',
       precio: c.precio ?? '', descuento: c.descuento ?? '', oferta: !!c.oferta,
       matricula: c.matricula ?? '', pension: c.pension ?? '',
-      // docentes and schedules removed from course edit form
     })
+    setSelectedSucursalIds(Array.isArray(c.sucursales) ? c.sucursales.map(s => s.id) : [])
     // initialize schedule grid from course schedules (solo activos)
     try{
       const grid = createEmptyGrid()
@@ -534,6 +547,7 @@ export default function AdminCourses(){
       modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
       precio: '', descuento: '', oferta: false, matricula: '', pension: ''
     }) 
+    setSelectedSucursalIds([])
     setScheduleGrid(createEmptyGrid())
     setTemarioUnits([])
   }
@@ -594,9 +608,8 @@ export default function AdminCourses(){
       if (!payload.type) throw new Error('El tipo es obligatorio')
 
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
-      // Solo subir horarios NUEVOS (los que no tienen id). Los existentes ya están en el servidor.
-      // Las eliminaciones ya se manejan en tiempo real con el botón "x".
       await uploadOnlyNewSchedules(id)
+      await axios.put(endpoints.COURSE_SUCURSALES(id), { sucursal_ids: selectedSucursalIds }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       cancelEdit(); await fetchCourses(); await fetchMedia()
     }catch(err){
       console.error('saveEdit', err)
@@ -745,6 +758,33 @@ export default function AdminCourses(){
                 <div className="mb-3">
                   <label className="form-label">Público objetivo</label>
                   <textarea className="form-control" rows={2} value={form.publico_objetivo} onChange={e=>handleChange('publico_objetivo', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Sedes donde se dicta</label>
+                  {sucursalesList.length === 0 ? (
+                    <div className="text-muted small">Cargando sedes...</div>
+                  ) : (
+                    <div className="d-flex flex-wrap gap-2">
+                      {sucursalesList.map(s => (
+                        <div key={s.id} className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id={`suc-${s.id}`}
+                            checked={selectedSucursalIds.includes(s.id)}
+                            onChange={e => {
+                              setSelectedSucursalIds(prev =>
+                                e.target.checked ? [...prev, s.id] : prev.filter(id => id !== s.id)
+                              )
+                            }}
+                          />
+                          <label className="form-check-label" htmlFor={`suc-${s.id}`}>
+                            <i className="bi bi-geo-alt-fill text-success me-1"></i>{s.nombre}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="row g-2 mb-3">
                   <div className="col-12 col-md-6">
@@ -925,6 +965,15 @@ export default function AdminCourses(){
                                   <div className="text-muted small">{c.subtitle}</div>
                                   <div className="text-muted small mt-1">{c.hours ? `Horas: ${c.hours}` : ''} {c.duration ? `· Duración: ${c.duration}` : ''}</div>
                                   {c.grado && <div className="badge badge-accent mt-2">{c.grado}</div>}
+                              {Array.isArray(c.sucursales) && c.sucursales.length > 0 && (
+                                <div className="d-flex flex-wrap gap-1 mt-1">
+                                  {c.sucursales.map(s => (
+                                    <span key={s.id} className="badge rounded-pill text-bg-success" style={{fontSize:'0.7rem'}}>
+                                      <i className="bi bi-geo-alt-fill me-1"></i>{s.nombre}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                                 </div>
                                 <div className="text-end">
                                   <div className="text-muted small">Tipo: {c.type}</div>
