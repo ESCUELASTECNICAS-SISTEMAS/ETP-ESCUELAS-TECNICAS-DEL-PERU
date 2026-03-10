@@ -16,7 +16,7 @@ export default function AdminCourses(){
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
     razones_para_estudiar: '', publico_objetivo: '',
-    modalidad: '', temario: '', horarios_media_id: '', extra_media_id: '',
+    modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
     precio: '', descuento: '', oferta: false, matricula: '', pension: ''
   })
 
@@ -291,6 +291,37 @@ export default function AdminCourses(){
   useEffect(()=>{ fetchMedia() }, [])
 
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
+  const normalizeModalidad = (value) => {
+    const raw = String(value || '').trim().toLowerCase()
+    if (!raw) return null
+    if (raw === 'virtual') return 'virtual'
+    if (raw === 'presencial') return 'presencial'
+    if (raw === 'hibrido' || raw === 'híbrido' || raw === 'mixto') return 'hibrido'
+    return null
+  }
+  const buildModalidadFromFlags = (isVirtual, isPresencial) => {
+    if (isVirtual && isPresencial) return 'hibrido'
+    if (isVirtual) return 'virtual'
+    if (isPresencial) return 'presencial'
+    return null
+  }
+  const resolveModalidadFields = (source = {}) => {
+    let isVirtual = Boolean(source.is_virtual)
+    let isPresencial = Boolean(source.is_presencial)
+
+    if (!isVirtual && !isPresencial) {
+      const parsed = normalizeModalidad(source.modalidad)
+      if (parsed === 'virtual') isVirtual = true
+      if (parsed === 'presencial') isPresencial = true
+      if (parsed === 'hibrido') { isVirtual = true; isPresencial = true }
+    }
+
+    return {
+      is_virtual: isVirtual,
+      is_presencial: isPresencial,
+      modalidad: buildModalidadFromFlags(isVirtual, isPresencial)
+    }
+  }
 
   
 
@@ -335,6 +366,7 @@ export default function AdminCourses(){
     e && e.preventDefault()
     setError(null); setSaving(true)
     try{
+      const modalidadFields = resolveModalidadFields(form)
       const payload = {
         title: form.title,
         subtitle: form.subtitle,
@@ -347,8 +379,10 @@ export default function AdminCourses(){
         published: Boolean(form.published),
         hours: form.hours || null,
         duration: form.duration || null,
-        modalidad: form.modalidad || null,
-          temario: (Array.isArray(temarioUnits) && temarioUnits.length) ? sanitizeTemarioForSend(temarioUnits) : parseTemarioInput(form.temario),
+        modalidad: modalidadFields.modalidad,
+        is_virtual: modalidadFields.is_virtual,
+        is_presencial: modalidadFields.is_presencial,
+        temario: (Array.isArray(temarioUnits) && temarioUnits.length) ? sanitizeTemarioForSend(temarioUnits) : parseTemarioInput(form.temario),
         grado: form.grado || null,
         registro: form.registro || null,
         perfil_egresado: form.perfil_egresado || null,
@@ -369,7 +403,7 @@ export default function AdminCourses(){
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
         razones_para_estudiar: '', publico_objetivo: '',
-        modalidad: '', temario: '', horarios_media_id: '', extra_media_id: '',
+        modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
         precio: '', descuento: '', oferta: false, matricula: '', pension: ''
       })
         setTemarioUnits([])
@@ -425,6 +459,7 @@ export default function AdminCourses(){
   }
 
   const startEdit = (c) => {
+    const modalidadFields = resolveModalidadFields(c)
     setEditingId(c.id)
     setForm({
       title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
@@ -432,7 +467,7 @@ export default function AdminCourses(){
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '',
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
-      modalidad: c.modalidad || '', temario: c.temario ? renderTemarioToText(c.temario) : '',
+      modalidad: modalidadFields.modalidad || '', is_virtual: modalidadFields.is_virtual, is_presencial: modalidadFields.is_presencial, temario: c.temario ? renderTemarioToText(c.temario) : '',
       precio: c.precio ?? '', descuento: c.descuento ?? '', oferta: !!c.oferta,
       matricula: c.matricula ?? '', pension: c.pension ?? '',
       // docentes and schedules removed from course edit form
@@ -496,7 +531,7 @@ export default function AdminCourses(){
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
       razones_para_estudiar: '', publico_objetivo: '',
-      modalidad: '', temario: '', horarios_media_id: '', extra_media_id: '',
+      modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
       precio: '', descuento: '', oferta: false, matricula: '', pension: ''
     }) 
     setScheduleGrid(createEmptyGrid())
@@ -520,6 +555,7 @@ export default function AdminCourses(){
       const temarioPayload = (Array.isArray(temarioUnits) && temarioUnits.length)
         ? sanitizeTemarioForSend(temarioUnits)
         : parseTemarioInput(form.temario)
+      const modalidadFields = resolveModalidadFields(form)
 
       const payload = {
         title: (form.title || '').trim(),
@@ -533,7 +569,9 @@ export default function AdminCourses(){
         published: Boolean(form.published),
         hours: toTrimmedOrUndefined(form.hours),
         duration: toTrimmedOrUndefined(form.duration),
-        modalidad: toTrimmedOrUndefined(form.modalidad),
+        modalidad: modalidadFields.modalidad || null,
+        is_virtual: modalidadFields.is_virtual,
+        is_presencial: modalidadFields.is_presencial,
         temario: (Array.isArray(temarioPayload) && temarioPayload.length > 0) ? temarioPayload : undefined,
         grado: toTrimmedOrUndefined(form.grado),
         registro: toTrimmedOrUndefined(form.registro),
@@ -686,51 +724,6 @@ export default function AdminCourses(){
                     </div>
                   </div>
                 </div>
-                {/* Cuadrícula rápida colocada junto a Horas */}
-                <div className="mb-3">
-                  <label className="form-label">Cuadrícula rápida (crear por día/turno)</label>
-                  <div style={{overflowX:'auto'}}>
-                    <table className="table table-sm" style={{minWidth:640}}>
-                      <thead>
-                        <tr>
-                          <th>Día</th>
-                          <th>Mañana</th>
-                          <th>Tarde</th>
-                          <th>Noche</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(scheduleGrid).map(day => (
-                          <tr key={day}>
-                            <td style={{verticalAlign:'top'}}><strong>{day}</strong></td>
-                            {['manana','tarde','noche'].map(turno => (
-                              <td key={turno} style={{verticalAlign:'top'}}>
-                                <div>
-                                  {(scheduleGrid[day][turno].ranges || []).map((r,idx) => {
-                                    const text = (typeof r === 'string') ? r : (r.text || r.range || '')
-                                    return (
-                                      <div key={idx} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                                        <small className="badge bg-light text-dark">{text}</small>
-                                        <button type="button" className="btn btn-sm btn-link text-danger" onClick={()=>setGridCellRemoveRange(day,turno,idx)}>x</button>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                                <div style={{display:'flex',gap:8,marginTop:6}}>
-                                  <button type="button" className="btn btn-sm btn-outline-secondary" onClick={()=>promptAddRange(day,turno)}>Agregar rango</button>
-                                  <input className="form-control form-control-sm" placeholder="Aula" value={scheduleGrid[day][turno].aula} onChange={e=>setGridCellAula(day,turno,e.target.value)} />
-                                </div>
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-2">
-                    <small className="text-muted">Los horarios se cargarán en lote al guardar el curso.</small>
-                  </div>
-                </div>
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <label className="form-label">Grado</label>
@@ -754,6 +747,31 @@ export default function AdminCourses(){
                   <textarea className="form-control" rows={2} value={form.publico_objetivo} onChange={e=>handleChange('publico_objetivo', e.target.value)} />
                 </div>
                 <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Modalidad</label>
+                    <div className="d-flex gap-3 align-items-center mt-1">
+                      <div className="form-check form-switch">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="isVirtualSwitch"
+                          checked={!!form.is_virtual}
+                          onChange={e=>handleChange('is_virtual', e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="isVirtualSwitch">Virtual</label>
+                      </div>
+                      <div className="form-check form-switch">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="isPresencialSwitch"
+                          checked={!!form.is_presencial}
+                          onChange={e=>handleChange('is_presencial', e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="isPresencialSwitch">Presencial</label>
+                      </div>
+                    </div>
+                  </div>
                   <div className="col-12 col-md-6">
                     <label className="form-label">Tipo</label>
                     <input className="form-control" value={form.type} onChange={e=>handleChange('type', e.target.value)} placeholder="apoyo_administrativo" />
@@ -858,12 +876,7 @@ export default function AdminCourses(){
                 </div>
               </form>
             </div>
-            {editingId && (
-              <div className="card-footer">
-                <h6 className="mb-2">Horarios</h6>
-                <div className="text-muted small">Edita los horarios en la cuadrícula arriba; se subirán al guardar el curso.</div>
-              </div>
-            )}
+
           </div>
 
           

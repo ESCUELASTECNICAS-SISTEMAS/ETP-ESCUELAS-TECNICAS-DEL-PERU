@@ -1099,6 +1099,38 @@ footer{background:#212529;color:#fff}
 }
 .cc-meta-item i{color:var(--accent);font-size:.85rem}
 
+/* Modalidad chips */
+.cc-modalidades{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  margin:.35rem 0 .9rem;
+}
+.cc-modalidad{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  padding:.3rem .72rem;
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.01em;
+  line-height:1;
+  border:1px solid transparent;
+  box-shadow:0 2px 8px rgba(2,17,204,0.08);
+}
+.cc-modalidad i{font-size:.78rem}
+.cc-modalidad-virtual{
+  color:#1246c9;
+  background:#eaf1ff;
+  border-color:#c9dcff;
+}
+.cc-modalidad-presencial{
+  color:#18794e;
+  background:#eaf8f1;
+  border-color:#bfe8d2;
+}
+
 /* Price */
 .cc-price{margin-bottom:.6rem}
 .cc-price-old{text-decoration:line-through;color:var(--muted);font-size:.85rem;margin-right:.4rem}

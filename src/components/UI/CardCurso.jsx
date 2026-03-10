@@ -5,6 +5,10 @@ export default function CardCurso({curso}){
   const imgSrc = curso.image || curso.imagen || (curso.thumbnail && curso.thumbnail.url) || '/assets/images/cursos/curso-1.jpg'
   const detailUrl = `/curso/${curso.id}`
   const subtitle = curso.subtitle || curso.descripcion || ''
+  const rawModalidad = curso.modalidad || curso.mode || curso.modality || curso.modalidad_tipo || ''
+  const normalizedModalidad = String(rawModalidad || '').trim().toLowerCase()
+  const isVirtual = Boolean(curso.is_virtual) || normalizedModalidad === 'virtual' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
+  const isPresencial = Boolean(curso.is_presencial) || normalizedModalidad === 'presencial' || normalizedModalidad === 'hibrido' || normalizedModalidad === 'híbrido'
   const price = curso.precio ?? curso.price ?? curso.pago_unico ?? null
   const matricula = curso.matricula ?? curso.enrollment ?? null
   const pension = curso.pension ?? curso.pension_mensual ?? null
@@ -37,6 +41,20 @@ export default function CardCurso({curso}){
         <div className="cc-meta">
           {curso.duracion && <span className="cc-meta-item"><i className="bi bi-clock"></i>{String(curso.duracion).toUpperCase()}</span>}
         </div>
+        {(isVirtual || isPresencial) && (
+          <div className="cc-modalidades">
+            {isVirtual && (
+              <span className="cc-modalidad cc-modalidad-virtual">
+                <i className="bi bi-laptop me-1"></i>Virtual
+              </span>
+            )}
+            {isPresencial && (
+              <span className="cc-modalidad cc-modalidad-presencial">
+                <i className="bi bi-building me-1"></i>Presencial
+              </span>
+            )}
+          </div>
+        )}
         {price != null && (
           <div className="cc-price">
             {discountedPrice ? (

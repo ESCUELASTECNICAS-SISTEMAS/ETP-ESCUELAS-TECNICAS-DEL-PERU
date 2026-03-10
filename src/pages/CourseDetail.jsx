@@ -33,6 +33,27 @@ const parseJsonField = (v) => {
   return null
 }
 
+const resolveModalidadDisplay = (course) => {
+  if (!course) return null
+  const raw = String(course.modalidad || '').trim().toLowerCase()
+  let isVirtual = Boolean(course.is_virtual)
+  let isPresencial = Boolean(course.is_presencial)
+
+  if (!isVirtual && !isPresencial) {
+    if (raw === 'virtual') isVirtual = true
+    else if (raw === 'presencial') isPresencial = true
+    else if (raw === 'hibrido' || raw === 'híbrido' || raw === 'mixto') {
+      isVirtual = true
+      isPresencial = true
+    }
+  }
+
+  if (isVirtual && isPresencial) return 'Presencial o Virtual'
+  if (isPresencial) return 'Presencial'
+  if (isVirtual) return 'Virtual'
+  return null
+}
+
 const renderTextWithLines = (text) => {
   if (!text) return null
   const s = String(text)
@@ -181,9 +202,10 @@ const generateBrochurePDF = async (course, schedulesByDay) => {
   // ═══════════════════════════════════════════════════════════════════
   // INFO: Duration & Modalidad
   // ═══════════════════════════════════════════════════════════════════
+  const modalidadLabel = resolveModalidadDisplay(course)
   const infoItems = []
   if (course.duration) infoItems.push(`Duracion: ${course.duration}`)
-  if (course.modalidad) infoItems.push(`Modalidad: ${course.modalidad}`)
+  if (modalidadLabel) infoItems.push(`Modalidad: ${modalidadLabel}`)
   
   if (infoItems.length > 0) {
     pdf.setFillColor(240, 242, 250)
@@ -407,6 +429,7 @@ export default function CourseDetail() {
     || (course.extra_media && course.extra_media.alt_text)
     || 'Imagen complementaria del curso'
   const temario = parseJsonField(course.temario)
+  const modalidadLabel = resolveModalidadDisplay(course)
   // prepare schedules grouped by day for display (solo activos)
   const schedules = Array.isArray(course.schedules) ? course.schedules.filter(s => s.active !== false) : []
   const schedulesByDay = schedules.reduce((acc, s) => {
@@ -492,10 +515,10 @@ export default function CourseDetail() {
               <div><small>Duración</small><strong>{course.duration}</strong></div>
             </div>
           )}
-          {course.modalidad && (
+          {modalidadLabel && (
             <div className="cd-info-badge shadow-sm border-0 rounded-pill">
               <i className="bi bi-laptop-fill text-info"></i>
-              <div><small>Modalidad</small><strong>{course.modalidad}</strong></div>
+              <div><small>Modalidad</small><strong>{modalidadLabel}</strong></div>
             </div>
           )}
         </div>
