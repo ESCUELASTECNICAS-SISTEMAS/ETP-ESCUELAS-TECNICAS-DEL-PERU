@@ -23,7 +23,7 @@ export default function CardCurso({curso}){
   const isPackageSinglePayment = price != null && !hasMatricula && !hasPension
 
   return (
-    <div className="cc-card">
+    <div className="cc-card card border border-secondary-subtle shadow-sm h-100">
       <div className="cc-img-wrap">
         <img src={imgSrc} className="cc-img" alt={curso.titulo || curso.title || ''} />
         <div className="cc-img-overlay">

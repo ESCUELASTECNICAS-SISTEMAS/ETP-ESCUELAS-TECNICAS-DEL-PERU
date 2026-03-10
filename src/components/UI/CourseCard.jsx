@@ -35,7 +35,7 @@ export default function CourseCard({ item, showPrice = true }) {
   const detailUrl = item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`
 
   return (
-    <div className="cc-card">
+    <div className="cc-card card border border-secondary-subtle shadow-sm h-100">
       <div className="cc-img-wrap">
         {imgSrc ? (
           <img src={imgSrc} className="cc-img" alt={item.titulo || item.title || ''} />

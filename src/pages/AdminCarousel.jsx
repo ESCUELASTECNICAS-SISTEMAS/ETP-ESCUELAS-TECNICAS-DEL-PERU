@@ -10,6 +10,8 @@ export default function AdminCarousel(){
 
   const [mediaId, setMediaId] = useState('')
   const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
+  const [description, setDescription] = useState('')
   const [orderIndex, setOrderIndex] = useState(1)
   const [mediaList, setMediaList] = useState([])
   const [loadingMedia, setLoadingMedia] = useState(true)
@@ -75,6 +77,8 @@ export default function AdminCarousel(){
 
   const [editingSlideId, setEditingSlideId] = useState(null)
   const [editSlideTitle, setEditSlideTitle] = useState('')
+  const [editSlideSubtitle, setEditSlideSubtitle] = useState('')
+  const [editSlideDescription, setEditSlideDescription] = useState('')
   const [editSlideOrder, setEditSlideOrder] = useState(1)
   const [editSlideActive, setEditSlideActive] = useState(true)
   const [editSlideMediaId, setEditSlideMediaId] = useState('')
@@ -84,19 +88,34 @@ export default function AdminCarousel(){
   const startEditSlide = (s) => {
     setEditingSlideId(s.id)
     setEditSlideTitle(s.title || '')
+    setEditSlideSubtitle(s.subtitle || '')
+    setEditSlideDescription(s.description || '')
     setEditSlideOrder(s.order_index || 1)
     setEditSlideActive(Boolean(s.active))
     setEditSlideMediaId(s.media_id || (s.media && s.media.id) || '')
   }
 
   const cancelEditSlide = () => {
-    setEditingSlideId(null); setEditSlideTitle(''); setEditSlideOrder(1); setEditSlideActive(true); setEditSlideMediaId('')
+    setEditingSlideId(null)
+    setEditSlideTitle('')
+    setEditSlideSubtitle('')
+    setEditSlideDescription('')
+    setEditSlideOrder(1)
+    setEditSlideActive(true)
+    setEditSlideMediaId('')
   }
 
   const saveSlide = async (id) => {
     setSavingSlide(true); setError(null)
     try{
-      const payload = { media_id: Number(editSlideMediaId), title: editSlideTitle, order_index: Number(editSlideOrder), active: Boolean(editSlideActive) }
+      const payload = {
+        media_id: Number(editSlideMediaId),
+        title: editSlideTitle,
+        subtitle: editSlideSubtitle || null,
+        description: editSlideDescription || null,
+        order_index: Number(editSlideOrder),
+        active: Boolean(editSlideActive)
+      }
       await axios.put(`${endpoints.CAROUSEL}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
       cancelEditSlide()
       fetchSlides()
@@ -125,10 +144,20 @@ export default function AdminCarousel(){
     e.preventDefault()
     setError(null)
     try{
-      const payload = { media_id: Number(mediaId), title, order_index: Number(orderIndex) }
+      const payload = {
+        media_id: Number(mediaId),
+        title,
+        subtitle: subtitle || null,
+        description: description || null,
+        order_index: Number(orderIndex)
+      }
       const res = await axios.post(endpoints.CAROUSEL, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
       // refresh
-      setMediaId(''); setTitle(''); setOrderIndex(1)
+      setMediaId('')
+      setTitle('')
+      setSubtitle('')
+      setDescription('')
+      setOrderIndex(1)
       fetchSlides()
     }catch(err){
       console.error(err)
@@ -179,6 +208,14 @@ export default function AdminCarousel(){
                   <input className="form-control" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
                 <div className="mb-3">
+                  <label className="form-label">Subtitle</label>
+                  <input className="form-control" value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Subtitulo del slide" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Descripcion</label>
+                  <textarea className="form-control" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripcion del slide"></textarea>
+                </div>
+                <div className="mb-3">
                   <label className="form-label">Orden (order_index)</label>
                   <input type="number" min={1} className="form-control" value={orderIndex} onChange={e => setOrderIndex(e.target.value)} />
                 </div>
@@ -216,6 +253,8 @@ export default function AdminCarousel(){
                             {editingSlideId === s.id ? (
                               <div>
                                 <input className="form-control form-control-sm mb-1" value={editSlideTitle} onChange={e=>setEditSlideTitle(e.target.value)} />
+                                <input className="form-control form-control-sm mb-1" value={editSlideSubtitle} onChange={e=>setEditSlideSubtitle(e.target.value)} placeholder="Subtitle" />
+                                <textarea className="form-control form-control-sm mb-1" rows={2} value={editSlideDescription} onChange={e=>setEditSlideDescription(e.target.value)} placeholder="Descripcion"></textarea>
                                 <div className="d-flex gap-2 align-items-center mb-1">
                                   <input type="number" className="form-control form-control-sm" style={{width:80}} value={editSlideOrder} onChange={e=>setEditSlideOrder(e.target.value)} />
                                   <select className="form-select form-select-sm" style={{maxWidth:300}} value={editSlideMediaId} onChange={e=>setEditSlideMediaId(e.target.value)}>
@@ -235,6 +274,8 @@ export default function AdminCarousel(){
                             ) : (
                               <>
                                 <strong>{s.title || 'Sin título'}</strong>
+                                {s.subtitle && <div className="text-muted small">Subtitle: {s.subtitle}</div>}
+                                {s.description && <div className="text-muted small">Descripcion: {s.description}</div>}
                                 <div className="text-muted small">Order: {s.order_index} • Active: {s.active ? 'Sí' : 'No'}</div>
                                 {s.media && (
                                   <div className="text-muted small">Media: {s.media.id} • {s.media.alt_text || 'Sin alt'} • {s.media.active !== undefined ? (s.media.active ? 'Activo' : 'Inactivo') : ''} • {formatDateTime(s.media.created_at)}</div>
@@ -273,6 +314,8 @@ export default function AdminCarousel(){
                             <div className="d-flex justify-content-between">
                               <div>
                                 <strong>{s.title || 'Sin título'}</strong>
+                                {s.subtitle && <div className="text-muted small">Subtitle: {s.subtitle}</div>}
+                                {s.description && <div className="text-muted small">Descripcion: {s.description}</div>}
                                 <div className="text-muted small">Order: {s.order_index} • Active: {s.active ? 'Sí' : 'No'}</div>
                                 {s.media && (
                                   <div className="text-muted small">Media: {s.media.id} • {s.media.alt_text || 'Sin alt'} • {formatDateTime(s.media.created_at)}</div>

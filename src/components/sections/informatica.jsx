@@ -12,6 +12,29 @@ const buildLocalCursos = () => (info?.cursos || []).map((titulo, i) => ({
   image: '/assets/images/Hero1.jpg'
 }))
 
+const normalizeText = (value = '') => String(value)
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+
+const ORDER_RULES = [
+  { rank: 1, words: ['especialista', 'informatica'] },
+  { rank: 2, words: ['especialista', 'excel'] },
+  { rank: 3, words: ['especialista', 'diseno', 'grafico'] },
+  { rank: 4, words: ['produccion', 'edicion', 'video'] },
+  { rank: 5, words: ['mantenimiento', 'reparacion'] },
+  { rank: 6, words: ['power', 'bi'] },
+  { rank: 7, words: ['sql', 'server'] },
+]
+
+const getCourseRank = (course) => {
+  const t = normalizeText(course?.titulo || course?.title || course?.name || '')
+  if (t.includes('ofimatica')) return 1
+  if (t.includes('informatica') || t.includes('infromatica')) return 2
+  const match = ORDER_RULES.find(rule => rule.words.every(w => t.includes(w)))
+  return match ? match.rank : 999
+}
+
 export default function Informatica(){
   const [cursos, setCursos] = useState([])
 
@@ -45,7 +68,11 @@ export default function Informatica(){
 
         const ofimatica = mapped.filter(c => {
           const tipo = (c.type || c.tipo || '').toLowerCase()
-          return tipo === 'ofimatica'
+          return tipo === 'ofimatica' || tipo === 'ofimática' || tipo === 'informatica' || tipo === 'informática'
+        }).sort((a, b) => {
+          const rankDiff = getCourseRank(a) - getCourseRank(b)
+          if (rankDiff !== 0) return rankDiff
+          return String(a.titulo || a.title || '').localeCompare(String(b.titulo || b.title || ''), 'es')
         })
 
         if(!mounted) return
