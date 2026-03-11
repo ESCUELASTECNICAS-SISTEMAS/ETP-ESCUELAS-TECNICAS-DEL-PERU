@@ -71,6 +71,9 @@ export default function AdminDashboard(){
 		{ title: 'Usuarios', desc: 'Gestión de administradores', icon: 'bi-people', to:'/admin/users' }
 	]
 
+	// añadir tarjeta para eventos de login
+	cards.push({ title: 'Eventos de acceso', desc: 'Registros e intentos de login', icon: 'bi-lock', to: '/admin/login-events' })
+
 	return (
 		<div className="container section-padding">
 			<div className="row mb-4">
@@ -82,6 +85,7 @@ export default function AdminDashboard(){
 					<div>
 						<Link to="/admin/courses" className="btn btn-outline-primary me-2">Ver Cursos</Link>
 						<Link to="/admin/docentes" className="btn btn-outline-primary me-2">Docentes</Link>
+						<Link to="/admin/login-events" className="btn btn-outline-secondary me-2">Eventos de acceso</Link>
 						<Link to="/admin/carousel" className="btn btn-accent">Editar Carousel</Link>
 					</div>
 				</div>

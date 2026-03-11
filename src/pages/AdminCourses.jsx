@@ -5,6 +5,7 @@ import { endpoints } from '../utils/apiStatic'
 import MediaPicker from '../components/admin/MediaPicker'
 import ExtraMediaSlots from '../components/admin/ExtraMediaSlots'
 import PriceSeatsFieldset from '../components/admin/PriceSeatsFieldset'
+import UserManager from '../components/admin/UserManager'
 
 export default function AdminCourses(){
   const [items, setItems] = useState([])
@@ -28,6 +29,7 @@ export default function AdminCourses(){
 
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [showUserManager, setShowUserManager] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
   const [showInactivePanel, setShowInactivePanel] = useState(false)
   const [schedulesUploadLoading, setSchedulesUploadLoading] = useState(false)
@@ -674,6 +676,9 @@ export default function AdminCourses(){
     <>
       <div className="container section-padding">
       <Link to="/admin" className="btn-back mb-3"><i className="bi bi-arrow-left"></i> Volver al Panel</Link>
+      <div className="mb-2 d-flex justify-content-end">
+        <button className="btn btn-sm btn-outline-secondary" onClick={()=>setShowUserManager(s => !s)}>{showUserManager ? 'Cerrar gestión de usuarios' : 'Gestionar usuarios'}</button>
+      </div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3>Administrar Cursos</h3>
         <small className="text-muted">Crear y editar cursos de carreras auxiliares</small>
@@ -789,7 +794,13 @@ export default function AdminCourses(){
                   </div>
                   <div className="col-12 col-md-6">
                     <label className="form-label">Tipo</label>
-                    <input className="form-control" value={form.type} onChange={e=>handleChange('type', e.target.value)} placeholder="apoyo_administrativo" />
+                    <input list="typesList" className="form-control" value={form.type} onChange={e=>handleChange('type', e.target.value)} placeholder="apoyo_administrativo" />
+                    <datalist id="typesList">
+                      {Array.from(new Set(items.map(i => i.type).filter(Boolean))).map(t => (
+                        <option key={t} value={t} />
+                      ))}
+                    </datalist>
+                    <div className="small text-muted mt-1">Elige un tipo existente o escribe uno nuevo.</div>
                   </div>
                   <div className="col-12 col-md-6">
                     <label className="form-label">Slug</label>
@@ -897,6 +908,7 @@ export default function AdminCourses(){
             </div>
 
           </div>
+          {showUserManager && <UserManager />}
 
           
         </div>

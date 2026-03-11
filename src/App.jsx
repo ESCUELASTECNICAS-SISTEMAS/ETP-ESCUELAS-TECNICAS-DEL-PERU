@@ -17,6 +17,8 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminCarousel from './pages/AdminCarousel'
 import AdminMedia from './pages/AdminMedia'
 import AdminCourses from './pages/AdminCourses'
+import AdminUsers from './pages/AdminUsers'
+import AdminLoginEvents from './pages/AdminLoginEvents'
 import AdminCertificaciones from './pages/AdminCertificaciones'
 import AdminDocentes from './pages/AdminDocentes'
 import AdminConvenios from './pages/AdminConvenios'
@@ -25,6 +27,7 @@ import AdminNoticias from './pages/AdminNoticias'
 import AdminSocialLinks from './pages/AdminSocialLinks'
 import AdminRoute from './components/layout/AdminRoute'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { sendVisit } from './utils/visits'
 import axios from 'axios'
 import { endpoints } from './utils/apiStatic'
 
@@ -40,6 +43,14 @@ function formatWaHref(number){
     if(!num.startsWith('51')) num = '51' + num
   }
   return `https://wa.me/${num}?text=${DEFAULT_WA_MESSAGE}`
+}
+
+function RouteTracker(){
+  const { pathname } = useLocation()
+  useEffect(() => {
+    sendVisit({ path: pathname, referrer: document.referrer || undefined })
+  }, [pathname])
+  return null
 }
 
 function ScrollToTop(){
@@ -82,6 +93,7 @@ export default function App(){
 
   return (
     <div className="d-flex flex-column min-vh-100">
+      <RouteTracker />
       <ScrollToTop />
       <Navbar />
       <main className="flex-grow-1">
@@ -100,6 +112,8 @@ export default function App(){
             <Route path="/admin/carousel" element={<AdminRoute><AdminCarousel /></AdminRoute>} />
             <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
             <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
+            <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="/admin/login-events" element={<AdminRoute><AdminLoginEvents /></AdminRoute>} />
             <Route path="/admin/certificaciones" element={<AdminRoute><AdminCertificaciones /></AdminRoute>} />
             <Route path="/admin/certificaciones/:courseId" element={<AdminRoute><AdminCertificaciones /></AdminRoute>} />
             <Route path="/admin/docentes" element={<AdminRoute><AdminDocentes /></AdminRoute>} />

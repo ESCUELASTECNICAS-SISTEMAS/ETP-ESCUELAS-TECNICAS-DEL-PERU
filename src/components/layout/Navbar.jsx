@@ -146,7 +146,7 @@ export default function Navbar() {
               {!user && (
                 <li className="nav-item ms-2">
                   <Link className="btn btn-login-nav" to="/login" onClick={closeMobileMenu}>
-                    <i className="bi bi-person-circle me-2"></i>Iniciar sesión
+                    <i className="bi bi-person-circle me-2"></i>Login
                   </Link>
                 </li>
               )}
