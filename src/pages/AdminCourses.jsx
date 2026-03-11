@@ -19,7 +19,7 @@ export default function AdminCourses(){
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
     razones_para_estudiar: '', publico_objetivo: '',
-    modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
+    modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [],
     precio: '', descuento: '', oferta: false, matricula: '', pension: ''
   })
 
@@ -299,6 +299,23 @@ export default function AdminCourses(){
   }, [])
 
   const handleChange = (k,v) => setForm(f=>({...f,[k]:v}))
+  const setExtraMediaAt = (index, id) => setForm(f => {
+    const arr = Array.isArray(f.extra_media) ? [...f.extra_media] : []
+    // ensure length
+    while (arr.length <= index) arr.push(undefined)
+    const prev = arr[index]
+    arr[index] = id
+    // if we're editing an existing course and the user cleared a slot, delete relation immediately
+    if (editingId && prev && !id) {
+      (async () => {
+        try{
+          const headers = token ? { Authorization: `Bearer ${token}` } : {}
+          await axios.delete(`${endpoints.COURSES}/${editingId}/extra-media/${prev}`, { headers })
+        }catch(e){ console.error('delete extra-media relation failed', e) }
+      })()
+    }
+    return { ...f, extra_media: arr }
+  })
   const normalizeModalidad = (value) => {
     const raw = String(value || '').trim().toLowerCase()
     if (!raw) return null
@@ -382,7 +399,7 @@ export default function AdminCourses(){
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
         horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : null,
-        extra_media_id: form.extra_media_id ? Number(form.extra_media_id) : null,
+        extra_media: Array.isArray(form.extra_media) && form.extra_media.length ? form.extra_media.map(n => Number(n)) : [],
         slug: form.slug,
         published: Boolean(form.published),
         hours: form.hours || null,
@@ -410,12 +427,19 @@ export default function AdminCourses(){
         if (selectedSucursalIds.length > 0) {
           await axios.put(endpoints.COURSE_SUCURSALES(created.id), { sucursal_ids: selectedSucursalIds }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
         }
+        // attach extra media relations via API (insert rows in course_extra_media)
+        try{
+          if (Array.isArray(form.extra_media) && form.extra_media.filter(Boolean).length) {
+            const mediaIds = form.extra_media.filter(Boolean).map(n => Number(n))
+            await axios.post(`${endpoints.COURSES}/${created.id}/extra-media`, { media_ids: mediaIds }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+          }
+        }catch(e){ console.error('attach extra media failed', e) }
       }
       setForm({ 
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
         razones_para_estudiar: '', publico_objetivo: '',
-        modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
+        modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [],
         precio: '', descuento: '', oferta: false, matricula: '', pension: ''
       })
       setSelectedSucursalIds([])
@@ -476,7 +500,7 @@ export default function AdminCourses(){
     setEditingId(c.id)
     setForm({
       title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
-      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_id: c.horarios_media_id || (c.horarios && c.horarios.id) || '', extra_media_id: c.extra_media_id || (c.extraImage && c.extraImage.id) || '', slug: c.slug||'', published: !!c.published,
+      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_id: c.horarios_media_id || (c.horarios && c.horarios.id) || '', extra_media: (Array.isArray(c.extra_media) ? c.extra_media.map(em => (em && (em.id || em.media_id)) ? (em.id || em.media_id) : em) : (c.extra_media_id ? [c.extra_media_id] : (c.extraImage && c.extraImage.id ? [c.extraImage.id] : []))), slug: c.slug||'', published: !!c.published,
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '',
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
@@ -544,7 +568,7 @@ export default function AdminCourses(){
       title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
       hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
       razones_para_estudiar: '', publico_objetivo: '',
-      modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media_id: '',
+      modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [],
       precio: '', descuento: '', oferta: false, matricula: '', pension: ''
     }) 
     setSelectedSucursalIds([])
@@ -578,7 +602,7 @@ export default function AdminCourses(){
         type: (form.type || editingCourse.type || editingCourse.tipo || '').trim() || undefined,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : undefined,
         horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : undefined,
-        extra_media_id: form.extra_media_id ? Number(form.extra_media_id) : undefined,
+        extra_media: (Array.isArray(form.extra_media) && form.extra_media.length) ? form.extra_media.map(n => Number(n)) : undefined,
         slug: toTrimmedOrUndefined(form.slug),
         published: Boolean(form.published),
         hours: toTrimmedOrUndefined(form.hours),
@@ -610,6 +634,12 @@ export default function AdminCourses(){
       await axios.put(`${endpoints.COURSES}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
       await uploadOnlyNewSchedules(id)
       await axios.put(endpoints.COURSE_SUCURSALES(id), { sucursal_ids: selectedSucursalIds }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      // update extra media relations with positions
+      try{
+        const arr = Array.isArray(form.extra_media) ? form.extra_media.filter(Boolean).map(n => Number(n)) : []
+        const items = arr.map((media_id, idx) => ({ media_id, position: idx }))
+        await axios.put(`${endpoints.COURSES}/${id}/extra-media`, { items }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type':'application/json' } : {'Content-Type':'application/json'} })
+      }catch(e){ console.error('update extra-media relations failed', e) }
       cancelEdit(); await fetchCourses(); await fetchMedia()
     }catch(err){
       console.error('saveEdit', err)
@@ -838,11 +868,21 @@ export default function AdminCourses(){
                   </div>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Segunda imagen (debajo de Dirigido a)</label>
-                  <div className="d-flex align-items-center gap-2">
-                    <div style={{position:'relative',width:'100%'}}>
-                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.extra_media_id} onSelect={id=>handleChange('extra_media_id', id)} label="segunda imagen" />
-                    </div>
+                  <label className="form-label">Imágenes adicionales (hasta 3)</label>
+                  <div className="d-flex align-items-start gap-2">
+                    {[0,1,2].map(i => (
+                      <div key={i} style={{position:'relative',width:140}}>
+                        <MediaPicker thumbnailSize={96} popupWidth={420} mediaList={mediaList} loading={loadingMedia} selectedId={(Array.isArray(form.extra_media) && form.extra_media[i]) ? form.extra_media[i] : undefined} onSelect={id=>setExtraMediaAt(i, id)} label={`extra ${i+1}`} />
+                        {(Array.isArray(form.extra_media) && form.extra_media[i]) ? (
+                          <div className="d-flex align-items-center gap-2 mt-2">
+                            <div className="small text-truncate" style={{flex:1}}>{(findMediaById(form.extra_media[i])||{}).alt_text || `ID ${form.extra_media[i]}`}</div>
+                            <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>setExtraMediaAt(i, undefined)} title="Quitar">✕</button>
+                          </div>
+                        ) : (
+                          <div className="mt-2 small text-muted">--</div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="form-check form-switch mb-3">

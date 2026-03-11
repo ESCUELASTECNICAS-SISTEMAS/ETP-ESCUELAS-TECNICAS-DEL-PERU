@@ -452,6 +452,62 @@ export default function CourseDetail() {
     }
   }
 
+  // Build list of extra media URLs (robust to different API shapes)
+  const buildExtraMedias = () => {
+    const out = []
+    if (Array.isArray(course.extra_media) && course.extra_media.length > 0) {
+      for (const item of course.extra_media) {
+        if (!item) continue
+        if (typeof item === 'string') {
+          const s = item.trim()
+          if (s.startsWith('http') || s.startsWith('/')) out.push({ url: s, alt_text: '' })
+        } else if (typeof item === 'object') {
+          if (item.url) out.push({ url: item.url, alt_text: item.alt_text || '' })
+          else if (item.id && item.media && item.media.url) out.push({ url: item.media.url, alt_text: item.media.alt_text || '' })
+        } else if (typeof item === 'number' || /^[0-9]+$/.test(String(item))) {
+          // If API gave only ids but included objects elsewhere, try find
+          if (Array.isArray(course.media) && course.media.length > 0) {
+            const found = course.media.find(m => String(m.id) === String(item))
+            if (found && found.url) out.push({ url: found.url, alt_text: found.alt_text || '' })
+          }
+        }
+        if (out.length >= 3) break
+      }
+    }
+    // fallback to single extraImageUrl
+    if (out.length === 0 && extraImageUrl) out.push({ url: extraImageUrl, alt_text: extraImageAlt || '' })
+    return out.slice(0,3)
+  }
+
+  // Simple inline carousel (no bootstrap dependency) — autoplay with fade
+  const InlineCarousel = ({ images = [], interval = 3000 }) => {
+    const [idx, setIdx] = useState(0)
+    useEffect(() => {
+      if (!images || images.length <= 1) return
+      const t = setInterval(() => setIdx(i => (i + 1) % images.length), interval)
+      return () => clearInterval(t)
+    }, [images, interval])
+    if (!images || images.length === 0) return null
+    return (
+      <div style={{position:'relative',width:'100%'}}>
+        {images.map((it, i) => (
+          <img key={i} src={it.url} alt={it.alt_text || ''}
+            style={{
+              width: '100%',
+              maxHeight: 260,
+              objectFit: 'cover',
+              borderRadius: 12,
+              transition: 'opacity .6s ease',
+              opacity: i === idx ? 1 : 0,
+              position: i === idx ? 'relative' : 'absolute',
+              left: 0, top: 0,
+              display: 'block'
+            }} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <>
     <div className="cd-page">
@@ -591,19 +647,19 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Imagen extra debajo de Dirigido a */}
-              {extraImageUrl && (
-                <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
-                  <div className="text-center">
-                    <img
-                      src={extraImageUrl}
-                      alt={extraImageAlt}
-                      className="img-fluid w-100 rounded-4 border border-2 border-primary-subtle shadow-sm bg-white p-1"
-                      style={{height:'auto'}}
-                    />
+              {/* Carrusel de imágenes adicionales debajo de Dirigido a */}
+              {(() => {
+                const imgs = buildExtraMedias()
+                if (!imgs || imgs.length === 0) return null
+                return (
+                  <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                    <h5 className="cd-sidebar-title"><i className="bi bi-building me-2 text-primary"></i>Nuestras modernas instalaciones</h5>
+                    <div className="text-center">
+                      <InlineCarousel images={imgs} interval={3000} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              })()}
 
               {/* Imagen de Horarios */}
               {course.horarios && course.horarios.url && (
