@@ -91,32 +91,7 @@ export default function AdminDashboard(){
 				{cards.map(c => <SectionCard key={c.title} {...c} />)}
 			</div>
 
-			<div className="row mt-4">
-				<div className="col-12">
-					<h4>Últimos cursos</h4>
-					{loading && <div className="text-muted">Cargando cursos...</div>}
-					{error && <div className="alert alert-danger">{error}</div>}
-					<div className="row mt-3">
-						{courses.slice(0,6).map(course => (
-							<div key={course.id} className="col-12 col-md-6 col-lg-4 mb-3">
-								<div className="card h-100">
-									{course.thumbnail?.url ? (
-										<img src={course.thumbnail.url} className="card-img-top" alt={course.thumbnail.alt_text || course.title} />
-									) : null}
-									<div className="card-body d-flex flex-column">
-										<h5 className="card-title">{course.title}</h5>
-										<p className="card-text text-muted">{course.subtitle}</p>
-										<div className="mt-auto d-flex gap-2">
-											<Link to={`/admin/courses/${course.id}`} className="btn btn-outline-secondary">Editar</Link>
-											<Link to="/admin/courses" className="btn btn-accent">Ver todos</Link>
-										</div>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</div>
+            
 		</div>
 	)
 }

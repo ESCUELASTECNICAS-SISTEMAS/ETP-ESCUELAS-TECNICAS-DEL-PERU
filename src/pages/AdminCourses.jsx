@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 import MediaPicker from '../components/admin/MediaPicker'
+import ExtraMediaSlots from '../components/admin/ExtraMediaSlots'
+import PriceSeatsFieldset from '../components/admin/PriceSeatsFieldset'
 
 export default function AdminCourses(){
   const [items, setItems] = useState([])
@@ -661,6 +663,8 @@ export default function AdminCourses(){
   const activeItems = items.filter(i => i.published)
   const inactiveItems = items.filter(i => !i.published)
 
+  const [selectedType, setSelectedType] = useState('all')
+
   const formPreviewUrl = form.thumbnail_media_id ? (findMediaById(form.thumbnail_media_id)||{}).url : (editingId ? getCourseMediaUrl(items.find(i=>i.id===editingId)) : null)
   const formPreviewAlt = form.thumbnail_media_id ? (findMediaById(form.thumbnail_media_id)||{}).alt_text : (editingId ? getCourseMediaAlt(items.find(i=>i.id===editingId)) : '')
 
@@ -684,17 +688,22 @@ export default function AdminCourses(){
             </div>
             <div className="card-body">
               <form onSubmit={editingId ? (e=>{e.preventDefault(); saveEdit(editingId)}) : handleCreate}>
+                {!editingId && (
+                  <div className="alert alert-info small">Modo creación — completa los campos y pulsa <strong>Crear</strong>.</div>
+                )}
                 <div className="mb-3">
                   <label className="form-label">Título</label>
-                  <input className="form-control form-control-lg" value={form.title} onChange={e=>handleChange('title', e.target.value)} required />
+                  <input className="form-control form-control-lg" value={form.title} onChange={e=>handleChange('title', e.target.value)} required placeholder="Ej: Apoyo Administrativo" autoFocus={!editingId} />
+                  <div className="small text-muted mt-1">Título público que verá el alumno. Procura ser claro y breve.</div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Subtítulo</label>
-                  <input className="form-control" value={form.subtitle} onChange={e=>handleChange('subtitle', e.target.value)} />
+                  <input className="form-control" value={form.subtitle} onChange={e=>handleChange('subtitle', e.target.value)} placeholder="Ej: Título a nombre del Ministerio de Educación" />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Descripción</label>
-                  <textarea className="form-control" rows={4} value={form.description} onChange={e=>handleChange('description', e.target.value)} />
+                  <textarea className="form-control" rows={3} value={form.description} onChange={e=>handleChange('description', e.target.value)} placeholder="Breve descripción (2-3 líneas)" />
+                  <div className="small text-muted mt-1">Texto corto que aparece en tarjetas y en la ficha del curso.</div>
                 </div>
                 <div className="row g-2 mb-3">
                   <div className="col-12 col-md-6">
@@ -702,71 +711,7 @@ export default function AdminCourses(){
                     <input className="form-control" value={form.duration} onChange={e=>handleChange('duration', e.target.value)} />
                   </div>
                 </div>
-                <div className="row g-2 mb-3">
-                  <div className="col-12 col-md-3">
-                    <label className="form-label">Precio</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="form-control"
-                      value={form.precio}
-                      onChange={e=>handleChange('precio', e.target.value)}
-                      placeholder="Ej: 350"
-                    />
-                  </div>
-                  <div className="col-12 col-md-3">
-                    <label className="form-label">Matrícula</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="form-control"
-                      value={form.matricula}
-                      onChange={e=>handleChange('matricula', e.target.value)}
-                      placeholder="Ej: 50"
-                    />
-                  </div>
-                  <div className="col-12 col-md-3">
-                    <label className="form-label">Mensualidad (Pensión)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="form-control"
-                      value={form.pension}
-                      onChange={e=>handleChange('pension', e.target.value)}
-                      placeholder="Ej: 180"
-                    />
-                  </div>
-                </div>
-                <div className="row g-2 mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">Descuento (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      className="form-control"
-                      value={form.descuento}
-                      onChange={e=>handleChange('descuento', e.target.value)}
-                      placeholder="Ej: 15"
-                    />
-                  </div>
-                  <div className="col-12 col-md-6 d-flex align-items-end">
-                    <div className="form-check form-switch mb-1">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="ofertaSwitch"
-                        checked={form.oferta}
-                        onChange={e=>handleChange('oferta', e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="ofertaSwitch">En oferta</label>
-                    </div>
-                  </div>
-                </div>
+                <PriceSeatsFieldset form={form} handleChange={handleChange} />
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <label className="form-label">Grado</label>
@@ -869,21 +814,7 @@ export default function AdminCourses(){
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Imágenes adicionales (hasta 3)</label>
-                  <div className="d-flex align-items-start gap-2">
-                    {[0,1,2].map(i => (
-                      <div key={i} style={{position:'relative',width:140}}>
-                        <MediaPicker thumbnailSize={96} popupWidth={420} mediaList={mediaList} loading={loadingMedia} selectedId={(Array.isArray(form.extra_media) && form.extra_media[i]) ? form.extra_media[i] : undefined} onSelect={id=>setExtraMediaAt(i, id)} label={`extra ${i+1}`} />
-                        {(Array.isArray(form.extra_media) && form.extra_media[i]) ? (
-                          <div className="d-flex align-items-center gap-2 mt-2">
-                            <div className="small text-truncate" style={{flex:1}}>{(findMediaById(form.extra_media[i])||{}).alt_text || `ID ${form.extra_media[i]}`}</div>
-                            <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>setExtraMediaAt(i, undefined)} title="Quitar">✕</button>
-                          </div>
-                        ) : (
-                          <div className="mt-2 small text-muted">--</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <ExtraMediaSlots extraMedia={form.extra_media} mediaList={mediaList} loadingMedia={loadingMedia} onSet={(i,id)=>setExtraMediaAt(i,id)} onRemove={(i)=>setExtraMediaAt(i, undefined)} findMediaById={findMediaById} />
                 </div>
                 <div className="form-check form-switch mb-3">
                   <input className="form-check-input" type="checkbox" id="publishedSwitch" checked={form.published} onChange={e=>handleChange('published', e.target.checked)} />
@@ -952,6 +883,14 @@ export default function AdminCourses(){
                 {error && <div className="alert alert-danger py-2">{error}</div>}
                 <div className="d-flex gap-2">
                   <button className="btn btn-accent" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}</button>
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => {
+                    setForm({ title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true, hours: '', duration: '', grado: '', registro: '', perfil_egresado: '', razones_para_estudiar: '', publico_objetivo: '', modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [], precio: '', descuento: '', oferta: false, matricula: '', pension: '' })
+                    setTemarioUnits([])
+                    setScheduleGrid(createEmptyGrid())
+                    setSelectedSucursalIds([])
+                    setEditingId(null)
+                    setError(null)
+                  }}>Limpiar</button>
                   {editingId && <button type="button" className="btn btn-outline-secondary" onClick={cancelEdit}>Cancelar</button>}
                 </div>
               </form>
@@ -966,86 +905,65 @@ export default function AdminCourses(){
           <div className="card">
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="card-title mb-0">Cursos</h5>
-                <div>
-                  <button className="btn btn-sm btn-outline-secondary me-2" onClick={()=>fetchCourses()}>Refrescar</button>
-                  <button className="btn btn-sm btn-outline-primary" onClick={()=>setShowInactivePanel(true)}>{`Ver desactivados (${inactiveItems.length})`}</button>
+                  <h5 className="card-title mb-0">Cursos</h5>
+                  <div>
+                    <button className="btn btn-sm btn-outline-secondary me-2" onClick={()=>fetchCourses()}>Refrescar</button>
+                    <button className="btn btn-sm btn-outline-primary" onClick={()=>setShowInactivePanel(true)}>{`Ver desactivados (${inactiveItems.length})`}</button>
+                  </div>
                 </div>
-              </div>
+
+                {/* Type filter toolbar */}
+                {(() => {
+                  const types = Array.from(new Set(items.map(i => i.type).filter(Boolean))).sort()
+                  return (
+                    <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
+                      <div className="me-2 small text-muted">Filtrar por tipo:</div>
+                      <button className={"btn btn-sm " + (selectedType==='all' ? 'btn-primary' : 'btn-outline-secondary')} onClick={()=>setSelectedType('all')}>Todos</button>
+                      {types.map(t => (
+                        <button key={t} className={"btn btn-sm " + (selectedType===t ? 'btn-primary' : 'btn-outline-secondary')} onClick={()=>setSelectedType(t)}>{t}</button>
+                      ))}
+                    </div>
+                  )
+                })()}
 
               {loading && <div>Cargando...</div>}
               {!loading && items.length === 0 && <div className="text-muted">No hay cursos.</div>}
 
               <div className="row row-cols-1 gy-3">
-                    {activeItems.map(c => (
+                    {activeItems.filter(c => selectedType === 'all' ? true : (c.type === selectedType)).map(c => (
                       <div key={c.id} className="col">
                         <div className="card shadow-sm">
-                          <div className="card-body d-flex align-items-center gap-3">
+                          <div className="card-body" style={{position:'relative', display:'grid', gridTemplateColumns: '140px 1fr 110px', alignItems: 'center', gap: '1rem', paddingRight: '1.25rem'}}>
                             {(() => {
                               const thumbUrl = getCourseMediaUrl(c)
                               const thumbAlt = getCourseMediaAlt(c)
                               if (thumbUrl) {
                                 return (
-                                  <div style={{width:120,height:76,flex:'0 0 120px',borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef'}}>
-                                    <img src={thumbUrl} alt={thumbAlt || 'thumb'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                  <div style={{width:140,height:88,flex:'0 0 140px',borderRadius:6,overflow:'hidden',border:'1px solid #e9ecef'}}>
+                                    <img src={thumbUrl} alt={thumbAlt || 'thumb'} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}} />
                                   </div>
                                 )
                               }
                               return (
-                                <div style={{width:120,height:76,flex:'0 0 120px',display:'grid',placeItems:'center',border:'1px dashed #e9ecef',borderRadius:6}}>
+                                <div style={{width:140,height:88,flex:'0 0 140px',display:'grid',placeItems:'center',border:'1px dashed #e9ecef',borderRadius:6}}>
                                   <small className="text-muted">No miniatura</small>
                                 </div>
                               )
                             })()}
 
                             <div style={{flex:1}}>
-                              <div className="d-flex justify-content-between align-items-start">
-                                <div>
-                                  <h6 className="mb-1">{c.title}</h6>
-                                  <div className="text-muted small">{c.subtitle}</div>
-                                  <div className="text-muted small mt-1">{c.hours ? `Horas: ${c.hours}` : ''} {c.duration ? `· Duración: ${c.duration}` : ''}</div>
-                                  {c.grado && <div className="badge badge-accent mt-2">{c.grado}</div>}
-                              {Array.isArray(c.sucursales) && c.sucursales.length > 0 && (
-                                <div className="d-flex flex-wrap gap-1 mt-1">
-                                  {c.sucursales.map(s => (
-                                    <span key={s.id} className="badge rounded-pill text-bg-success" style={{fontSize:'0.7rem'}}>
-                                      <i className="bi bi-geo-alt-fill me-1"></i>{s.nombre}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                                </div>
-                                <div className="text-end">
-                                  <div className="text-muted small">Tipo: {c.type}</div>
-                                  <div className="text-muted small">Slug: {c.slug}</div>
-                                  {c.registro && <div className="text-muted small">Registro: {c.registro}</div>}
-                                  {c.precio != null && (
-                                    <div className="text-muted small">
-                                      Precio: S/ {Number(c.precio).toFixed(2)}
-                                      {c.oferta && c.descuento != null ? ` (Oferta: -${c.descuento}%)` : ''}
-                                    </div>
-                                  )}
-                                  {c.matricula != null && (
-                                    <div className="text-muted small">
-                                      Matrícula: S/ {Number(c.matricula).toFixed(2)}
-                                    </div>
-                                  )}
-                                  {c.pension != null && (
-                                    <div className="text-muted small">
-                                      Mensualidad: S/ {Number(c.pension).toFixed(2)}
-                                    </div>
-                                  )}
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div style={{overflow:'hidden'}}>
+                                  <h6 className="mb-0" style={{fontSize:'1rem',lineHeight:1.1,whiteSpace:'nowrap',textOverflow:'ellipsis',overflow:'hidden',maxWidth:'60ch'}}>{c.title}</h6>
+                                  {c.subtitle && <div className="text-muted small" style={{fontSize:'0.85rem',whiteSpace:'nowrap',textOverflow:'ellipsis',overflow:'hidden',maxWidth:'60ch'}}>{c.subtitle}</div>}
+                                  <div style={{marginTop:4}}><span className="badge bg-light text-muted" style={{fontSize:'0.75rem',border:'1px solid #e9ecef'}}>{c.type}</span></div>
                                 </div>
                               </div>
-                              {c.perfil_egresado && <div className="mt-2"><strong>Perfil egresado:</strong> <div className="text-muted small">{c.perfil_egresado}</div></div>}
-                              {c.razones_para_estudiar && <div className="mt-2"><strong>Razones para estudiar:</strong> <div className="text-muted small">{String(c.razones_para_estudiar)}</div></div>}
-                              {c.publico_objetivo && <div className="mt-2"><strong>Público objetivo:</strong> <div className="text-muted small">{String(c.publico_objetivo)}</div></div>}
-                              {/* Módulos eliminados: ahora use Unidades didácticas en el campo Unidades didácticas */}
                             </div>
 
-                            <div className="d-flex flex-column align-items-end">
-                              <button className="btn btn-sm btn-outline-primary mb-2" onClick={()=>startEdit(c)}>Editar</button>
-                              <button className="btn btn-sm btn-outline-warning" onClick={()=>togglePublished(c)}>{c.published ? 'Despublicar' : 'Publicar'}</button>
+                            <div style={{position:'absolute', right: '1rem', top: '50%', transform:'translateY(-50%)', display:'flex', flexDirection:'column', gap:'.5rem', width:110}}>
+                              <button className="btn btn-sm btn-outline-primary" style={{width:'100%'}} onClick={()=>startEdit(c)}>Editar</button>
+                              <button className="btn btn-sm btn-outline-warning" style={{width:'100%'}} onClick={()=>togglePublished(c)}>{c.published ? 'Despublicar' : 'Publicar'}</button>
                             </div>
                           </div>
                         </div>

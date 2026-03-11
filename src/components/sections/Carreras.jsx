@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import carrerasLocal from '../../data/carreras.json'
 // Noticias will be loaded from API (published + active)
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
@@ -8,7 +7,7 @@ import CourseCard from '../UI/CourseCard'
 export default function Carreras({ selectedSucursalId = null, selectedModalidad = null }){
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
-  const [carreras, setCarreras] = useState(carrerasLocal)
+  const [carreras, setCarreras] = useState([])
   const [noticias, setNoticias] = useState([])
 
   useEffect(() => {
@@ -61,7 +60,7 @@ export default function Carreras({ selectedSucursalId = null, selectedModalidad 
             descripcion: c.description || c.descripcion || c.subtitle || '',
             image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m=>String(m.id)===String(c.thumbnail_media_id))||{}).url : null),
           }))
-        if(mapped.length) setCarreras(mapped)
+        if (mapped.length) setCarreras(mapped)
       }catch(err){ /* keep local */ }
     }
     load()
@@ -101,8 +100,9 @@ export default function Carreras({ selectedSucursalId = null, selectedModalidad 
       const belongsToSucursal = sucursales.some(s => String(s.id) === String(selectedSucursalId))
       if (!belongsToSucursal) return false
     }
-    const tipo = (c.type || c.tipo || '').toLowerCase()
-    return tipo !== 'cursos_talleres' && tipo !== 'ofimatica' && tipo !== 'cinco_meses' && tipo !== 'cinco meses' && tipo !== '5_meses' && tipo !== '5 meses'
+    const tipo = String((c.type || c.tipo || '')).toLowerCase()
+    // Only include explicit 'carr' types
+    return tipo.includes('carr')
   }).sort((a, b) => {
     const orderA = getCarreraOrder(a)
     const orderB = getCarreraOrder(b)

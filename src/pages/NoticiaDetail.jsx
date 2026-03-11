@@ -147,25 +147,7 @@ export default function NoticiaDetail() {
                   ) : null}
                 </div>
 
-                <div className="mt-3 mt-md-0">
-                  <div className="share-buttons d-flex gap-2">
-                    <a
-                      className="btn btn-outline-primary btn-sm"
-                      href={`mailto:?subject=${encodeURIComponent(titleText)}&body=${encodeURIComponent(shareUrl)}`}
-                      aria-label="Compartir por email"
-                    >
-                      ✉️ Email
-                    </a>
-                    <a
-                      className="btn btn-outline-success btn-sm"
-                      href={`https://wa.me/?text=${encodeURIComponent(titleText + ' ' + shareUrl)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      💬 WhatsApp
-                    </a>
-                  </div>
-                </div>
+                {/* share buttons removed per request */}
               </div>
 
               {/* lead paragraph (primer párrafo) */}

@@ -6,6 +6,7 @@ import Carreras from '../components/sections/Carreras'
 import CincoMeses from '../components/sections/CincoMeses'
 import Talleres from '../components/sections/talleres'
 import Informatica from '../components/sections/informatica'
+import DynamicTypes from '../components/sections/DynamicTypes'
 import { endpoints } from '../utils/apiStatic'
 
 export default function HomePage(){
@@ -109,6 +110,7 @@ export default function HomePage(){
       <CincoMeses selectedSucursalId={selectedSucursalId} selectedModalidad={selectedModalidad} />
       <Talleres selectedSucursalId={selectedSucursalId} selectedModalidad={selectedModalidad} />
       <Informatica selectedSucursalId={selectedSucursalId} selectedModalidad={selectedModalidad} />
+      <DynamicTypes />
     </div>
   )
 }

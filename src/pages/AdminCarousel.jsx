@@ -75,6 +75,43 @@ export default function AdminCarousel(){
     }catch(e){ return iso }
   }
 
+  // Word-based limit (100 palabras)
+  const countWords = (text) => {
+    if (!text || !text.trim()) return 0
+    return text.trim().split(/\s+/).filter(w => w.length > 0).length
+  }
+
+  const truncateTo100Words = (text) => {
+    if (!text) return ''
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0)
+    if (words.length <= 100) return words.join(' ')
+    return words.slice(0, 100).join(' ')
+  }
+
+  const handleDescriptionChange = (e) => {
+    const val = e.target.value || ''
+    setDescription(truncateTo100Words(val))
+  }
+
+  const handleEditDescriptionChange = (e) => {
+    const val = e.target.value || ''
+    setEditSlideDescription(truncateTo100Words(val))
+  }
+
+  const handleDescriptionPaste = (e) => {
+    e.preventDefault()
+    const paste = (e.clipboardData || window.clipboardData).getData('text') || ''
+    const combined = ((description || '').trim() + ' ' + paste.trim()).trim()
+    setDescription(truncateTo100Words(combined))
+  }
+
+  const handleEditDescriptionPaste = (e) => {
+    e.preventDefault()
+    const paste = (e.clipboardData || window.clipboardData).getData('text') || ''
+    const combined = ((editSlideDescription || '').trim() + ' ' + paste.trim()).trim()
+    setEditSlideDescription(truncateTo100Words(combined))
+  }
+
   const [editingSlideId, setEditingSlideId] = useState(null)
   const [editSlideTitle, setEditSlideTitle] = useState('')
   const [editSlideSubtitle, setEditSlideSubtitle] = useState('')
@@ -212,8 +249,9 @@ export default function AdminCarousel(){
                   <input className="form-control" value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Subtitulo del slide" />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Descripcion</label>
-                  <textarea className="form-control" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripcion del slide"></textarea>
+                  <label className="form-label">Descripcion <small className="text-muted">(máx 100 palabras)</small></label>
+                  <textarea className="form-control" rows={3} value={description} onChange={handleDescriptionChange} onPaste={handleDescriptionPaste} maxLength={2000} placeholder="Descripcion del slide (máx 100 palabras)"></textarea>
+                  <small className="text-muted d-block mt-1">{countWords(description)}/100 palabras</small>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Orden (order_index)</label>
@@ -254,7 +292,10 @@ export default function AdminCarousel(){
                               <div>
                                 <input className="form-control form-control-sm mb-1" value={editSlideTitle} onChange={e=>setEditSlideTitle(e.target.value)} />
                                 <input className="form-control form-control-sm mb-1" value={editSlideSubtitle} onChange={e=>setEditSlideSubtitle(e.target.value)} placeholder="Subtitle" />
-                                <textarea className="form-control form-control-sm mb-1" rows={2} value={editSlideDescription} onChange={e=>setEditSlideDescription(e.target.value)} placeholder="Descripcion"></textarea>
+                                <div className="mb-1">
+                                  <textarea className="form-control form-control-sm" rows={2} value={editSlideDescription} onChange={handleEditDescriptionChange} onPaste={handleEditDescriptionPaste} maxLength={2000} placeholder="Descripcion (máx 100 palabras)"></textarea>
+                                  <small className="text-muted d-block mt-1">{countWords(editSlideDescription)}/100 palabras</small>
+                                </div>
                                 <div className="d-flex gap-2 align-items-center mb-1">
                                   <input type="number" className="form-control form-control-sm" style={{width:80}} value={editSlideOrder} onChange={e=>setEditSlideOrder(e.target.value)} />
                                   <select className="form-select form-select-sm" style={{maxWidth:300}} value={editSlideMediaId} onChange={e=>setEditSlideMediaId(e.target.value)}>

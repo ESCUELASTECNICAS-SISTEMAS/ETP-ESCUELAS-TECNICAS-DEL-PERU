@@ -38,36 +38,64 @@ export default function NoticiasPage(){
 
         {loading && <div>Cargando noticias...</div>}
 
-        <div className="row g-4">
-          {noticias.map((n) => {
-            const m = findMedia(n.featured_media_id)
-            return (
-              <div className="col-12 col-md-6" key={n.id}>
-                <div className="card h-100">
-                  <div className="row g-0">
-                    {m ? (
-                      <div className="col-4 d-none d-sm-block">
-                        <img src={m.url} alt={m.alt_text||'imagen'} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+        {noticias.length > 0 ? (
+          <>
+            {/* Featured first news */}
+            {noticias[0] && (() => {
+              const n = noticias[0]
+              const m = findMedia(n.featured_media_id)
+              return (
+                <div className="news-featured mb-4">
+                  <div className="row g-0 align-items-center">
+                    <div className="col-12 col-lg-7">
+                      <div className="featured-media rounded overflow-hidden shadow-sm">
+                        {m ? <img src={m.url} alt={m.alt_text||n.title} /> : <div className="featured-placeholder" />}
+                        <div className="featured-overlay">
+                          <span className="news-badge">{n.categoria || n.category || 'Noticia'}</span>
+                          <h3 className="featured-title">{n.title || n.titulo}</h3>
+                          <p className="text-white small mb-0">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ''}</p>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="col-4 d-none d-sm-block">
-                        <div style={{height: '100%', background: 'linear-gradient(90deg,var(--primary),var(--accent))'}}></div>
-                      </div>
-                    )}
-                    <div className="col">
-                      <div className="card-body">
-                        <h5 className="card-title">{n.title || n.titulo || 'Sin título'}</h5>
-                        <p className="text-muted small">{n.published_at ? `Fecha: ${new Date(n.published_at).toLocaleString()}` : ''}</p>
-                        <p>{n.summary || n.resumen || ''}</p>
-                        <a href={`/noticia/${n.id}`} className="btn btn-outline-primary btn-sm">Leer más</a>
+                    </div>
+                    <div className="col-12 col-lg-5">
+                      <div className="p-4">
+                        <p className="text-muted">{(n.summary || n.resumen || '').slice(0,220)}</p>
+                        <a href={`/noticia/${n.id}`} className="btn btn-accent">Leer noticia</a>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })()}
+
+            {/* Grid for remaining news */}
+            <div className="row g-4 news-grid">
+              {noticias.slice(1).map((n) => {
+                const m = findMedia(n.featured_media_id)
+                return (
+                  <div className="col-12 col-md-6 col-lg-4" key={n.id}>
+                    <article className="news-card h-100">
+                      <div className="media-wrap">
+                        {m ? <img src={m.url} alt={m.alt_text||n.title} /> : <div className="media-placeholder" />}
+                      </div>
+                      <div className="card-body p-3 d-flex flex-column">
+                        <div className="mb-2"><span className="news-badge">{n.categoria || n.category || 'Noticia'}</span></div>
+                        <h5 className="mb-2">{n.title || n.titulo}</h5>
+                        <p className="text-muted small mb-3">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ''}</p>
+                        <p className="flex-grow-1 text-truncate-3">{n.summary || n.resumen || ''}</p>
+                        <div className="mt-3">
+                          <a href={`/noticia/${n.id}`} className="btn btn-outline-primary btn-sm">Leer más</a>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="text-muted">No hay noticias disponibles.</div>
+        )}
 
       </div>
     </section>
