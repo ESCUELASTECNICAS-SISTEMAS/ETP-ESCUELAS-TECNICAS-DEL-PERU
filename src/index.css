@@ -514,24 +514,42 @@ footer{background:#212529;color:#fff}
    ============================================= */
 .cd-page{padding-bottom:4rem}
 
-/* Animaciones */
+/* Animaciones burbujas — fast & continuous */
 @keyframes bubble-rise {
-  0% { transform: translateY(100vh) translateX(0px) scale(0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(-100vh) translateX(100px) scale(1); opacity: 0; }
+  0%   { transform: translateY(0) translateX(0) scale(.5); opacity: 0; }
+  5%   { opacity: .9; }
+  25%  { transform: translateY(-25vh) translateX(30px) scale(.8); }
+  50%  { transform: translateY(-50vh) translateX(-20px) scale(.95); }
+  75%  { transform: translateY(-75vh) translateX(25px) scale(1); }
+  95%  { opacity: .7; }
+  100% { transform: translateY(-105vh) translateX(-10px) scale(1); opacity: 0; }
 }
 @keyframes bubble-rise-2 {
-  0% { transform: translateY(100vh) translateX(0px) scale(0); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
-  100% { transform: translateY(-100vh) translateX(-80px) scale(1); opacity: 0; }
+  0%   { transform: translateY(0) translateX(0) scale(.45); opacity: 0; }
+  5%   { opacity: .85; }
+  25%  { transform: translateY(-22vh) translateX(-35px) scale(.75); }
+  50%  { transform: translateY(-48vh) translateX(25px) scale(.9); }
+  75%  { transform: translateY(-72vh) translateX(-30px) scale(1); }
+  95%  { opacity: .65; }
+  100% { transform: translateY(-105vh) translateX(15px) scale(1); opacity: 0; }
 }
 @keyframes bubble-rise-3 {
-  0% { transform: translateY(100vh) translateX(0px) scale(0); opacity: 0; }
-  10% { opacity: 0.9; }
-  90% { opacity: 0.9; }
-  100% { transform: translateY(-100vh) translateX(60px) scale(1); opacity: 0; }
+  0%   { transform: translateY(0) translateX(0) scale(.5); opacity: 0; }
+  5%   { opacity: .88; }
+  25%  { transform: translateY(-28vh) translateX(40px) scale(.82); }
+  50%  { transform: translateY(-52vh) translateX(-30px) scale(.92); }
+  75%  { transform: translateY(-78vh) translateX(20px) scale(1); }
+  95%  { opacity: .6; }
+  100% { transform: translateY(-105vh) translateX(-25px) scale(1); opacity: 0; }
+}
+@keyframes bubble-rise-4 {
+  0%   { transform: translateY(0) translateX(0) scale(.4); opacity: 0; }
+  5%   { opacity: .82; }
+  25%  { transform: translateY(-20vh) translateX(-25px) scale(.7); }
+  50%  { transform: translateY(-45vh) translateX(35px) scale(.88); }
+  75%  { transform: translateY(-70vh) translateX(-20px) scale(.98); }
+  95%  { opacity: .58; }
+  100% { transform: translateY(-105vh) translateX(30px) scale(1); opacity: 0; }
 }
 @keyframes slide-in-left {
   from { opacity: 0; transform: translateX(-30px); }
@@ -582,8 +600,8 @@ footer{background:#212529;color:#fff}
   background:radial-gradient(circle at 30% 30%, rgba(255,255,255,1), rgba(255,255,255,0.3));
   border-radius:50%;
   z-index:0;
-  animation: bubble-rise 6s ease-in infinite;
-  animation-delay:-5s;
+  animation: bubble-rise 4s ease-in-out infinite;
+  animation-delay:-2s;
   box-shadow:inset -4px -4px 15px rgba(0,0,0,0.15), 0 10px 30px rgba(255,255,255,0.2);
 }
 .cd-hero::after{
@@ -593,59 +611,91 @@ footer{background:#212529;color:#fff}
   background:radial-gradient(circle at 30% 30%, rgba(253,113,15,1), rgba(253,113,15,0.35));
   border-radius:50%;
   z-index:0;
-  animation: bubble-rise-2 7s ease-in infinite;
-  animation-delay:-4.5s;
+  animation: bubble-rise-2 4.5s ease-in-out infinite;
+  animation-delay:-1s;
   box-shadow:inset -4px -4px 15px rgba(0,0,0,0.2), 0 10px 30px rgba(253,113,15,0.25);
 }
-.cd-hero .bubble-1{
+/* Shared bubble base */
+.cd-hero [class^="bubble-"]{
   position:absolute;
-  left:10%;bottom:-50px;width:160px;height:160px;
-  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(255,255,255,0.25));
+  bottom:-60px;
   border-radius:50%;
   z-index:0;
-  animation: bubble-rise-3 8s ease-in infinite;
-  animation-delay:-6s;
-  box-shadow:inset -3px -3px 12px rgba(0,0,0,0.12), 0 8px 25px rgba(255,255,255,0.15);
+  will-change:transform,opacity;
+  pointer-events:none;
+}
+/* Individual bubbles — fast, staggered, always visible */
+.cd-hero .bubble-1{
+  left:3%;width:160px;height:160px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.92), rgba(255,255,255,.22));
+  animation: bubble-rise 3.8s ease-in-out infinite 0s;
+  box-shadow:inset -4px -4px 14px rgba(0,0,0,.1), 0 8px 28px rgba(255,255,255,.18);
 }
 .cd-hero .bubble-2{
-  position:absolute;
-  left:70%;bottom:-50px;width:150px;height:150px;
-  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,0.9), rgba(253,113,15,0.25));
-  border-radius:50%;
-  z-index:0;
-  animation: bubble-rise 6.5s ease-in infinite;
-  animation-delay:-4s;
-  box-shadow:inset -3px -3px 12px rgba(0,0,0,0.18), 0 8px 25px rgba(253,113,15,0.2);
+  left:85%;width:135px;height:135px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.85), rgba(253,113,15,.22));
+  animation: bubble-rise-2 3.5s ease-in-out infinite -.8s;
+  box-shadow:inset -3px -3px 12px rgba(0,0,0,.15), 0 8px 25px rgba(253,113,15,.22);
 }
 .cd-hero .bubble-3{
-  position:absolute;
-  left:30%;bottom:-50px;width:140px;height:140px;
-  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.2));
-  border-radius:50%;
-  z-index:0;
-  animation: bubble-rise-2 7.5s ease-in infinite;
-  animation-delay:-5.5s;
-  box-shadow:inset -3px -3px 12px rgba(0,0,0,0.12), 0 8px 25px rgba(255,255,255,0.15);
+  left:25%;width:115px;height:115px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.88), rgba(255,255,255,.2));
+  animation: bubble-rise-3 4.2s ease-in-out infinite -1.6s;
+  box-shadow:inset -3px -3px 12px rgba(0,0,0,.1), 0 6px 20px rgba(255,255,255,.14);
 }
 .cd-hero .bubble-4{
-  position:absolute;
-  left:55%;bottom:-50px;width:130px;height:130px;
-  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,0.85), rgba(253,113,15,0.2));
-  border-radius:50%;
-  z-index:0;
-  animation: bubble-rise-3 8.5s ease-in infinite;
-  animation-delay:-6.5s;
-  box-shadow:inset -3px -3px 12px rgba(0,0,0,0.15), 0 8px 25px rgba(253,113,15,0.18);
+  left:50%;width:150px;height:150px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.8), rgba(253,113,15,.2));
+  animation: bubble-rise-4 3.6s ease-in-out infinite -2.4s;
+  box-shadow:inset -3px -3px 12px rgba(0,0,0,.14), 0 8px 24px rgba(253,113,15,.2);
 }
 .cd-hero .bubble-5{
-  position:absolute;
-  left:20%;bottom:-50px;width:125px;height:125px;
-  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.88), rgba(255,255,255,0.18));
-  border-radius:50%;
-  z-index:0;
-  animation: bubble-rise 7s ease-in infinite;
-  animation-delay:-5s;
-  box-shadow:inset -3px -3px 12px rgba(0,0,0,0.12), 0 8px 25px rgba(255,255,255,0.15);
+  left:68%;width:95px;height:95px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), rgba(255,255,255,.18));
+  animation: bubble-rise 4s ease-in-out infinite -3.2s;
+  box-shadow:inset -2px -2px 10px rgba(0,0,0,.1), 0 6px 18px rgba(255,255,255,.12);
+}
+.cd-hero .bubble-6{
+  left:40%;width:85px;height:85px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.75), rgba(253,113,15,.18));
+  animation: bubble-rise-2 3.3s ease-in-out infinite -.4s;
+  box-shadow:inset -2px -2px 10px rgba(0,0,0,.12), 0 6px 18px rgba(253,113,15,.15);
+}
+.cd-hero .bubble-7{
+  left:92%;width:75px;height:75px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.82), rgba(255,255,255,.15));
+  animation: bubble-rise-3 3.9s ease-in-out infinite -1.2s;
+  box-shadow:inset -2px -2px 8px rgba(0,0,0,.08), 0 4px 14px rgba(255,255,255,.1);
+}
+.cd-hero .bubble-8{
+  left:15%;width:105px;height:105px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.72), rgba(253,113,15,.15));
+  animation: bubble-rise-4 4.4s ease-in-out infinite -2s;
+  box-shadow:inset -3px -3px 10px rgba(0,0,0,.12), 0 6px 20px rgba(253,113,15,.16);
+}
+.cd-hero .bubble-9{
+  left:58%;width:68px;height:68px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.84), rgba(255,255,255,.16));
+  animation: bubble-rise 3.2s ease-in-out infinite -2.8s;
+  box-shadow:inset -2px -2px 8px rgba(0,0,0,.08), 0 4px 12px rgba(255,255,255,.1);
+}
+.cd-hero .bubble-10{
+  left:78%;width:125px;height:125px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.78), rgba(253,113,15,.18));
+  animation: bubble-rise-3 3.7s ease-in-out infinite -3s;
+  box-shadow:inset -3px -3px 12px rgba(0,0,0,.13), 0 8px 22px rgba(253,113,15,.18);
+}
+.cd-hero .bubble-11{
+  left:35%;width:60px;height:60px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.8), rgba(255,255,255,.14));
+  animation: bubble-rise-4 3.4s ease-in-out infinite -.6s;
+  box-shadow:inset -2px -2px 8px rgba(0,0,0,.08), 0 4px 12px rgba(255,255,255,.1);
+}
+.cd-hero .bubble-12{
+  left:8%;width:90px;height:90px;
+  background:radial-gradient(circle at 30% 30%, rgba(253,113,15,.74), rgba(253,113,15,.14));
+  animation: bubble-rise-2 4.1s ease-in-out infinite -1.8s;
+  box-shadow:inset -2px -2px 10px rgba(0,0,0,.1), 0 6px 16px rgba(253,113,15,.14);
 }
 .cd-hero-overlay{
   position:relative;

@@ -462,6 +462,13 @@ export default function CourseDetail() {
         <div className="bubble-3"></div>
         <div className="bubble-4"></div>
         <div className="bubble-5"></div>
+        <div className="bubble-6"></div>
+        <div className="bubble-7"></div>
+        <div className="bubble-8"></div>
+        <div className="bubble-9"></div>
+        <div className="bubble-10"></div>
+        <div className="bubble-11"></div>
+        <div className="bubble-12"></div>
         <div className="cd-hero-overlay">
           <div className="container">
             <button onClick={() => navigate(-1)} className="btn-back mb-3 btn btn-light shadow-sm rounded-pill">
