@@ -28,25 +28,58 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from './utils/apiStatic'
 
+const DEFAULT_WA_MESSAGE = 'Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A'
+
+function formatWaHref(number){
+  if(!number) return '#'
+  const digits = String(number).replace(/\D/g,'')
+  if(!digits) return '#'
+  let num = digits
+  if(!num.startsWith('51')){
+    num = num.replace(/^0+/, '')
+    if(!num.startsWith('51')) num = '51' + num
+  }
+  return `https://wa.me/${num}?text=${DEFAULT_WA_MESSAGE}`
+}
+
+function ScrollToTop(){
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      setTimeout(() => {
+        const el = document.querySelector(hash)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        else window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 50)
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [pathname, hash])
+  return null
+}
+
 export default function App(){
   const [waOpen, setWaOpen] = React.useState(false)
-  
-  function ScrollToTop(){
-    const { pathname, hash } = useLocation()
-    useEffect(() => {
-      if (hash) {
-        // try to scroll to anchor, fallback to top
-        setTimeout(() => {
-          const el = document.querySelector(hash)
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          else window.scrollTo({ top: 0, behavior: 'smooth' })
-        }, 50)
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
-    }, [pathname, hash])
-    return null
+  const [selectedSucursal, setSelectedSucursal] = React.useState(() => {
+    try{ const raw = localStorage.getItem('etp_selected_sucursal'); return raw ? JSON.parse(raw) : null }catch(e){ return null }
+  })
+
+  // update selected sucursal when user selects on Home
+  useEffect(() => {
+    const onChange = (ev) => setSelectedSucursal(ev?.detail || null)
+    window.addEventListener('etp:sucursal:change', onChange)
+    return () => window.removeEventListener('etp:sucursal:change', onChange)
+  }, [])
+
+  function getWhatsappNumberFromSelection(){
+    try{
+      const s = selectedSucursal
+      if(s && s.telefono) return s.telefono
+    }catch(e){}
+    // default ICA
+    return '950 340 502'
   }
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <ScrollToTop />
@@ -86,34 +119,30 @@ export default function App(){
         style={{ zIndex: 1080 }}
       >
         {/* Instagram & Facebook from API */}
-        <SocialLinksButtons />
+        <SocialLinksButtons selectedSucursal={selectedSucursal} />
 
         {/* Divider */}
         <hr className="w-100 my-0 border-secondary opacity-25" />
 
         {/* WhatsApp sub-numbers (shown when open) */}
-        {waOpen && (
-          <div className="d-flex flex-column gap-2 align-items-end">
-            <a
-              href="https://wa.me/51950340502?text=Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A"
-              target="_blank" rel="noopener noreferrer"
-              className="btn btn-success rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2"
-              aria-label="WhatsApp 950 340 502"
-            >
-              <i className="bi bi-whatsapp fs-5"></i>
-              <span className="small fw-semibold">950 340 502</span>
-            </a>
-            <a
-              href="https://wa.me/51962324393?text=Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A"
-              target="_blank" rel="noopener noreferrer"
-              className="btn btn-success rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2"
-              aria-label="WhatsApp 962 324 393"
-            >
-              <i className="bi bi-whatsapp fs-5"></i>
-              <span className="small fw-semibold">962 324 393</span>
-            </a>
-          </div>
-        )}
+          {waOpen && (
+            <div className="d-flex flex-column gap-2 align-items-end">
+              {(() => {
+                const n = getWhatsappNumberFromSelection()
+                return (
+                  <a
+                    href={formatWaHref(n)}
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn btn-success rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2"
+                    aria-label={`WhatsApp ${n}`}
+                  >
+                    <i className="bi bi-whatsapp fs-5"></i>
+                    <span className="small fw-semibold">{n}</span>
+                  </a>
+                )
+              })()}
+            </div>
+          )}
 
         {/* WhatsApp main toggle button */}
         <button
@@ -129,7 +158,7 @@ export default function App(){
   )
 }
 
-function SocialLinksButtons(){
+function SocialLinksButtons({ selectedSucursal }){
   const [links, setLinks] = useState([])
 
   useEffect(() => {
@@ -174,8 +203,22 @@ function SocialLinksButtons(){
   }, [])
 
   const visible = (links || []).filter(l => l && l.active)
-  const filtered = visible.filter(l => ['instagram','facebook'].includes(String(l.network).toLowerCase()))
 
+  // Filter by selected sucursal: each link has sucursal.id
+  const sucursalId = selectedSucursal ? selectedSucursal.id : null
+  const forSucursal = sucursalId
+    ? visible.filter(l => l.sucursal && String(l.sucursal.id) === String(sucursalId))
+    : []
+  // Use sucursal-specific links if available, otherwise fall back to first sucursal's links
+  const source = forSucursal.length ? forSucursal : visible
+  // Dedupe by network (one facebook, one instagram)
+  const byNetwork = new Map()
+  for(const item of source){
+    const net = String(item.network || '').toLowerCase()
+    if(!net) continue
+    if(!byNetwork.has(net)) byNetwork.set(net, item)
+  }
+  const filtered = Array.from(byNetwork.values()).filter(l => ['instagram','facebook'].includes(String(l.network).toLowerCase()))
   if(!filtered.length) return null
 
   const netConfig = {
@@ -191,7 +234,7 @@ function SocialLinksButtons(){
 
   return (
     <>
-      {filtered.map((s, i) => {
+        {filtered.map((s, i) => {
         const net = String(s.network).toLowerCase()
         const cfg = netConfig[net] || { icon: 'bi bi-link', style: {} }
         return (
@@ -200,7 +243,8 @@ function SocialLinksButtons(){
             href={s.value}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+              className="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+
             style={{ width: 48, height: 48, fontSize: '1.25rem', ...cfg.style }}
             aria-label={s.network}
           >

@@ -34,12 +34,27 @@ function Counter({ end, suffix = '' }) {
 
 export default function NosotrosPage() {
   const bgVideoRef = useRef(null)
+  const [videoReady, setVideoReady] = useState(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const v = bgVideoRef.current
     if (!v) return
-    const p = v.play()
-    if (p && typeof p.catch === 'function') p.catch(() => {})
+
+    // Only start loading when the hero is visible
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        v.preload = 'auto'
+        v.load()
+        const tryPlay = () => {
+          const p = v.play()
+          if (p && typeof p.catch === 'function') p.catch(() => {})
+        }
+        v.addEventListener('canplay', () => { setVideoReady(true); tryPlay() }, { once: true })
+        observer.disconnect()
+      }
+    }, { threshold: 0.1 })
+    observer.observe(v)
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -50,18 +65,25 @@ export default function NosotrosPage() {
         className="position-relative overflow-hidden d-flex align-items-center justify-content-center text-center"
         style={{ minHeight: '100vh' }}
       >
-        {/* Video de fondo */}
+        {/* Video de fondo – GPU-accelerated, lazy-loaded */}
         <video
           ref={bgVideoRef}
-          preload="auto"
-          autoPlay
+          preload="none"
           muted
           loop
           playsInline
+          poster="https://res.cloudinary.com/du6mveaoo/video/upload/so_0/q_auto,f_jpg,w_1280/v1772496442/0605_aarpwd.jpg"
           className="position-absolute top-0 start-0 w-100 h-100"
-          style={{ objectFit: 'cover', zIndex: 0 }}
+          style={{
+            objectFit: 'cover',
+            zIndex: 0,
+            willChange: 'transform',
+            transform: 'translateZ(0)',
+            opacity: videoReady ? 1 : 0.3,
+            transition: 'opacity 0.8s ease'
+          }}
         >
-          <source src="https://res.cloudinary.com/du6mveaoo/video/upload/v1772496442/0605_aarpwd.mp4" type="video/mp4" />
+          <source src="https://res.cloudinary.com/du6mveaoo/video/upload/q_auto,f_auto/v1772496442/0605_aarpwd.mp4" type="video/mp4" />
         </video>
 
         {/* Overlay removed to show video without filters */}

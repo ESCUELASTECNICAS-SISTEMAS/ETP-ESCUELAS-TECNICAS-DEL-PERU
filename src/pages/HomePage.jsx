@@ -43,6 +43,12 @@ export default function HomePage(){
     return [...preferred, ...remaining].slice(0, 2)
   }, [sucursales])
 
+  const handleSelectSucursal = (sucursal) => {
+    setSelectedSucursalId(sucursal.id)
+    try{ localStorage.setItem('etp_selected_sucursal', JSON.stringify(sucursal)) }catch(e){}
+    try{ window.dispatchEvent(new CustomEvent('etp:sucursal:change',{ detail: sucursal })) }catch(e){}
+  }
+
   return (
     <div className="home-page">
       <HeroCarousel />
@@ -60,13 +66,13 @@ export default function HomePage(){
                   const isActive = String(selectedSucursalId) === String(sucursal.id)
                   return (
                     <button
-                      key={sucursal.id}
-                      type="button"
-                      className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${isActive ? 'btn-success shadow-sm' : 'btn-outline-success'}`}
-                      onClick={() => setSelectedSucursalId(sucursal.id)}
-                    >
-                      {sucursal.nombre}
-                    </button>
+                          key={sucursal.id}
+                          type="button"
+                          className={`btn btn-sm rounded-pill px-4 py-2 fw-semibold ${isActive ? 'btn-success shadow-sm' : 'btn-outline-success'}`}
+                          onClick={() => handleSelectSucursal(sucursal)}
+                        >
+                          {sucursal.nombre}
+                        </button>
                   )
                 })}
               </div>
