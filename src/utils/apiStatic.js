@@ -17,4 +17,5 @@ export const endpoints = {
   ,SOCIAL_LINKS: `${BASE_API}/social-links`
 }
 
+
 export default { endpoints }
