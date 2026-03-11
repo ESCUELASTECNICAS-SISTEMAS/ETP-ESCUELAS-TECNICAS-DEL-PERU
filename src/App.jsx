@@ -24,14 +24,32 @@ import AdminSeminarios from './pages/AdminSeminarios'
 import AdminNoticias from './pages/AdminNoticias'
 import AdminSocialLinks from './pages/AdminSocialLinks'
 import AdminRoute from './components/layout/AdminRoute'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from './utils/apiStatic'
 
 export default function App(){
   const [waOpen, setWaOpen] = React.useState(false)
+  
+  function ScrollToTop(){
+    const { pathname, hash } = useLocation()
+    useEffect(() => {
+      if (hash) {
+        // try to scroll to anchor, fallback to top
+        setTimeout(() => {
+          const el = document.querySelector(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          else window.scrollTo({ top: 0, behavior: 'smooth' })
+        }, 50)
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }, [pathname, hash])
+    return null
+  }
   return (
     <div className="d-flex flex-column min-vh-100">
+      <ScrollToTop />
       <Navbar />
       <main className="flex-grow-1">
         <Routes>

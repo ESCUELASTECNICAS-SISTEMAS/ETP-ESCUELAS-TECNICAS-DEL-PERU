@@ -54,6 +54,18 @@ export default function Navbar() {
 
   const handleLogin = (u) => setUser(u)
 
+  const closeMobileMenu = () => {
+    try {
+      const nav = document.getElementById('navbarSupportedContent')
+      if (!nav) return
+      if (nav.classList.contains('show')) {
+        nav.classList.remove('show')
+        const toggler = document.querySelector('.navbar-toggler')
+        if (toggler) toggler.setAttribute('aria-expanded', 'false')
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   return (
     <>
       <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
@@ -79,26 +91,26 @@ export default function Navbar() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
               <li className="nav-item">
-                <Link className="nav-link active" aria-current="page" to="/">Inicio</Link>
+                <Link className="nav-link active" aria-current="page" to="/" onClick={closeMobileMenu}>Inicio</Link>
               </li>
               <li className="nav-item dropdown">
                 <a className="nav-link dropdown-toggle" href="#" id="cursosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Cursos
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="cursosDropdown">
-                  <li><Link className="dropdown-item" to="/talleres">Cursos Talleres</Link></li>
-                  <li><Link className="dropdown-item" to="/cinco-meses">Cursos de 5 Meses</Link></li>
-                  <li><Link className="dropdown-item" to="/cursos-informatica">Ofimática</Link></li>
+                  <li><Link className="dropdown-item" to="/talleres" onClick={closeMobileMenu}>Cursos Talleres</Link></li>
+                  <li><Link className="dropdown-item" to="/cinco-meses" onClick={closeMobileMenu}>Cursos de 5 Meses</Link></li>
+                  <li><Link className="dropdown-item" to="/cursos-informatica" onClick={closeMobileMenu}>Ofimática</Link></li>
                 </ul>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/programas">Carreras</Link>
+                <Link className="nav-link" to="/programas" onClick={closeMobileMenu}>Carreras</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/nosotros">Nosotros</Link>
+                <Link className="nav-link" to="/nosotros" onClick={closeMobileMenu}>Nosotros</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/noticias">Noticias</Link>
+                <Link className="nav-link" to="/noticias" onClick={closeMobileMenu}>Noticias</Link>
               </li>
               {/* Buscador compacto */}
               <li className="nav-item ms-2 position-relative">
@@ -121,7 +133,7 @@ export default function Navbar() {
                         key={c.id}
                         className="px-3 py-2 border-bottom small"
                         style={{cursor:'pointer'}}
-                        onMouseDown={() => { navigate(`/curso/${c.slug || c.id}`); setQuery(''); setShowResults(false) }}
+                        onMouseDown={() => { navigate(`/curso/${c.slug || c.id}`); setQuery(''); setShowResults(false); closeMobileMenu() }}
                       >
                         <strong>{c.title || c.titulo}</strong>
                         {c.subtitle && <div className="text-muted" style={{fontSize:'.75rem'}}>{c.subtitle}</div>}
@@ -133,7 +145,7 @@ export default function Navbar() {
               {/* Auth area */}
               {!user && (
                 <li className="nav-item ms-2">
-                  <Link className="btn btn-login-nav" to="/login">
+                  <Link className="btn btn-login-nav" to="/login" onClick={closeMobileMenu}>
                     <i className="bi bi-person-circle me-2"></i>Iniciar sesión
                   </Link>
                 </li>
@@ -145,7 +157,7 @@ export default function Navbar() {
                     {user.name || user.email}
                   </a>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                    <li><Link className="dropdown-item" to="/admin">Panel</Link></li>
+                    <li><Link className="dropdown-item" to="/admin" onClick={closeMobileMenu}>Panel</Link></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><button className="dropdown-item" onClick={handleLogout}>Cerrar sesión</button></li>
                   </ul>
