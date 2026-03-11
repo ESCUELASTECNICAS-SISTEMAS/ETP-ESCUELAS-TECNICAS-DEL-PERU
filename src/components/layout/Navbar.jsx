@@ -153,8 +153,10 @@ export default function Navbar() {
 
               {user && (
                 <li className="nav-item dropdown ms-3">
-                  <a className="nav-link dropdown-toggle text-white" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    {user.name || user.email}
+                  <a className="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span style={{maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block'}}>
+                      {user.name || user.email}
+                    </span>
                   </a>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                     <li><Link className="dropdown-item" to="/admin" onClick={closeMobileMenu}>Panel</Link></li>
