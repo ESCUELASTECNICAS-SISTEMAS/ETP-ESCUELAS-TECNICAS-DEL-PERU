@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
 
 export default function HeroCarousel() {
   const [slides, setSlides] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const fetchSlides = async () => {
     setLoading(true)
@@ -62,9 +62,41 @@ export default function HeroCarousel() {
     .filter(it => Boolean(it.url))
     .slice(0, 3)
 
+  const carouselRef = useRef(null)
+
+  useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
+    let instance = null
+    // prefer Bootstrap's Carousel if available
+    try{
+      if (window.bootstrap && window.bootstrap.Carousel) {
+        instance = new window.bootstrap.Carousel(el, { interval: 1000, ride: 'carousel', pause: 'hover', touch: true })
+      } else {
+        // fallback: advance by clicking next every 5s
+        const timer = setInterval(() => {
+          const btn = el.querySelector('.carousel-control-next')
+          if (btn) btn.click()
+        }, 5000)
+        instance = { _fallbackTimer: timer }
+      }
+    }catch(e){
+      console.error('init hero carousel autoplay', e)
+    }
+
+    return () => {
+      try{
+        if (instance) {
+          if (instance.dispose) instance.dispose()
+          if (instance._fallbackTimer) clearInterval(instance._fallbackTimer)
+        }
+      }catch(e){}
+    }
+  }, [items.length])
+
   return (
     <section id="inicio">
-      <div id="heroCarousel" className="carousel slide" data-bs-ride="carousel">
+      <div id="heroCarousel" ref={carouselRef} className="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
         <div className="carousel-indicators">
           {items.map((_, i) => (
             <button key={i} type="button" data-bs-target="#heroCarousel" data-bs-slide-to={i} className={i===0 ? 'active' : ''} aria-current={i===0 ? 'true' : undefined} aria-label={`Slide ${i+1}`}></button>

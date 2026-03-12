@@ -84,7 +84,7 @@ export default function AdminCarousel(){
   const truncateTo100Words = (text) => {
     if (!text) return ''
     const words = text.trim().split(/\s+/).filter(w => w.length > 0)
-    if (words.length <= 100) return words.join(' ')
+    if (words.length <= 100) return text  // preserve raw value (spaces included)
     return words.slice(0, 100).join(' ')
   }
 

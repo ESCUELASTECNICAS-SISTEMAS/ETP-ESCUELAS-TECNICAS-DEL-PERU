@@ -169,17 +169,46 @@ export default function NosotrosPage() {
           <div className="col-lg-6">
             <span className="badge rounded-pill text-bg-warning fs-6 px-3 py-2 mb-3">¿Quiénes Somos?</span>
             <h2 className="display-5 fw-bold mb-4">
-              Transformando vidas a través de la <span className="text-primary fst-italic">formación</span>
+              Más de <span style={{color:'var(--accent)'}}>15 años</span> transformando vidas a través de la{' '}
+              <span className="text-primary fst-italic">educación</span>
             </h2>
+
+            {/* Highlight banner */}
+            <div
+              className="rounded-4 p-4 mb-4 d-flex align-items-center gap-3"
+              style={{background:'linear-gradient(135deg,rgba(253,113,15,0.1),rgba(67,56,202,0.08))', border:'1.5px solid rgba(253,113,15,0.25)'}}
+            >
+              <span style={{fontSize:'2.5rem'}}>🏆</span>
+              <div>
+                <div className="fw-bold fs-5 mb-1">Líderes en formación técnica en el Perú</div>
+                <div className="text-muted small">Desde nuestra fundación hemos capacitado a <strong>miles de estudiantes</strong> que hoy trabajan y crecen profesionalmente.</div>
+              </div>
+            </div>
+
             <p className="text-secondary fs-5 lh-lg mb-3">
-              Somos un equipo dedicado a transformar vidas a través de la educación de calidad.
-              Con años de experiencia en la formación de profesionales, hemos impactado positivamente
-              a miles de estudiantes que hoy son competentes en sus campos.
+              Somos <strong>ETP — Escuelas Técnicas del Perú</strong>, una institución con más de <strong>15 años de trayectoria</strong>{' '}
+              brindando educación de calidad en formación técnica, carreras auxiliares, talleres y programas de ofimática.
+              Hemos impactado positivamente la vida de miles de estudiantes que hoy son profesionales competentes.
             </p>
-            <p className="text-secondary fs-5 lh-lg">
-              Nuestra trayectoria se fundamenta en la pasión por la educación de calidad y el desarrollo
-              integral de nuestros estudiantes, combinando lo mejor de la teoría y la práctica profesional.
+            <p className="text-secondary fs-5 lh-lg mb-4">
+              Nuestra fortaleza radica en combinar docentes con experiencia real en la industria, 
+              una currícula actualizada al mercado laboral y el acompañamiento personalizado que cada alumno merece 
+              para alcanzar sus metas.
             </p>
+
+            {/* Mini stats */}
+            <div className="d-flex gap-4 flex-wrap">
+              {[
+                { num: '+15', label: 'Años de experiencia' },
+                { num: '+5 mil', label: 'Alumnos egresados' },
+                { num: '2', label: 'Sedes en Perú' },
+              ].map((s, i) => (
+                <div key={i} className="text-center">
+                  <div className="fw-bold fs-3" style={{color:'var(--accent)'}}>{s.num}</div>
+                  <div className="text-muted small">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="col-lg-6">
             <div className="row g-3">
