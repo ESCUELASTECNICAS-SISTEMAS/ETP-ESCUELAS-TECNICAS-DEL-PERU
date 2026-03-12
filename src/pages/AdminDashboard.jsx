@@ -67,6 +67,7 @@ export default function AdminDashboard(){
 		{ title: 'Convenios', desc: 'Gestionar convenios por curso', icon: 'bi-handshake', to:'/admin/convenios' },
 		{ title: 'Seminarios', desc: 'Gestionar seminarios por curso', icon: 'bi-calendar-event', to:'/admin/seminarios' },
 		{ title: 'Media', desc: 'Imágenes y recursos', icon: 'bi-card-image', to:'/admin/media' },
+		{ title: 'Galería', desc: 'Editar galería pública', icon: 'bi-grid-3x3-gap', to:'/admin/gallery' },
 		{ title: 'Social Links', desc: 'Enlaces y números sociales', icon: 'bi-share', to:'/admin/social' },
 		{ title: 'Usuarios', desc: 'Gestión de administradores', icon: 'bi-people', to:'/admin/users' }
 	]

@@ -66,6 +66,8 @@ export default function Navbar() {
     } catch (e) { /* ignore */ }
   }
 
+
+
   return (
     <>
       <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
@@ -106,8 +108,14 @@ export default function Navbar() {
               <li className="nav-item">
                 <Link className="nav-link" to="/programas" onClick={closeMobileMenu}>Carreras</Link>
               </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/nosotros" onClick={closeMobileMenu}>Nosotros</Link>
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Nosotros
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="nosotrosDropdown">
+                  <li><Link className="dropdown-item" to="/nosotros" onClick={closeMobileMenu}>Sobre nosotros</Link></li>
+                  <li><Link className="dropdown-item" to="/galeria" onClick={closeMobileMenu}>Ver galería</Link></li>
+                </ul>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/noticias" onClick={closeMobileMenu}>Noticias</Link>

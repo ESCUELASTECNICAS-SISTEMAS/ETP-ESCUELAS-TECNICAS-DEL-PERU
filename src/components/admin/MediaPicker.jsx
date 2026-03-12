@@ -18,7 +18,7 @@ export default function MediaPicker({ mediaList = [], loading = false, selectedI
   return (
     <div ref={ref} style={{position:'relative'}}>
       <button type="button" className="form-select d-flex align-items-center justify-content-between" onClick={()=>setOpen(v=>!v)} style={{padding:'6px 8px',gap:8}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
           <div style={{width:thumbnailSize,height:thumbnailSize,overflow:'hidden',borderRadius:6,background:'#f6f6f6',flex:'0 0 auto'}}>
             {selected ? (
               <img src={selected.url} alt={selected.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover'}} />
@@ -26,7 +26,7 @@ export default function MediaPicker({ mediaList = [], loading = false, selectedI
               <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#999',fontSize:12}}>--</div>
             )}
           </div>
-          <div style={{minWidth:120}}>{selected ? (selected.alt_text || `ID ${selected.id}`) : `-- ${label} --`}</div>
+          <div style={{minWidth:120}}>{selected ? (`${selected.alt_text || `ID ${selected.id}`}${selected.category ? ` · ${selected.category}` : ''}`) : `-- ${label} --`}</div>
         </div>
         <span className="text-muted">▾</span>
       </button>
@@ -55,7 +55,7 @@ export default function MediaPicker({ mediaList = [], loading = false, selectedI
                   <div style={{width:'100%',height:thumbnailSize,overflow:'hidden',borderRadius:8,boxShadow:isSel ? '0 0 0 3px rgba(0,123,255,0.12)' : 'none',border:isSel ? '2px solid rgba(0,123,255,0.14)' : '1px solid rgba(0,0,0,0.06)'}}>
                     <img src={m.url} alt={m.alt_text||''} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
                   </div>
-                  <div className="small text-truncate mt-1">{m.alt_text || `ID ${m.id}`}{m.active === false ? ' (desactivado)' : ''}</div>
+                  <div className="small text-truncate mt-1">{m.alt_text || `ID ${m.id}`}{m.category ? ` · ${m.category}` : ''}{m.active === false ? ' (desactivado)' : ''}</div>
                 </button>
               )
             })}

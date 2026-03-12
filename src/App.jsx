@@ -19,6 +19,8 @@ import AdminMedia from './pages/AdminMedia'
 import AdminCourses from './pages/AdminCourses'
 import AdminUsers from './pages/AdminUsers'
 import AdminLoginEvents from './pages/AdminLoginEvents'
+import GalleryPage from './pages/GalleryPage'
+import AdminGallery from './pages/AdminGallery'
 import AdminCertificaciones from './pages/AdminCertificaciones'
 import AdminDocentes from './pages/AdminDocentes'
 import AdminConvenios from './pages/AdminConvenios'
@@ -111,6 +113,8 @@ export default function App(){
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/carousel" element={<AdminRoute><AdminCarousel /></AdminRoute>} />
             <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
+            <Route path="/galeria" element={<GalleryPage />} />
+            <Route path="/admin/gallery" element={<AdminRoute><AdminGallery /></AdminRoute>} />
             <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/login-events" element={<AdminRoute><AdminLoginEvents /></AdminRoute>} />

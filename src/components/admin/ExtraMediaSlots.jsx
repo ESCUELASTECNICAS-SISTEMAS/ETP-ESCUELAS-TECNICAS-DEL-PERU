@@ -14,8 +14,8 @@ export default function ExtraMediaSlots({ extraMedia = [], mediaList = [], loadi
           <div key={i} style={{position:'relative',width:140}}>
             <MediaSelector thumbnailSize={thumbnailSize} popupWidth={popupWidth} mediaList={mediaList} loading={loadingMedia} selectedId={(Array.isArray(extraMedia) && extraMedia[i]) ? extraMedia[i] : undefined} onSelect={id=>onSet(i, id)} label={`extra ${i+1}`} />
             {(Array.isArray(extraMedia) && extraMedia[i]) ? (
-              <div className="d-flex align-items-center gap-2 mt-2">
-                <div className="small text-truncate" style={{flex:1}}>{(findMediaById(extraMedia[i])||{}).alt_text || `ID ${extraMedia[i]}`}</div>
+                <div className="d-flex align-items-center gap-2 mt-2">
+                <div className="small text-truncate" style={{flex:1}}>{((findMediaById(extraMedia[i])||{}).alt_text || `ID ${extraMedia[i]}`)}{(findMediaById(extraMedia[i])||{}).category ? ` · ${(findMediaById(extraMedia[i])||{}).category}` : ''}</div>
                 <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>onRemove(i)} title="Quitar">✕</button>
               </div>
             ) : (

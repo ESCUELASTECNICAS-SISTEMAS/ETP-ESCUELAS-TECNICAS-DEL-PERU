@@ -10,12 +10,14 @@ export default function AdminMedia(){
 
   const [url, setUrl] = useState('')
   const [alt, setAlt] = useState('')
+  const [category, setCategory] = useState('')
 
   const token = localStorage.getItem('etp_token')
 
   const [editingId, setEditingId] = useState(null)
   const [editUrl, setEditUrl] = useState('')
   const [editAlt, setEditAlt] = useState('')
+  const [editCategory, setEditCategory] = useState('')
   const [editActive, setEditActive] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showInactive, setShowInactive] = useState(false)
@@ -39,12 +41,16 @@ export default function AdminMedia(){
     setError(null)
     if(!url) return setError('Ingresa la URL de la imagen')
     try{
-      const payload = { url, alt_text: alt }
-      await axios.post(endpoints.MEDIA, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      const payload = { url, alt_text: alt, category: category || null }
+      console.log('AdminMedia: POST payload', payload)
+      const res = await axios.post(endpoints.MEDIA, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      console.log('AdminMedia: POST response', res && res.data)
       setUrl(''); setAlt('')
+      setCategory('')
       fetchMedia()
     }catch(err){
       console.error(err)
+      if (err.response) console.log('AdminMedia: POST error response', err.response.data)
       setError('Error al crear media')
     }
   }
@@ -68,6 +74,7 @@ export default function AdminMedia(){
     setEditUrl(m.url || '')
     setEditAlt(m.alt_text || '')
     setEditActive(Boolean(m.active))
+    setEditCategory(m.category || '')
   }
 
   const cancelEdit = () => {
@@ -77,12 +84,15 @@ export default function AdminMedia(){
   const saveEdit = async (id) => {
     setSaving(true); setError(null)
     try{
-      const payload = { url: editUrl, alt_text: editAlt, active: editActive }
-      await axios.put(`${endpoints.MEDIA}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      const payload = { url: editUrl, alt_text: editAlt, active: editActive, category: editCategory || null }
+      console.log('AdminMedia: PUT payload', id, payload)
+      const res = await axios.put(`${endpoints.MEDIA}/${id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      console.log('AdminMedia: PUT response', res && res.data)
       cancelEdit()
       fetchMedia()
     }catch(err){
       console.error('saveEdit', err)
+      if (err.response) console.log('AdminMedia: PUT error response', err.response.data)
       setError('Error al actualizar media')
     }finally{setSaving(false)}
   }
@@ -93,9 +103,12 @@ export default function AdminMedia(){
   const toggleActive = async (m) => {
     setError(null)
     try{
-      await axios.put(`${endpoints.MEDIA}/${m.id}`, { active: !m.active }, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      const payload = { url: m.url, alt_text: m.alt_text, active: !m.active, category: m.category || null }
+      console.log('AdminMedia: toggleActive PUT payload', m.id, payload)
+      const res = await axios.put(`${endpoints.MEDIA}/${m.id}`, payload, { headers: token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' } })
+      console.log('AdminMedia: toggleActive response', res && res.data)
       fetchMedia()
-    }catch(err){ console.error('toggleActive', err); setError('No se pudo cambiar activo') }
+    }catch(err){ console.error('toggleActive', err); if (err.response) console.log('AdminMedia: toggleActive error', err.response.data); setError('No se pudo cambiar activo') }
   }
 
   const deleteMedia = async (m) => {
@@ -130,6 +143,10 @@ export default function AdminMedia(){
                 <div className="mb-3">
                   <label className="form-label">Texto alternativo</label>
                   <input className="form-control" value={alt} onChange={e=>setAlt(e.target.value)} placeholder="Descripción breve" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Categoría (opcional)</label>
+                  <input className="form-control" value={category} onChange={e=>setCategory(e.target.value)} placeholder="Ej: portada, seminario, curso" />
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="d-grid">
@@ -167,7 +184,8 @@ export default function AdminMedia(){
                           <div>
                             <div className="mb-2">
                               <input className="form-control form-control-sm mb-1" value={editUrl} onChange={e=>setEditUrl(e.target.value)} />
-                              <input className="form-control form-control-sm" value={editAlt} onChange={e=>setEditAlt(e.target.value)} />
+                              <input className="form-control form-control-sm mb-1" value={editAlt} onChange={e=>setEditAlt(e.target.value)} />
+                              <input className="form-control form-control-sm" value={editCategory} onChange={e=>setEditCategory(e.target.value)} placeholder="Categoría (opcional)" />
                             </div>
                             <div className="d-flex gap-2">
                               <div className="form-check form-switch">
@@ -181,6 +199,7 @@ export default function AdminMedia(){
                         ) : (
                           <>
                             <div className="small text-truncate mb-2">{m.alt_text || 'Sin alt'}</div>
+                            {m.category ? <div className="small text-muted">Categoría: {m.category}</div> : null}
                             <div className="d-flex gap-2">
                               <button className="btn btn-sm btn-outline-secondary" onClick={()=>handleCopy(m.url)}>Copiar URL</button>
                               <button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(m)}>Editar</button>
@@ -203,7 +222,8 @@ export default function AdminMedia(){
                         <div className="card h-100" style={{opacity:0.6}}>
                           <img src={m.url} alt={m.alt_text || ''} className="card-img-top" style={{height:120,objectFit:'cover',filter:'grayscale(10%)'}} />
                           <div className="card-body p-2">
-                            <div className="small text-truncate mb-2">{m.alt_text || 'Sin alt'}</div>
+                                <div className="small text-truncate mb-2">{m.alt_text || 'Sin alt'}</div>
+                                {m.category ? <div className="small text-muted">Categoría: {m.category}</div> : null}
                             <div className="d-flex gap-2">
                               <button className="btn btn-sm btn-outline-secondary" onClick={()=>handleCopy(m.url)}>Copiar URL</button>
                               <button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(m)}>Editar</button>
