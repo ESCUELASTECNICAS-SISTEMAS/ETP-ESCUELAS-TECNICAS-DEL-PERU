@@ -100,9 +100,8 @@ export default function Navbar() {
                   Cursos
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="cursosDropdown">
-                  <li><Link className="dropdown-item" to="/talleres" onClick={closeMobileMenu}>Cursos Talleres</Link></li>
-                  <li><Link className="dropdown-item" to="/cinco-meses" onClick={closeMobileMenu}>Cursos de 5 Meses</Link></li>
-                  <li><Link className="dropdown-item" to="/cursos-informatica" onClick={closeMobileMenu}>Capacítate</Link></li>
+                  <li><Link className="dropdown-item" to="/talleres" onClick={closeMobileMenu}>Talleres</Link></li>
+                  <li><Link className="dropdown-item" to="/cursos-informatica" onClick={closeMobileMenu}>Cortos</Link></li>
                 </ul>
               </li>
               <li className="nav-item">

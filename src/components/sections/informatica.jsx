@@ -110,7 +110,7 @@ export default function Informatica({ selectedSucursalId = null, selectedModalid
       <div className="container">
         <div className="section-header">
           <div>
-            <h3 className="section-title">Capacítate con Nosotros</h3>
+            <h3 className="section-title">Cursos Cortos</h3>
             <p className="section-subtitle">Domina las herramientas digitales esenciales</p>
           </div>
           <a href="/cursos-informatica" className="section-link">Ver todos <i className="bi bi-arrow-right"></i></a>
