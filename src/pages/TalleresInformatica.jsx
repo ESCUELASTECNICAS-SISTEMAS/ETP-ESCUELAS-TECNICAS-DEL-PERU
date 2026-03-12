@@ -42,6 +42,10 @@ export default function CursosInformatica(){
   const informatica = cursos.filter(c => {
     const tipo = (c.tipo || c.type || '').toLowerCase()
     return tipo === 'ofimatica' || tipo === 'informatica' || tipo === 'ofimática'
+  }).sort((a, b) => {
+    const norm = (v='') => v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+    const isSoporte = (c) => { const t = norm(c.titulo||c.title||''); return t.includes('soporte') || t.includes('reparacion') || t.includes('mantenimiento') ? 1 : 0 }
+    return isSoporte(a) - isSoporte(b)
   })
 
   return (

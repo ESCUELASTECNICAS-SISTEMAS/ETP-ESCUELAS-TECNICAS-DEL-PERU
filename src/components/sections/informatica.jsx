@@ -22,9 +22,11 @@ const ORDER_RULES = [
   { rank: 2, words: ['especialista', 'excel'] },
   { rank: 3, words: ['especialista', 'diseno', 'grafico'] },
   { rank: 4, words: ['produccion', 'edicion', 'video'] },
-  { rank: 5, words: ['mantenimiento', 'reparacion'] },
-  { rank: 6, words: ['power', 'bi'] },
-  { rank: 7, words: ['sql', 'server'] },
+  { rank: 5, words: ['power', 'bi'] },
+  { rank: 6, words: ['sql', 'server'] },
+  { rank: 99, words: ['mantenimiento'] },
+  { rank: 99, words: ['reparacion'] },
+  { rank: 99, words: ['soporte'] },
 ]
 
 const getCourseRank = (course) => {
