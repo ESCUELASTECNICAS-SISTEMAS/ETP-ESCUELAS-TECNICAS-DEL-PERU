@@ -6,11 +6,17 @@ import { endpoints } from '../../utils/apiStatic'
 export default function CardCurso({curso}){
   const [showBranchModal, setShowBranchModal] = useState(false)
   const [sucursales, setSucursales] = useState([])
+  const [defaultSedeId, setDefaultSedeId] = useState(null)
 
   useEffect(() => {
     if (!showBranchModal) return
     axios.get(endpoints.SUCURSALES)
-      .then(r => setSucursales((Array.isArray(r.data) ? r.data : []).filter(s => s.active !== false)))
+      .then(r => {
+        const list = (Array.isArray(r.data) ? r.data : []).filter(s => s.active !== false)
+        setSucursales(list)
+        const ica = list.find(s => (s.nombre || s.name || '').toLowerCase().includes('ica'))
+        if (ica) setDefaultSedeId(ica.id)
+      })
       .catch(() => setSucursales([]))
   }, [showBranchModal])
 
@@ -56,18 +62,39 @@ export default function CardCurso({curso}){
           <button type="button" onClick={()=>setShowBranchModal(true)} className="btn btn-sm btn-success cc-overlay-btn" style={{backgroundColor:'#25D366',borderColor:'#25D366'}}><i className="bi bi-whatsapp me-1"></i>Inscribirme</button>
         </div>
         {showBranchModal && (
-          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,.55)',borderRadius:'inherit',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}} onClick={()=>setShowBranchModal(false)}>
-            <div style={{background:'#fff',borderRadius:12,padding:'1.2rem',minWidth:200,maxWidth:280,boxShadow:'0 8px 24px rgba(0,0,0,.2)'}} onClick={e=>e.stopPropagation()}>
-              <p className="fw-bold text-center mb-3" style={{fontSize:'.9rem'}}>¿De qué sucursal eres?</p>
+          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,.6)',borderRadius:'inherit',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center',padding:'.8rem'}} onClick={()=>setShowBranchModal(false)}>
+            <div style={{background:'#fff',borderRadius:14,padding:'1.4rem',minWidth:240,maxWidth:320,boxShadow:'0 8px 28px rgba(0,0,0,.25)'}} onClick={e=>e.stopPropagation()}>
+              <p className="fw-bold text-center mb-2" style={{fontSize:'1.05rem'}}>Selecciona tu sede</p>
+              <div style={{background:'#e8f5e9',border:'1px solid #a5d6a7',borderRadius:10,padding:'.55rem .75rem',marginBottom:'.8rem',fontSize:'.8rem',color:'#2e7d32',display:'flex',alignItems:'center',gap:'.4rem'}}>
+                <i className="bi bi-geo-alt-fill"></i>
+                <span>Estás en sede <strong>Ica</strong>. Puedes cambiar si deseas.</span>
+              </div>
               {sucursales.length === 0 && <p className="text-muted small text-center">Cargando...</p>}
               <div className="d-grid gap-2">
-                {sucursales.map(s => (
-                  <button key={s.id} className="btn btn-success btn-sm d-flex align-items-center justify-content-center gap-2" style={{backgroundColor:'#25D366',borderColor:'#25D366'}} onClick={()=>openWhatsApp(s)}>
-                    <i className="bi bi-whatsapp"></i> {s.nombre || s.name}
-                  </button>
-                ))}
+                {sucursales.map(s => {
+                  const isDefault = s.id === defaultSedeId
+                  return (
+                    <button key={s.id}
+                      className="btn d-flex align-items-center justify-content-center gap-2"
+                      style={{
+                        backgroundColor: isDefault ? '#25D366' : 'transparent',
+                        borderColor: '#25D366',
+                        color: isDefault ? '#fff' : '#25D366',
+                        fontSize:'1rem',
+                        padding:'.65rem 1rem',
+                        fontWeight: isDefault ? 700 : 500,
+                        borderWidth:2, borderStyle:'solid', borderRadius:10,
+                      }}
+                      onClick={()=>openWhatsApp(s)}
+                    >
+                      <i className={`bi ${isDefault ? 'bi-geo-alt-fill' : 'bi-whatsapp'}`}></i>
+                      {s.nombre || s.name}
+                      {isDefault && <span style={{fontSize:'.65rem',background:'rgba(255,255,255,.3)',borderRadius:6,padding:'1px 6px',marginLeft:4}}>✓ Sede actual</span>}
+                    </button>
+                  )
+                })}
               </div>
-              <button className="btn btn-sm btn-outline-secondary w-100 mt-2" onClick={()=>setShowBranchModal(false)}>Cancelar</button>
+              <button className="btn btn-outline-secondary w-100 mt-2" style={{fontSize:'.9rem',padding:'.5rem',borderRadius:10}} onClick={()=>setShowBranchModal(false)}>Cancelar</button>
             </div>
           </div>
         )}
