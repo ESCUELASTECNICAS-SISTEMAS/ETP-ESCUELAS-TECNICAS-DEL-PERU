@@ -383,6 +383,35 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('temario')
+  const [showSedeModal, setShowSedeModal] = useState(false)
+  const [sucursales, setSucursales] = useState([])
+  const [defaultSedeId, setDefaultSedeId] = useState(null)
+
+  useEffect(() => {
+    if (!showSedeModal) return
+    axios.get(endpoints.SUCURSALES)
+      .then(r => {
+        const list = (Array.isArray(r.data) ? r.data : []).filter(s => s.active !== false)
+        setSucursales(list)
+        const ica = list.find(s => (s.nombre || s.name || '').toLowerCase().includes('ica'))
+        if (ica) setDefaultSedeId(ica.id)
+      })
+      .catch(() => setSucursales([]))
+  }, [showSedeModal])
+
+  const openWhatsApp = (suc) => {
+    if (!course) return
+    const nombre = course.title || course.titulo || 'este curso'
+    const sucName = suc.nombre || suc.name || ''
+    const phoneRaw = (suc.telefono || suc.phone || suc.telefono_whatsapp || '950340502').replace(/\D/g, '')
+    const number = phoneRaw.startsWith('51') ? phoneRaw : '51' + phoneRaw
+    const rawMod = String(course.modalidad || course.mode || '').toLowerCase()
+    const esVirtual = rawMod.includes('virtual') || Boolean(course.is_virtual)
+    const modalidadTxt = esVirtual ? ' en modalidad VIRTUAL' : ''
+    const msg = encodeURIComponent(`Hola, vengo desde la página y me interesa inscribirme en el curso: ${nombre}${modalidadTxt} y soy de la sucursal ${sucName}`)
+    window.open(`https://wa.me/${number}?text=${msg}`, '_blank')
+    setShowSedeModal(false)
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -511,6 +540,22 @@ export default function CourseDetail() {
   return (
     <>
     <div className="cd-page">
+      {course && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": course.title || course.titulo || '',
+          "description": String(course.subtitle || course.description || '').slice(0,300),
+          "courseCode": course.code || course.codigo || String(course.id || ''),
+          "url": (typeof window !== 'undefined' ? window.location.href : ''),
+          "inLanguage": course.language || 'es',
+          "provider": {
+            "@type": "Organization",
+            "name": "ETP - Escuelas Técnicas del Perú",
+            "sameAs": "https://www.escuelastecnicas.pe/"
+          }
+        }) }} />
+      )}
       {/* ═══ HERO ═══ */}
       <div className="cd-hero">
         <div className="bubble-1"></div>
@@ -547,8 +592,49 @@ export default function CourseDetail() {
                     <button onClick={handleExplorarPlan} className="btn btn-primary btn-lg me-3 shadow">
                       <i className="bi bi-book-fill me-2"></i>Explora el Plan de Estudios
                     </button>
-
+                    <button onClick={()=>setShowSedeModal(true)} className="btn btn-lg shadow" style={{backgroundColor:'#25D366',borderColor:'#25D366',color:'#fff'}}>
+                      <i className="bi bi-whatsapp me-2"></i>Matricularme
+                    </button>
                   </div>
+
+                  {/* Modal selección de sede */}
+                  {showSedeModal && (
+                    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}} onClick={()=>setShowSedeModal(false)}>
+                      <div style={{background:'#fff',borderRadius:16,padding:'1.8rem',minWidth:300,maxWidth:400,boxShadow:'0 12px 40px rgba(0,0,0,.3)',animation:'fadeInUp .3s ease'}} onClick={e=>e.stopPropagation()}>
+                        <h5 className="fw-bold text-center mb-2" style={{fontSize:'1.15rem'}}><i className="bi bi-geo-alt-fill text-success me-2"></i>Selecciona tu sede</h5>
+                        <div style={{background:'#e8f5e9',border:'1px solid #a5d6a7',borderRadius:12,padding:'.6rem .9rem',marginBottom:'1rem',fontSize:'.85rem',color:'#2e7d32',display:'flex',alignItems:'center',gap:'.5rem'}}>
+                          <i className="bi bi-info-circle-fill"></i>
+                          <span>Estás en sede <strong>Ica</strong>. Puedes elegir otra sede si deseas.</span>
+                        </div>
+                        {sucursales.length === 0 && <p className="text-muted text-center">Cargando sedes...</p>}
+                        <div className="d-grid gap-2">
+                          {sucursales.map(s => {
+                            const isDefault = s.id === defaultSedeId
+                            return (
+                              <button key={s.id}
+                                className="btn d-flex align-items-center justify-content-center gap-2"
+                                style={{
+                                  backgroundColor: isDefault ? '#25D366' : 'transparent',
+                                  borderColor: '#25D366',
+                                  color: isDefault ? '#fff' : '#25D366',
+                                  fontSize:'1.05rem',
+                                  padding:'.7rem 1.2rem',
+                                  fontWeight: isDefault ? 700 : 500,
+                                  borderWidth:2, borderStyle:'solid', borderRadius:12,
+                                }}
+                                onClick={()=>openWhatsApp(s)}
+                              >
+                                <i className={`bi ${isDefault ? 'bi-geo-alt-fill' : 'bi-whatsapp'}`}></i>
+                                {s.nombre || s.name}
+                                {isDefault && <span style={{fontSize:'.7rem',background:'rgba(255,255,255,.3)',borderRadius:6,padding:'2px 8px',marginLeft:4}}>✓ Sede actual</span>}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <button className="btn btn-outline-secondary w-100 mt-3" style={{fontSize:'.95rem',padding:'.55rem',borderRadius:12}} onClick={()=>setShowSedeModal(false)}>Cancelar</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               {img && (
