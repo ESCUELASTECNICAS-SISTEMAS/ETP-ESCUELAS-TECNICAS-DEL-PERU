@@ -54,7 +54,8 @@ export default function CourseCard({ item, showPrice = true }) {
 
   const hoursVal = item.duration || item.hours || item.horas || null
   const subtitle = item.subtitle || item.descripcion || ''
-  const detailUrl = item.tipo === 'Programa' ? `/programa/${item.id}` : `/curso/${item.id}`
+  const courseKey = item.slug || item.id
+  const detailUrl = item.tipo === 'Programa' ? `/programa/${courseKey}` : `/curso/${courseKey}`
 
   return (
     <div className="cc-card card border border-secondary-subtle shadow-sm h-100">

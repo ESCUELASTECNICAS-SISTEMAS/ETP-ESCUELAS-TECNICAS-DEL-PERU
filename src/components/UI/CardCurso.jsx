@@ -34,7 +34,8 @@ export default function CardCurso({curso}){
   }
 
   const imgSrc = curso.image || curso.imagen || (curso.thumbnail && curso.thumbnail.url) || '/assets/images/cursos/curso-1.jpg'
-  const detailUrl = `/curso/${curso.id}`
+  const courseKey = curso.slug || curso.id
+  const detailUrl = `/curso/${courseKey}`
   const subtitle = curso.subtitle || curso.descripcion || ''
   const price = curso.precio ?? curso.price ?? curso.pago_unico ?? null
   const matricula = curso.matricula ?? curso.enrollment ?? null

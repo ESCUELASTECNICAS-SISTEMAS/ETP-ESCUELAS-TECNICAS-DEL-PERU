@@ -41,8 +41,12 @@ const run = async () => {
     const res = await axios.get(apiEndpoints.COURSES)
     const courses = Array.isArray(res.data) ? res.data : []
     for (const c of courses) {
-      const slug = c.slug || c.id || (c.title && encodeURIComponent(String(c.title).toLowerCase().replace(/\s+/g,'-')))
-      const loc = `${SITE_ROOT}/curso/${slug}`
+      const rawSlug = c.slug || c.id || (c.title && String(c.title).toLowerCase().replace(/\s+/g,'-'))
+      const slug = rawSlug ? String(rawSlug).trim() : ''
+      const typeVal = String(c.tipo || c.type || '').toLowerCase()
+      const isPrograma = typeVal.includes('program') || typeVal.includes('programa')
+      const pathSegment = isPrograma ? '/programa/' : '/curso/'
+      const loc = `${SITE_ROOT}${pathSegment}${encodeURIComponent(slug)}`
       urls.add({ loc, lastmod: fmtDate(c.updated_at || c.updatedAt || c.published_at || c.publishedAt), priority: '0.8' })
     }
   } catch (e) {

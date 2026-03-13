@@ -377,7 +377,8 @@ const generateBrochurePDF = async (course, schedulesByDay) => {
 }
 
 export default function CourseDetail() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params.id || params.slug || params.courseSlug || params.programaSlug
   const navigate = useNavigate()
   const [course, setCourse] = useState(null)
   const [loading, setLoading] = useState(true)
