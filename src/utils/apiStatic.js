@@ -17,6 +17,7 @@ export const endpoints = {
   ,SOCIAL_LINKS: `${BASE_API}/social-links`
   ,VISITS: `${BASE_API}/visits`
   ,VISIT_STATS: `${BASE_API}/visits/stats`
+    ,TIPS: `${BASE_API}/tips`
 }
 
 

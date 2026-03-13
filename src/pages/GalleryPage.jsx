@@ -2,18 +2,28 @@ import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 
-const ALLOWED_CATEGORIES = ['promociones', 'testimonios', 'administrativo']
+const ALLOWED_CATEGORIES = ['promociones', 'tips', 'testimonios', 'administrativo']
 
 const CATEGORY_META = {
-  promociones:    { icon: 'bi-megaphone',    color: '#e74c3c' },
-  testimonios:    { icon: 'bi-chat-quote',   color: '#2ecc71' },
-  administrativo: { icon: 'bi-building',     color: '#3498db' },
+  promociones:    { icon: 'bi-megaphone',    color: '#e74c3c', label: 'Promociones' },
+  tips:           { icon: 'bi-lightbulb',    color: '#f39c12', label: 'Tips y recomendaciones' },
+  testimonios:    { icon: 'bi-chat-quote',   color: '#2ecc71', label: 'Testimonios' },
+  administrativo: { icon: 'bi-building',     color: '#3498db', label: 'Administrativo' },
 }
 
 export default function GalleryPage(){
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('')
+  const TIP_CATEGORIES = [
+    'ofimatica',
+    'diseño grafico',
+    'administrativo',
+    'contabilidad',
+    'informatica general',
+    'talleres practicos'
+  ]
+  const [tipFilter, setTipFilter] = useState('')
   const [lightbox, setLightbox] = useState(null) // index in filtered
 
   useEffect(()=>{
@@ -21,12 +31,22 @@ export default function GalleryPage(){
     const load = async () => {
       setLoading(true)
       try{
-        const res = await axios.get(endpoints.MEDIA)
+        const [mres, tres] = await Promise.allSettled([axios.get(endpoints.MEDIA), axios.get(endpoints.TIPS)])
         if(!mounted) return
-        const data = (res.data || [])
-          .filter(m => m.active && m.category && ALLOWED_CATEGORIES.includes(m.category.toLowerCase()))
-          .map(m => ({ ...m, category: m.category.toLowerCase() }))
-        setItems(data)
+        let mediaData = []
+        if(mres.status === 'fulfilled'){
+          mediaData = (mres.value.data || [])
+            .filter(m => m.active && m.category && ALLOWED_CATEGORIES.includes(m.category.toLowerCase()))
+            .map(m => ({ ...m, category: m.category.toLowerCase() }))
+        }
+        // map tips into gallery-like items with category 'tips'
+        let tipsData = []
+        if(tres.status === 'fulfilled'){
+          const raw = Array.isArray(tres.value.data) ? tres.value.data : []
+          tipsData = raw.map(t => ({ id: `tip-${t.id}`, url: t.image_url, alt_text: t.alt_text || t.title || '', category: 'tips', active: true, tip: t }))
+        }
+        // For the gallery we include both media items and tips; tips already have category 'tips'
+        setItems([...mediaData, ...tipsData])
       }catch(e){ console.error('gallery fetch', e) }
       finally{ if(mounted) setLoading(false) }
     }
@@ -34,7 +54,13 @@ export default function GalleryPage(){
     return ()=>{ mounted = false }
   }, [])
 
-  const filtered = category ? items.filter(i => i.category === category) : items
+  const filtered = (() => {
+    if(!category) return items
+    if(category === 'tips'){
+      return items.filter(i => i.category === 'tips' && ( !tipFilter || (i.tip && (i.tip.category||'').toLowerCase() === tipFilter.toLowerCase()) ))
+    }
+    return items.filter(i => i.category === category)
+  })()
 
   // lightbox navigation
   const openLightbox = (idx) => setLightbox(idx)
@@ -104,11 +130,21 @@ export default function GalleryPage(){
           const meta = CATEGORY_META[c] || {}
           return (
             <button key={c} className={`gf-btn${category === c ? ' active' : ''}`} onClick={()=>setCategory(c)}>
-              <i className={`bi ${meta.icon || 'bi-tag'}`}></i> {c.charAt(0).toUpperCase() + c.slice(1)}
+              <i className={`bi ${meta.icon || 'bi-tag'}`}></i> {meta.label || (c.charAt(0).toUpperCase() + c.slice(1))}
             </button>
           )
         })}
       </div>
+
+      {/* Tip sub-filter */}
+      {category === 'tips' && (
+        <div style={{display:'flex',justifyContent:'center',marginBottom:'1rem'}}>
+          <select className="form-select" style={{width:320}} value={tipFilter} onChange={e=>setTipFilter(e.target.value)}>
+            <option value="">Todas las subcategorías</option>
+            {TIP_CATEGORIES.map(tc => <option key={tc} value={tc}>{tc.charAt(0).toUpperCase() + tc.slice(1)}</option>)}
+          </select>
+        </div>
+      )}
 
       {/* Content */}
       {loading && (
