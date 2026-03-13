@@ -1,9 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
-import { endpoints as apiEndpoints } from '../src/utils/apiStatic.js'
 
+// NOTE: we do NOT import src/utils/apiStatic.js here because that file
+// uses `import.meta.env` (Vite) which is undefined when running under
+// plain Node during `postbuild`. Instead read env vars directly and
+// provide a sensible fallback.
+const BASE_API = process.env.VITE_API_BASE || process.env.API_BASE || 'https://servidorpaginaetp-production.up.railway.app'
 const SITE_ROOT = process.env.SITE_ROOT || 'https://www.escuelastecnicas.pe'
+
+const apiEndpoints = {
+  COURSES: `${BASE_API}/courses`,
+  NEWS: `${BASE_API}/noticias`
+}
 
 const outPath = (name) => path.resolve(process.cwd(), name)
 
