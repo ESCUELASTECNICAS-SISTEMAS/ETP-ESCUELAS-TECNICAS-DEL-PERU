@@ -7,7 +7,9 @@ import axios from 'axios'
 // plain Node during `postbuild`. Instead read env vars directly and
 // provide a sensible fallback.
 const BASE_API = process.env.VITE_API_BASE || process.env.API_BASE || 'https://servidorpaginaetp-production.up.railway.app'
-const SITE_ROOT = process.env.SITE_ROOT || 'https://www.escuelastecnicas.pe'
+// Default to the Railway deployment domain you provided so generated
+// sitemap/robots point to the correct production URLs.
+const SITE_ROOT = process.env.SITE_ROOT || 'https://etp-escuelas-tecnicas-del-peru-production.up.railway.app'
 
 const apiEndpoints = {
   COURSES: `${BASE_API}/courses`,
