@@ -35,11 +35,13 @@ export default function CarrerasPage(){
             media = Array.isArray(mres.data) ? mres.data : []
           } catch (e) {}
         }
-        const mapped = apiCursos.map(c => ({
-          ...c,
-          titulo: c.title || c.titulo || c.name,
-          image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
-        }))
+        const mapped = apiCursos
+          .filter(c => c.active !== false && c.published !== false)
+          .map(c => ({
+            ...c,
+            titulo: c.title || c.titulo || c.name,
+            image: c.image || c.imagen || c.image_url || (c.thumbnail && c.thumbnail.url) || (c.media && c.media.url) || (c.thumbnail_media_id ? (media.find(m => String(m.id) === String(c.thumbnail_media_id)) || {}).url : null),
+          }))
         if (mapped.length) setCarreras(mapped)
       } catch (err) {
         console.warn('fetch courses failed', err)

@@ -1,319 +1,614 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { endpoints } from '../utils/apiStatic'
 
-function Counter({ end, suffix = '' }) {
-  const [count, setCount] = useState(0)
-  const ref = useRef(null)
-  const started = useRef(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
-        started.current = true
-        const steps = 60
-        const duration = 1800
-        const inc = parseFloat(end) / steps
-        let current = 0
-        const timer = setInterval(() => {
-          current += inc
-          if (current >= parseFloat(end)) {
-            setCount(end)
-            clearInterval(timer)
-          } else {
-            setCount(Math.floor(current))
-          }
-        }, duration / steps)
-      }
-    }, { threshold: 0.3 })
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [end])
-
-  return <span ref={ref}>{count}{suffix}</span>
+const KEYFRAMES = `
+@keyframes fadeUp { from{opacity:0;transform:translateY(36px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin   { to{transform:rotate(360deg)} }
+@keyframes pulse  { 0%,100%{opacity:.6} 50%{opacity:1} }
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.fu0{animation:fadeUp .8s ease both}
+.fu1{animation:fadeUp .8s .15s ease both}
+.fu2{animation:fadeUp .8s .3s ease both}
+.fu3{animation:fadeUp .8s .45s ease both}
+.fu4{animation:fadeUp .8s .6s ease both}
+`
+function injectKF(){
+  if(document.getElementById('__nkf2'))return
+  const s=document.createElement('style');s.id='__nkf2';s.textContent=KEYFRAMES
+  document.head.appendChild(s)
 }
 
-export default function NosotrosPage() {
-  const bgVideoRef = useRef(null)
-  const [videoReady, setVideoReady] = useState(false)
-
-  useEffect(() => {
-    const v = bgVideoRef.current
-    if (!v) return
-
-    // Only start loading when the hero is visible
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        v.preload = 'auto'
-        v.load()
-        const tryPlay = () => {
-          const p = v.play()
-          if (p && typeof p.catch === 'function') p.catch(() => {})
-        }
-        v.addEventListener('canplay', () => { setVideoReady(true); tryPlay() }, { once: true })
-        observer.disconnect()
+function Counter({end}){
+  const [c,setC]=useState(0),ref=useRef(null),started=useRef(false)
+  useEffect(()=>{
+    const obs=new IntersectionObserver(([e])=>{
+      if(e.isIntersecting&&!started.current){
+        started.current=true
+        const steps=60,dur=1800,inc=parseFloat(end)/steps;let cur=0
+        const t=setInterval(()=>{ cur+=inc; if(cur>=parseFloat(end)){setC(end);clearInterval(t)}else setC(Math.floor(cur)) },dur/steps)
       }
-    }, { threshold: 0.1 })
-    observer.observe(v)
-    return () => observer.disconnect()
-  }, [])
+    },{threshold:.3})
+    if(ref.current)obs.observe(ref.current)
+    return()=>obs.disconnect()
+  },[end])
+  return <span ref={ref}>{c}</span>
+}
 
-  return (
-    <div>
+export default function NosotrosPage(){
+  const videoRef=useRef(null)
+  const [data,setData]=useState(null)
+  const [loading,setLoading]=useState(true)
+  const [error,setError]=useState(null)
+  const [preForm,setPreForm]=useState({nombres:'',apellidos:'',dni:'',telefono:'',email:'',modalidad_id:'',course_id:'',sucursal_id:''})
+  const [preSending,setPreSending]=useState(false)
+  const [preMsg,setPreMsg]=useState('')
+  const [preErr,setPreErr]=useState('')
+  const [modalidades,setModalidades]=useState([])
+  const [sucursales,setSucursales]=useState([])
 
-      {/* ══ HERO con video de fondo ══ */}
-      <div
-        className="position-relative overflow-hidden d-flex align-items-center justify-content-center text-center"
-        style={{ minHeight: '100vh' }}
+  useEffect(()=>{injectKF()},[])
+
+  useEffect(()=>{
+    ;(async()=>{
+      try{
+        const res=await axios.get(endpoints.NOSOTROS,{timeout:5000})
+        let rec=Array.isArray(res.data)?res.data[0]:res.data
+        setData(rec||null)
+        if(!rec)setError('No hay registros en la base de datos')
+      }catch(e){setError(`Error: ${e.message}`)}
+      finally{setLoading(false)}
+    })()
+    // Cargar modalidades
+    axios.get(endpoints.MODALIDADES).then(r=>{
+      setModalidades(Array.isArray(r.data)?r.data:[])
+    }).catch(()=>setModalidades([]))
+    // Cargar sucursales
+    axios.get(endpoints.SUCURSALES).then(r=>{
+      setSucursales(Array.isArray(r.data)?r.data:[])
+    }).catch(()=>setSucursales([]))
+  },[])
+
+  const preBase=endpoints.PRE_INSCRIPCIONES || `${(import.meta.env.VITE_API_BASE||'http://localhost:3000').replace(/\/$/,'')}/pre-inscripciones`
+
+  const cleanPayload=(obj)=>Object.entries(obj).reduce((acc,[k,v])=>{
+    if(v===undefined||v===null||String(v).trim()==='')return acc
+    acc[k]=v
+    return acc
+  },{})
+
+  const normalizeId=(v)=>{
+    const n=Number(v)
+    return Number.isFinite(n)?n:undefined
+  }
+
+  const submitPre=(e)=>{
+    e.preventDefault()
+    setPreErr('');setPreMsg('');setPreSending(true)
+    // LOG: Mostrar datos antes de enviar
+    const data = {
+      nombre: preForm.nombres,
+      apellido: preForm.apellidos,
+      nombres: preForm.nombres,
+      apellidos: preForm.apellidos,
+      dni: preForm.dni,
+      celular: preForm.telefono,
+      telefono: preForm.telefono,
+      email: preForm.email,
+      modalidad_id: preForm.modalidad_id ? Number(preForm.modalidad_id) : undefined,
+      course_id: preForm.course_id ? Number(preForm.course_id) : undefined,
+      sucursal_id: preForm.sucursal_id ? Number(preForm.sucursal_id) : undefined,
+      acepta_politicas: true
+    }
+    console.log('Datos a enviar:', data)
+    axios.post(preBase, data).then(()=>{
+      setPreMsg('¡Pre-inscripción enviada! Te contactaremos pronto.')
+      setPreForm({nombres:'',apellidos:'',dni:'',telefono:'',email:'',modalidad_id:'',course_id:'',sucursal_id:''})
+    }).catch(err=>{
+      console.error('pre-inscripcion',err)
+      setPreErr('No se pudo enviar. Intenta de nuevo o revisa los datos.')
+    }).finally(()=>setPreSending(false))
+  }
+
+  if(loading)return(
+    <div className="min-vh-100 d-flex align-items-center justify-content-center"
+      style={{background:'#0f0f14'}}>
+      <div className="text-center">
+        <div style={{width:48,height:48,border:'3px solid rgba(255,255,255,0.1)',borderTop:'3px solid #f97316',borderRadius:'50%',animation:'spin .8s linear infinite',margin:'0 auto 16px'}}/>
+        <p className="fw-semibold" style={{color:'#888',letterSpacing:'0.08em',fontSize:'.9rem'}}>Cargando…</p>
+      </div>
+    </div>
+  )
+
+  if(error||!data)return(
+    <div className="min-vh-100 d-flex align-items-center justify-content-center"
+      style={{background:'#0f0f14'}}>
+      <div className="text-center text-white p-5 rounded-4"
+        style={{border:'1px solid rgba(255,255,255,0.1)',maxWidth:420}}>
+        <div className="fs-1 mb-3">{error?'❌':'⚠️'}</div>
+        <h5 className="fw-bold mb-2">{error?'Error al cargar':'Sin datos'}</h5>
+        <p style={{color:'#888'}}>{error||'No hay información disponible.'}</p>
+      </div>
+    </div>
+  )
+
+  const valores=(data?.valores||[]).map(v=>typeof v==='string'?{title:v.replace(/:$/,'').trim()}:v)
+
+  // Paleta alineada a la web: azules institucionales + dorado
+  const valorColors=[
+    {bg:'linear-gradient(135deg,#1a3ab5,#3b6ef8)',shadow:'rgba(26,58,181,0.35)'},
+    {bg:'linear-gradient(135deg,#0d1b5a,#1a3ab5)',shadow:'rgba(13,27,90,0.4)'},
+    {bg:'linear-gradient(135deg,#ffc107,#ffe58a)',shadow:'rgba(255,193,7,0.45)'},
+    {bg:'linear-gradient(135deg,#1a3ab5,#4f8bff)',shadow:'rgba(26,58,181,0.35)'},
+    {bg:'linear-gradient(135deg,#0d1b5a,#182e72)',shadow:'rgba(13,27,90,0.45)'},
+    {bg:'linear-gradient(135deg,#ffc107,#ffda6a)',shadow:'rgba(255,193,7,0.4)'},
+    {bg:'linear-gradient(135deg,#1a3ab5,#3b6ef8)',shadow:'rgba(26,58,181,0.35)'},
+    {bg:'linear-gradient(135deg,#0d1b5a,#1a3ab5)',shadow:'rgba(13,27,90,0.4)'},
+    {bg:'linear-gradient(135deg,#ffc107,#ffe58a)',shadow:'rgba(255,193,7,0.45)'},
+    {bg:'linear-gradient(135deg,#1a3ab5,#4f8bff)',shadow:'rgba(26,58,181,0.35)'},
+  ]
+  const emojis=['⭐','🤝','💡','❤️','🌱','🔥','🏆','📚','✨','🚀']
+
+  return(
+    <div style={{background:'#0f0f14',color:'#fff',fontFamily:"'Segoe UI',system-ui,sans-serif"}}>
+
+      {/* ═══════════════════════════════════════════
+          1 ▸ HERO + FORMULARIO flotante (estilo UPSJB)
+      ═══════════════════════════════════════════ */}
+      <section
+        id="preinscripcion"
+        className="position-relative overflow-hidden d-flex align-items-center"
+        style={{
+          minHeight:'100vh',
+          paddingTop:100,
+          paddingBottom:80,
+          background:'linear-gradient(145deg,#0b37c9 0%,#0a2fa3 45%,#061a66 100%)'
+        }}
       >
-        {/* Video de fondo – GPU-accelerated, lazy-loaded */}
-        <video
-          ref={bgVideoRef}
-          preload="none"
-          muted
-          loop
-          playsInline
-          poster="https://res.cloudinary.com/du6mveaoo/video/upload/so_0/q_auto,f_jpg,w_1280/v1772496442/0605_aarpwd.jpg"
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            objectFit: 'cover',
-            zIndex: 0,
-            willChange: 'transform',
-            transform: 'translateZ(0)',
-            opacity: videoReady ? 1 : 0.3,
-            transition: 'opacity 0.8s ease'
-          }}
-        >
-          <source src="https://res.cloudinary.com/du6mveaoo/video/upload/q_auto,f_auto/v1772496442/0605_aarpwd.mp4" type="video/mp4" />
-        </video>
+        {/* Patrón de puntos */}
+        <div className="position-absolute w-100 h-100" style={{opacity:.15,backgroundImage:'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.14) 1px, transparent 0)',backgroundSize:'20px 20px'}}/>
+        {/* Blobs decorativos */}
+        <div className="position-absolute rounded-circle d-none d-lg-block" style={{width:480,height:480,background:'radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 70%)',top:'-8%',left:'-6%',pointerEvents:'none'}}/>
+        <div className="position-absolute rounded-circle d-none d-lg-block" style={{width:320,height:320,background:'radial-gradient(circle,rgba(255,176,23,0.12) 0%,transparent 70%)',bottom:'5%',left:'30%',pointerEvents:'none'}}/>
 
-        {/* Overlay removed to show video without filters */}
-
-        {/* Contenido */}
-        <div className="container py-5 position-relative" style={{ zIndex: 2 }}>
-          <span
-            className="d-inline-block text-uppercase fw-bold mb-4 px-3 py-2 rounded-pill"
-            style={{
-              background: 'rgba(253,113,15,0.12)',
-              color: 'var(--accent)',
-              border: '1.5px solid rgba(253,113,15,0.35)',
-              letterSpacing: '3px',
-              fontSize: '0.85rem',
-              textShadow: '0 1px 8px rgba(0,0,0,0.6)'
-            }}
-          >
-            Conoce nuestra historia
-          </span>
-          <h1
-            className="fw-bold mb-4"
-            style={{
-              fontSize: 'clamp(3rem, 8vw, 6rem)',
-              color: '#ffffff',
-              textShadow: '0 6px 36px rgba(0,0,0,0.85), 0 3px 12px rgba(0,0,0,0.6)',
-              lineHeight: 1.1,
-              letterSpacing: '-1px'
-            }}
-          >
-            Sobre{' '}
-            <span
-              style={{
-                color: 'var(--accent)',
-                textShadow: '0 3px 12px rgba(0,0,0,0.75), 0 0 14px rgba(253,113,15,0.22)'
-              }}
-            >
-              Nosotros
-            </span>
-          </h1>
-          <p
-            className="mb-5 mx-auto"
-            style={{
-              color: '#ffffff',
-              fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
-              textShadow: '0 3px 18px rgba(0,0,0,0.75)',
-              maxWidth: '600px',
-              fontWeight: 600,
-              lineHeight: 1.6
-            }}
-          >
-            Conoce nuestra historia, misión y compromiso con la educación de calidad
-          </p>
-          <a
-            href="#quienes-somos"
-            className="btn btn-lg px-5 py-3 rounded-pill fw-bold"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent), rgba(253,113,15,0.85))',
-              color: '#ffffff',
-              border: 'none',
-              boxShadow: '0 8px 32px rgba(253,113,15,0.25)',
-              fontSize: '1rem',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Descubrir más ↓
-          </a>
-        </div>
-
-        {/* Flecha animada al fondo */}
-        <div
-          className="position-absolute bottom-0 start-50 translate-middle-x pb-4"
-          style={{ zIndex: 2, opacity: 0.7 }}
-        >
-            <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-            <path d="M15 6v18M7 17l8 8 8-8" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-      </div>
-
-      {/* ══ QUIÉNES SOMOS ══ */}
-      <div id="quienes-somos" className="container py-5">
-        <div className="row align-items-center g-5">
-          <div className="col-lg-6">
-            <span className="badge rounded-pill text-bg-warning fs-6 px-3 py-2 mb-3">¿Quiénes Somos?</span>
-            <h2 className="display-5 fw-bold mb-4">
-              Más de <span style={{color:'var(--accent)'}}>15 años</span> transformando vidas a través de la{' '}
-              <span className="text-primary fst-italic">educación</span>
-            </h2>
-
-            {/* Highlight banner */}
-            <div
-              className="rounded-4 p-4 mb-4 d-flex align-items-center gap-3"
-              style={{background:'linear-gradient(135deg,rgba(253,113,15,0.1),rgba(67,56,202,0.08))', border:'1.5px solid rgba(253,113,15,0.25)'}}
-            >
-              <span style={{fontSize:'2.5rem'}}>🏆</span>
-              <div>
-                <div className="fw-bold fs-5 mb-1">Líderes en formación técnica en el Perú</div>
-                <div className="text-muted small">Desde nuestra fundación hemos capacitado a <strong>miles de estudiantes</strong> que hoy trabajan y crecen profesionalmente.</div>
-              </div>
-            </div>
-
-            <p className="text-secondary fs-5 lh-lg mb-3">
-              Somos <strong>ETP — Escuelas Técnicas del Perú</strong>, una institución con más de <strong>15 años de trayectoria</strong>{' '}
-              brindando educación de calidad en formación técnica, carreras auxiliares, talleres y programas de ofimática.
-              Hemos impactado positivamente la vida de miles de estudiantes que hoy son profesionales competentes.
-            </p>
-            <p className="text-secondary fs-5 lh-lg mb-4">
-              Nuestra fortaleza radica en combinar docentes con experiencia real en la industria, 
-              una currícula actualizada al mercado laboral y el acompañamiento personalizado que cada alumno merece 
-              para alcanzar sus metas.
-            </p>
-
-            {/* Mini stats */}
-            <div className="d-flex gap-4 flex-wrap">
-              {[
-                { num: '+15', label: 'Años de experiencia' },
-                { num: '+5 mil', label: 'Alumnos egresados' },
-                { num: '2', label: 'Sedes en Perú' },
-              ].map((s, i) => (
-                <div key={i} className="text-center">
-                  <div className="fw-bold fs-3" style={{color:'var(--accent)'}}>{s.num}</div>
-                  <div className="text-muted small">{s.label}</div>
+        <div className="container position-relative" style={{zIndex:2}}>
+          <div className="row gy-5">
+            {/* ── Derecha: tarjeta formulario flotante ── */}
+            <div className="col-lg-6 order-lg-2 fu2">
+              <div className="rounded-4 shadow" style={{
+                background:'#fff',
+                color:'#111',
+                padding:'36px 38px 40px',
+                boxShadow:'0 32px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)'
+              }}>
+                {/* Cabecera tarjeta */}
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <div style={{width:6,height:28,borderRadius:4,background:'linear-gradient(180deg,#0b37c9,#061a66)'}}/>
+                  <h4 className="fw-black mb-0" style={{letterSpacing:'-0.02em',color:'#0b37c9'}}>Más información</h4>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="col-lg-6">
-            <div className="row g-3">
-              {[
-                { icon: 'bi-person-check-fill', color: 'text-primary', bg: 'bg-primary', title: 'Docentes Especializados', desc: 'Con experiencia profesional real en la industria' },
-                { icon: 'bi-journal-check', color: 'text-success', bg: 'bg-success', title: 'Currículo Actualizado', desc: 'Alineado con las demandas del mercado laboral' },
-                { icon: 'bi-building', color: 'text-info', bg: 'bg-info', title: 'Infraestructura Moderna', desc: 'Laboratorios y espacios acondicionados' },
-                { icon: 'bi-headset', color: 'text-warning', bg: 'bg-warning', title: 'Atención Personalizada', desc: 'Apoyo continuo para el éxito de cada alumno' },
-              ].map((p, i) => (
-                <div className="col-6" key={i}>
-                  <div className="card border-0 shadow-sm h-100 rounded-4 p-1">
-                    <div className="card-body text-center p-3">
-                      <div className={`${p.bg} bg-opacity-10 rounded-3 p-3 mb-3 d-inline-flex`}>
-                        <i className={`bi ${p.icon} fs-3 ${p.color}`}></i>
-                      </div>
-                      <h6 className="fw-bold mb-1">{p.title}</h6>
-                      <small className="text-muted">{p.desc}</small>
+                <p className="text-muted mb-4" style={{fontSize:'.88rem'}}>Un asesor te contactará para confirmar tu vacante.</p>
+
+                {preErr && <div className="alert alert-danger py-2 mb-3">{preErr}</div>}
+                {preMsg && <div className="alert alert-success py-2 mb-3">{preMsg}</div>}
+
+                <form className="row g-3" onSubmit={submitPre}>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Nombres<span className="text-danger">*</span></label>
+                      <input className="form-control" style={{borderRadius:8,border:'1.5px solid #d1d5db'}}
+                        value={preForm.nombres} onChange={e=>setPreForm(f=>({...f,nombres:e.target.value}))} required />
                     </div>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Apellidos<span className="text-danger">*</span></label>
+                      <input className="form-control" style={{borderRadius:8,border:'1.5px solid #d1d5db'}}
+                        value={preForm.apellidos} onChange={e=>setPreForm(f=>({...f,apellidos:e.target.value}))} required />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Correo electrónico</label>
+                      <input type="email" className="form-control" style={{borderRadius:8,border:'1.5px solid #d1d5db'}}
+                        value={preForm.email} onChange={e=>setPreForm(f=>({...f,email:e.target.value}))} />
+                    </div>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Teléfono móvil<span className="text-danger">*</span></label>
+                      <div className="input-group">
+                        <span className="input-group-text fw-semibold" style={{background:'#f3f4f6',border:'1.5px solid #d1d5db',borderRight:'none',borderRadius:'8px 0 0 8px',fontSize:'.85rem'}}>PE +51</span>
+                        <input className="form-control" style={{borderRadius:'0 8px 8px 0',border:'1.5px solid #d1d5db',borderLeft:'none'}}
+                          value={preForm.telefono} onChange={e=>setPreForm(f=>({...f,telefono:e.target.value}))} required />
+                      </div>
+                    </div>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Número de documento</label>
+                      <input className="form-control" style={{borderRadius:8,border:'1.5px solid #d1d5db'}}
+                        value={preForm.dni} onChange={e=>setPreForm(f=>({...f,dni:e.target.value}))} />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Curso o programa</label>
+                      <select className="form-select" style={{borderRadius:8,border:'1.5px solid #d1d5db'}} value={preForm.course_id} onChange={e=>setPreForm(f=>({...f,course_id:e.target.value}))} required>
+                        <option value="">Selecciona un curso/programa</option>
+                        <option value="1">Reparación de Celulares</option>
+                        <option value="2">Diseño y Armado de Muebles en Melamina</option>
+                        <option value="3">Reparación de Computadoras</option>
+                        <option value="4">Instalación de Cámaras de Seguridad</option>
+                        <option value="5">Inteligencia Artificial</option>
+                        <option value="6">Auxiliar en Soporte Informático</option>
+                        <option value="7">Instalaciones Eléctricas Residenciales</option>
+                        <option value="8">Emprendimiento y Gestión de Negocios</option>
+                        <option value="9">Informática (Ofimática, Excel, etc.)</option>
+                      </select>
+                    </div>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Sucursal</label>
+                      <select className="form-select" style={{borderRadius:8,border:'1.5px solid #d1d5db'}} value={preForm.sucursal_id} onChange={e=>setPreForm(f=>({...f,sucursal_id:e.target.value}))} required>
+                        <option value="">Selecciona una sucursal</option>
+                        {sucursales.map(s => (
+                          <option key={s.id} value={s.id}>{s.nombre||s.title||s.titulo}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-12 col-sm-6">
+                      <label className="form-label fw-semibold small" style={{color:'#374151'}}>Modalidad</label>
+                      <select className="form-select" style={{borderRadius:8,border:'1.5px solid #d1d5db'}} value={preForm.modalidad_id} onChange={e=>setPreForm(f=>({...f,modalidad_id:e.target.value}))} required>
+                        <option value="">Selecciona una modalidad</option>
+                        {modalidades.map(m => (
+                          <option key={m.id} value={m.id}>{m.nombre||m.title||m.titulo}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-12">
+                      <button type="submit" className="btn w-100 fw-bold py-2" disabled={preSending}
+                        style={{background:'linear-gradient(90deg,#0b37c9,#1a5fd4)',color:'#fff',borderRadius:8,fontSize:'1rem',boxShadow:'0 6px 24px rgba(11,55,201,0.35)'}}>
+                        {preSending
+                          ? <><span className="spinner-border spinner-border-sm me-2"/>Enviando…</>
+                          : 'Solicitar información'}
+                      </button>
+                    </div>
+                </form>
+              </div>
+            </div>
+            {/* ── Izquierda: contenido hero ── */}
+            <div className="col-lg-6 order-lg-1 text-white fu0">
+              {data?.logo&&(
+                <img src={data.logo} alt="Logo" className="mb-4"
+                  style={{height:60,objectFit:'contain',filter:'drop-shadow(0 0 16px rgba(0,0,0,0.5))'}}/>
+              )}
+
+              <span className="badge rounded-pill fw-bold px-4 py-2 mb-4"
+                style={{background:'rgba(6,26,102,0.85)',border:'1px solid rgba(255,255,255,0.18)',letterSpacing:'.16em',fontSize:'.75rem'}}>
+                ACELERADORA DE EMPLEABILIDAD · ICA, PERÚ
+              </span>
+
+              <h1 className="fw-black mb-3 fu1"
+                style={{fontSize:'clamp(2.6rem,5.5vw,4rem)',lineHeight:1.06,letterSpacing:'-0.03em'}}>
+                Tu carrera técnica<br/>empieza <span style={{color:'#ffb017'}}>hoy.</span>
+              </h1>
+
+              <p className="fw-light mb-4 fu2"
+                style={{fontSize:'1.05rem',maxWidth:500,color:'rgba(255,255,255,0.78)'}}>
+                {data?.anios_texto || 'Formación práctica, currículo alineado al mercado laboral real y laboratorios de punta. De 0 a empleado en menos de 6 meses.'}
+              </p>
+
+              {/* Video profesional y moderno debajo del título/descripción */}
+              {data?.video_url && (
+                <div className="mb-4 d-flex justify-content-center">
+                  <div className="rounded-4 shadow-lg overflow-hidden" style={{background:'#000',border:'2px solid #1a3ab5',maxWidth:420,width:'100%',boxShadow:'0 12px 32px rgba(26,58,181,0.18)'}}>
+                    <video ref={videoRef} controls preload="metadata" playsInline poster={data?.video_poster} autoPlay muted
+                      style={{width:'100%',display:'block',maxHeight:260,objectFit:'cover',background:'#000'}}>
+                      <source src={data.video_url} type="video/mp4"/>
+                    </video>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+              )}
 
-      {/* ══ MISIÓN / VISIÓN ══ */}
-      <div className="py-5 bg-light">
-        <div className="container">
-          <div className="text-center mb-5">
-            <span className="badge rounded-pill text-bg-primary fs-6 px-3 py-2 mb-3">Filosofía Institucional</span>
-            <h2 className="display-5 fw-bold">Lo que nos <span className="text-danger fst-italic">define</span></h2>
-          </div>
-          <div className="row g-4">
-            <div className="col-md-6">
-              <div className="card border-0 rounded-4 h-100 text-white overflow-hidden shadow-lg"
-                style={{ background: 'linear-gradient(135deg, var(--primary), #3b30e8)' }}>
-                <div className="card-body p-5">
-                  <div className="fs-1 mb-3">🎯</div>
-                  <span className="badge border border-white border-opacity-50 text-white mb-3 px-3 py-2 fw-normal">MISIÓN</span>
-                  <h3 className="fw-bold mb-4">Nuestra Razón de Ser</h3>
-                  <blockquote className="blockquote fst-italic mb-0 border-start border-warning border-3 ps-3">
-                    <p className="fs-5 lh-lg opacity-75">
-                      "Formar profesionales competentes, innovadores y comprometidos con la excelencia académica,
-                      dotados de habilidades prácticas y conocimientos aplicables que les permitan transformar sus
-                      vidas y contribuir al desarrollo sostenible de sus comunidades."
-                    </p>
-                  </blockquote>
-                </div>
+              <div className="d-flex flex-wrap gap-3 fu3">
+                <a href="#quienes-somos" className="btn btn-lg fw-bold rounded-pill px-5"
+                  style={{background:'#ff6a00',border:'none',color:'#111',letterSpacing:'.04em',boxShadow:'0 10px 40px rgba(0,0,0,0.45)'}}>
+                  Ver programas
+                </a>
+                <a href="#quienes-somos" className="btn btn-outline-light btn-lg rounded-pill px-4 fw-semibold"
+                  style={{borderColor:'rgba(255,255,255,0.55)',color:'#fff',background:'rgba(6,26,102,0.7)'}}>
+                  Conocer ETP
+                </a>
               </div>
-            </div>
-            <div className="col-md-6">
-              <div className="card border-0 rounded-4 h-100 text-white overflow-hidden shadow-lg"
-                style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d60)' }}>
-                <div className="card-body p-5">
-                  <div className="fs-1 mb-3">🔭</div>
-                  <span className="badge border border-white border-opacity-50 text-white mb-3 px-3 py-2 fw-normal">VISIÓN</span>
-                  <h3 className="fw-bold mb-4">Nuestro Horizonte</h3>
-                  <blockquote className="blockquote fst-italic mb-0 border-start border-warning border-3 ps-3">
-                    <p className="fs-5 lh-lg opacity-75">
-                      "Ser una institución reconocida por su innovación educativa y la calidad de sus egresados,
-                      contribuyendo al progreso social y al desarrollo profesional de nuestras comunidades."
-                    </p>
-                  </blockquote>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ══ VALORES ══ */}
-      <div className="container py-5">
-        <div className="text-center mb-5">
-          <span className="badge rounded-pill text-bg-warning fs-6 px-3 py-2 mb-3">Nuestros Valores</span>
-          <h2 className="display-5 fw-bold">Los principios que <span className="text-primary fst-italic">nos guían</span></h2>
-          <p className="text-muted fs-5 mt-3">Los principios que guían cada una de nuestras acciones</p>
-        </div>
-        <div className="row g-4">
-          {[
-            { icon: 'bi-star-fill', color: 'text-warning', bg: 'bg-warning', title: 'Excelencia', desc: 'Nos comprometemos con la máxima calidad en cada aspecto de nuestro trabajo educativo, superando expectativas.' },
-            { icon: 'bi-handshake-fill', color: 'text-success', bg: 'bg-success', title: 'Integridad', desc: 'Actuamos con transparencia, honestidad y responsabilidad en todas nuestras acciones, construyendo confianza.' },
-            { icon: 'bi-lightbulb-fill', color: 'text-info', bg: 'bg-info', title: 'Innovación', desc: 'Buscamos constantemente nuevas formas de mejorar la educación con metodologías modernas.' },
-            { icon: 'bi-heart-fill', color: 'text-danger', bg: 'bg-danger', title: 'Compromiso', desc: 'Estamos plenamente dedicados al éxito de cada estudiante, acompañándolos en cada etapa de su formación.' },
-            { icon: 'bi-tree-fill', color: 'text-success', bg: 'bg-success', title: 'Sostenibilidad', desc: 'Formamos profesionales conscientes de su impacto social y ambiental, preparados para contribuir al futuro.' },
-            { icon: 'bi-fire', color: 'text-danger', bg: 'bg-danger', title: 'Pasión', desc: 'Enseñamos con entusiasmo y dedicación genuina, transmitiendo el amor por el aprendizaje continuo.' },
-          ].map((v, i) => (
-            <div className="col-md-6 col-lg-4" key={i}>
-              <div className="card border-0 shadow-sm rounded-4 h-100 p-1">
-                <div className="card-body p-4">
-                  <div className={`${v.bg} bg-opacity-10 rounded-3 p-3 mb-3 d-inline-flex`}>
-                    <i className={`bi ${v.icon} fs-2 ${v.color}`}></i>
+              <div className="row mt-5 fu4" style={{maxWidth:400}}>
+                {[{n:<><Counter end={data?.anios||13}/>+</>,t:'Años en el sector'},{n:'2K+',t:'Egresados empleados'},{n:'6',t:'Programas activos'}].map((s,i)=>(
+                  <div className="col-4" key={i}>
+                    <div className="fw-black" style={{fontSize:'1.6rem',color:'#ffb017'}}>{s.n}</div>
+                    <p className="mb-0" style={{fontSize:'.68rem',color:'rgba(255,255,255,0.65)',textTransform:'uppercase',letterSpacing:'.09em'}}>{s.t}</p>
                   </div>
-                  <h5 className={`fw-bold mb-2 ${v.color}`}>{v.title}</h5>
-                  <p className="text-muted mb-0 lh-lg">{v.desc}</p>
-                </div>
+                ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+          {/* ═══════════════════════════════════════════
+              TICKER — franja de colores
+          ═══════════════════════════════════════════ */}
+      <div className="overflow-hidden py-3" style={{background:'linear-gradient(90deg,#f97316,#ec4899,#8b5cf6,#06b6d4,#10b981,#f97316)',borderTop:'1px solid rgba(255,255,255,0.1)',borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+        <div style={{display:'flex',gap:48,whiteSpace:'nowrap',animation:'ticker 18s linear infinite'}}>
+          {Array(6).fill(null).map((_,i)=>(
+            <span key={i} className="fw-black" style={{color:'rgba(255,255,255,0.9)',fontSize:'.85rem',letterSpacing:'.18em'}}>
+              ✦ EXCELENCIA TÉCNICA &nbsp;&nbsp; ✦ FORMACIÓN DE CALIDAD &nbsp;&nbsp; ✦ FUTURO PROFESIONAL &nbsp;&nbsp; ✦ LÍDERES EN PERÚ &nbsp;&nbsp;
+            </span>
           ))}
         </div>
       </div>
 
-      {/* Estadísticas removed per request */}
+      {/* ═══════════════════════════════════════════
+          2 ▸ QUIÉNES SOMOS — estilo sección de la home
+      ═══════════════════════════════════════════ */}
+      <section
+        id="quienes-somos"
+        className="position-relative overflow-hidden"
+        style={{background:'#f5f7ff',padding:'100px 0'}}
+      >
+        <div className="container position-relative" style={{zIndex:2}}>
+          <div className="row align-items-stretch gy-5">
 
-      {/* Video institucional section removed per request */}
+            {/* Bloque azul izquierdo */}
+            <div className="col-lg-5">
+              <div
+                className="h-100 rounded-4 position-relative overflow-hidden d-flex flex-column justify-content-between"
+                style={{
+                  background: data?.imagen
+                    ? `#0025ce url(${data.imagen}) center/contain no-repeat`
+                    : '#0025ce',
+                  padding:'40px 40px 32px',
+                  color:'#fff',
+                  boxShadow:'0 26px 80px rgba(0,0,0,0.45)'
+                }}
+              >
+                <div className="position-relative mt-auto">
+                  <div className="fw-black" style={{fontSize:'3.4rem',color:'#ff6a00',lineHeight:1}}>
+                    {data?.anios || 13}
+                  </div>
+                  <p className="mb-0 mt-2" style={{fontSize:'.9rem',color:'rgba(255,255,255,0.8)'}}>
+                    Años transformando vidas en {data?.ciudad || 'Ica'}
+                  </p>
+                </div>
+
+                <div
+                  className="position-absolute d-flex flex-column justify-content-center align-items-center text-white fw-bold"
+                  style={{
+                    bottom:0,
+                    right:0,
+                    width:130,
+                    height:90,
+                    background:'#ff6a00',
+                    borderTopLeftRadius:18
+                  }}
+                >
+                  <span style={{fontSize:'1.05rem',lineHeight:1}}> {data?.ciudad || 'Ica'} </span>
+                  <small style={{fontSize:'.75rem',opacity:.9}}>Sede Principal</small>
+                </div>
+              </div>
+            </div>
+
+            {/* Contenido derecho */}
+            <div className="col-lg-7">
+              <div className="mb-3 d-flex align-items-center gap-3">
+                <span
+                  className="fw-bold text-uppercase"
+                  style={{fontSize:'.7rem',letterSpacing:'.22em',color:'#0b37c9'}}
+                >
+                  QUIÉNES SOMOS
+                </span>
+              </div>
+
+              <h2
+                className="fw-black mb-3"
+                style={{fontSize:'clamp(2.2rem,4vw,3rem)',lineHeight:1.1,letterSpacing:'-0.03em',color:'#111827'}}
+              >
+                {data?.titulo || 'Nacimos para resolver la brecha técnica'}
+              </h2>
+
+              <p
+                className="mb-4"
+                style={{fontSize:'1rem',color:'#4b5563',lineHeight:1.8,maxWidth:640}}
+              >
+                {data?.descripcion}
+              </p>
+
+              {data?.bullets?.length>0 && (
+                <div className="mt-3">
+                  {data.bullets.map((b,i)=>(
+                    <div
+                      key={i}
+                      className="d-flex align-items-start gap-3 py-3"
+                      style={{borderTop:i===0?'1px solid #e5e7eb':'1px solid #e5e7eb'}}
+                    >
+                      <div
+                        className="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                        style={{
+                          width:28,
+                          height:28,
+                          background:'#0b37c9',
+                          color:'#fff',
+                          fontSize:'.85rem'
+                        }}
+                      >
+                        ✓
+                      </div>
+                      <p className="mb-0" style={{fontSize:'.95rem',color:'#111827',lineHeight:1.6}}>
+                        {b}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          3 ▸ MISIÓN / VISIÓN — oscuro con cards de colores
+      ═══════════════════════════════════════════ */}
+      <section className="position-relative overflow-hidden"
+        style={{background:'#111116',padding:'100px 0'}}>
+
+        <div className="position-absolute rounded-circle" style={{width:500,height:500,background:'radial-gradient(circle,rgba(139,92,246,0.12) 0%,transparent 70%)',top:'-15%',left:'-8%',pointerEvents:'none'}}/>
+        <div className="position-absolute rounded-circle" style={{width:400,height:400,background:'radial-gradient(circle,rgba(6,182,212,0.1) 0%,transparent 70%)',bottom:'-10%',right:'-5%',pointerEvents:'none'}}/>
+
+        <div className="container position-relative" style={{zIndex:2}}>
+          <div className="text-center mb-5">
+            <div className="d-flex align-items-center justify-content-center gap-3 mb-3">
+              <div style={{width:36,height:3,background:'linear-gradient(90deg,#8b5cf6,#06b6d4)',borderRadius:2}}/>
+              <span className="fw-bold text-uppercase" style={{fontSize:'.72rem',letterSpacing:'.2em',color:'#8b5cf6'}}>Filosofía Institucional</span>
+              <div style={{width:36,height:3,background:'linear-gradient(90deg,#06b6d4,#8b5cf6)',borderRadius:2}}/>
+            </div>
+            <h2 className="fw-black" style={{fontSize:'clamp(2rem,4vw,3.2rem)',letterSpacing:'-0.025em'}}>
+              Misión &amp; Visión
+            </h2>
+          </div>
+
+          <div className="row g-4">
+            {/* Misión — violeta */}
+            <div className="col-lg-6">
+              <div className="h-100 rounded-4 p-5 position-relative overflow-hidden"
+                style={{background:'linear-gradient(145deg,rgba(139,92,246,0.15) 0%,rgba(139,92,246,0.05) 100%)',border:'1px solid rgba(139,92,246,0.35)',transition:'box-shadow .3s'}}
+                onMouseEnter={e=>e.currentTarget.style.boxShadow='0 0 70px rgba(139,92,246,0.3)'}
+                onMouseLeave={e=>e.currentTarget.style.boxShadow='none'}>
+                <div className="position-absolute" style={{width:200,height:200,borderRadius:'50%',background:'rgba(139,92,246,0.2)',filter:'blur(60px)',top:-40,right:-40,pointerEvents:'none'}}/>
+                <div className="d-inline-flex align-items-center justify-content-center rounded-3 mb-4"
+                  style={{width:60,height:60,background:'linear-gradient(135deg,#8b5cf6,#a78bfa)',fontSize:'1.8rem',boxShadow:'0 8px 24px rgba(139,92,246,0.5)'}}>
+                  🎯
+                </div>
+                <div className="fw-bold text-uppercase mb-2" style={{fontSize:'.7rem',letterSpacing:'.2em',color:'#a78bfa'}}>Misión</div>
+                <h3 className="fw-black mb-4" style={{fontSize:'1.7rem',letterSpacing:'-0.02em'}}>Nuestra Misión</h3>
+                <p className="mb-0 fst-italic lh-lg" style={{color:'rgba(255,255,255,0.65)',fontSize:'1rem'}}>"{data?.mision}"</p>
+                <div className="position-absolute bottom-0 start-0 w-100" style={{height:3,background:'linear-gradient(90deg,#8b5cf6,transparent)'}}/>
+              </div>
+            </div>
+
+            {/* Visión — cyan */}
+            <div className="col-lg-6">
+              <div className="h-100 rounded-4 p-5 position-relative overflow-hidden"
+                style={{background:'linear-gradient(145deg,rgba(6,182,212,0.12) 0%,rgba(6,182,212,0.04) 100%)',border:'1px solid rgba(6,182,212,0.35)',transition:'box-shadow .3s'}}
+                onMouseEnter={e=>e.currentTarget.style.boxShadow='0 0 70px rgba(6,182,212,0.25)'}
+                onMouseLeave={e=>e.currentTarget.style.boxShadow='none'}>
+                <div className="position-absolute" style={{width:200,height:200,borderRadius:'50%',background:'rgba(6,182,212,0.15)',filter:'blur(60px)',top:-40,right:-40,pointerEvents:'none'}}/>
+                <div className="d-inline-flex align-items-center justify-content-center rounded-3 mb-4"
+                  style={{width:60,height:60,background:'linear-gradient(135deg,#06b6d4,#22d3ee)',fontSize:'1.8rem',boxShadow:'0 8px 24px rgba(6,182,212,0.5)'}}>
+                  🔭
+                </div>
+                <div className="fw-bold text-uppercase mb-2" style={{fontSize:'.7rem',letterSpacing:'.2em',color:'#22d3ee'}}>Visión</div>
+                <h3 className="fw-black mb-4" style={{fontSize:'1.7rem',letterSpacing:'-0.02em'}}>Nuestra Visión</h3>
+                <p className="mb-0 fst-italic lh-lg" style={{color:'rgba(255,255,255,0.65)',fontSize:'1rem'}}>"{data?.vision}"</p>
+                <div className="position-absolute bottom-0 start-0 w-100" style={{height:3,background:'linear-gradient(90deg,#06b6d4,transparent)'}}/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          4 ▸ VALORES — fondo claro, cards coloridas
+      ═══════════════════════════════════════════ */}
+      {valores.length>0&&(
+        <section className="position-relative overflow-hidden"
+          style={{background:'#f8f7f5',padding:'100px 0',color:'#111'}}>
+
+          <div className="position-absolute rounded-circle" style={{width:350,height:350,background:'radial-gradient(circle,rgba(236,72,153,0.08) 0%,transparent 70%)',top:'-5%',right:'5%',pointerEvents:'none'}}/>
+          <div className="position-absolute rounded-circle" style={{width:300,height:300,background:'radial-gradient(circle,rgba(16,185,129,0.08) 0%,transparent 70%)',bottom:'0',left:'8%',pointerEvents:'none'}}/>
+
+          <div className="container position-relative" style={{zIndex:2}}>
+            <div className="text-center mb-5">
+              <div className="d-flex align-items-center justify-content-center gap-3 mb-3">
+                <div style={{width:36,height:3,background:'linear-gradient(90deg,#ec4899,#f97316)',borderRadius:2}}/>
+                <span className="fw-bold text-uppercase" style={{fontSize:'.72rem',letterSpacing:'.2em',color:'#ec4899'}}>Principios</span>
+                <div style={{width:36,height:3,background:'linear-gradient(90deg,#f97316,#ec4899)',borderRadius:2}}/>
+              </div>
+              <h2 className="fw-black mb-3" style={{fontSize:'clamp(2rem,4vw,3.2rem)',letterSpacing:'-0.025em',color:'#111'}}>
+                Nuestros Valores
+              </h2>
+              <p className="mx-auto" style={{color:'#777',maxWidth:500,fontSize:'1rem'}}>
+                Los pilares fundamentales que guían cada acción dentro de nuestra institución.
+              </p>
+            </div>
+
+            <div className="row g-4">
+              {valores.map((v,i)=>{
+                const vc=valorColors[i%valorColors.length]
+                return(
+                  <div className="col-sm-6 col-lg-4" key={i}>
+                    <div className="h-100 rounded-4 p-4 bg-white"
+                      style={{border:'1px solid #eee',boxShadow:'0 4px 20px rgba(0,0,0,0.05)',transition:'all .25s',cursor:'default'}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-8px)';e.currentTarget.style.boxShadow=`0 20px 50px ${vc.shadow}`;e.currentTarget.style.borderColor=`${vc.shadow}`}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)';e.currentTarget.style.borderColor='#eee'}}>
+
+                      {/* Número de fondo */}
+                      <div className="fw-black position-relative overflow-hidden" style={{height:0}}>
+                        <span style={{position:'absolute',fontSize:'5rem',lineHeight:1,color:'rgba(0,0,0,0.03)',top:-8,right:8,userSelect:'none'}}>
+                          {String(i+1).padStart(2,'0')}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center gap-3 mb-3">
+                        <div className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                          style={{width:52,height:52,background:vc.bg,fontSize:'1.4rem',boxShadow:`0 6px 20px ${vc.shadow}`,transition:'box-shadow .25s'}}>
+                          {emojis[i%emojis.length]}
+                        </div>
+                        <h6 className="fw-black mb-0" style={{fontSize:'1rem',letterSpacing:'-0.01em',color:'#111',lineHeight:1.3}}>
+                          {v.title||v}
+                        </h6>
+                      </div>
+                      {v.desc&&(
+                        <p className="mb-0" style={{fontSize:'.9rem',color:'#777',lineHeight:1.65}}>{v.desc}</p>
+                      )}
+
+                      {/* Barra inferior de color */}
+                      <div className="rounded-pill mt-3" style={{height:3,width:40,background:vc.bg,transition:'width .3s'}}/>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════
+          PRE-INSCRIPCIÓN — tarjeta centrada
+      ═══════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════
+          5 ▸ CTA FINAL — gradiente multicolor brutal
+      ═══════════════════════════════════════════ */}
+      <section className="text-center text-white position-relative overflow-hidden"
+        style={{background:'linear-gradient(135deg,#0f0f14 0%,#1a0a2e 40%,#0a1a1f 100%)',padding:'110px 32px'}}>
+
+        {/* Blobs */}
+        <div className="position-absolute rounded-circle" style={{width:500,height:500,background:'radial-gradient(circle,rgba(249,115,22,0.15) 0%,transparent 70%)',top:'-20%',left:'-10%',pointerEvents:'none'}}/>
+        <div className="position-absolute rounded-circle" style={{width:500,height:500,background:'radial-gradient(circle,rgba(139,92,246,0.15) 0%,transparent 70%)',bottom:'-20%',right:'-10%',pointerEvents:'none'}}/>
+        <div className="position-absolute rounded-circle" style={{width:350,height:350,background:'radial-gradient(circle,rgba(6,182,212,0.1) 0%,transparent 70%)',top:'20%',right:'15%',pointerEvents:'none'}}/>
+
+        <div className="position-relative" style={{zIndex:2}}>
+          <span className="badge rounded-pill fw-bold px-4 py-2 mb-4 d-inline-block"
+            style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.8)',border:'1px solid rgba(255,255,255,0.12)',fontSize:'.78rem',letterSpacing:'.15em'}}>
+            ✦ EMPIEZA TU FUTURO HOY
+          </span>
+          <h2 className="fw-black mx-auto mb-4"
+            style={{fontSize:'clamp(2rem,5vw,3.8rem)',lineHeight:1.1,letterSpacing:'-0.03em',maxWidth:700}}>
+            ¿Listo para construir tu{' '}
+            <span style={{background:'linear-gradient(90deg,#f97316,#ec4899,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+              futuro técnico?
+            </span>
+          </h2>
+          <p className="fw-light mx-auto mb-5"
+            style={{fontSize:'1.1rem',color:'rgba(255,255,255,0.45)',maxWidth:500,lineHeight:1.9}}>
+            Únete a los miles de profesionales que confiaron en Escuelas Técnicas del Perú.
+          </p>
+          <a href="#quienes-somos"
+            className="btn btn-lg fw-bold rounded-pill px-5 py-3"
+            style={{background:'linear-gradient(90deg,#f97316,#ec4899,#8b5cf6)',color:'#fff',border:'none',letterSpacing:'.04em',fontSize:'1.05rem',boxShadow:'0 8px 40px rgba(249,115,22,0.35)',transition:'all .2s'}}
+            onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow='0 16px 60px rgba(249,115,22,0.55)'}}
+            onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 8px 40px rgba(249,115,22,0.35)'}}>
+            Ver todos los programas →
+          </a>
+        </div>
+      </section>
 
     </div>
   )

@@ -62,6 +62,7 @@ export default function AdminDashboard(){
 		{ title: 'Carousel', desc: 'Slides del home', icon: 'bi-images', to:'/admin/carousel' },
 		{ title: 'Cursos', desc: 'Cursos y programas', icon: 'bi-journal-bookmark', to:'/admin/courses' },
 		{ title: 'Noticias', desc: 'Gestionar noticias del sitio', icon: 'bi-newspaper', to:'/admin/noticias' },
+		{ title: 'Pre-inscripciones', desc: 'Leads de interés', icon: 'bi-ui-checks', to:'/admin/pre-inscripciones' },
 		{ title: 'Certificaciones', desc: 'Gestionar certificados y constancias', icon: 'bi-award', to:'/admin/certificaciones' },
 		{ title: 'Docentes', desc: 'Gestionar docentes', icon: 'bi-person-badge', to:'/admin/docentes' },
 		{ title: 'Convenios', desc: 'Gestionar convenios por curso', icon: 'bi-handshake', to:'/admin/convenios' },
@@ -70,6 +71,7 @@ export default function AdminDashboard(){
 		{ title: 'Galería', desc: 'Editar galería pública', icon: 'bi-grid-3x3-gap', to:'/admin/gallery' },
 		{ title: 'Tips', desc: 'Gestionar tips y recomendaciones', icon: 'bi-lightbulb', to:'/admin/tips' },
 		{ title: 'Social Links', desc: 'Enlaces y números sociales', icon: 'bi-share', to:'/admin/social' },
+		{ title: 'Nosotros', desc: 'Quiénes somos — contenido público', icon: 'bi-building', to:'/admin/nosotros' },
 		{ title: 'Usuarios', desc: 'Gestión de administradores', icon: 'bi-people', to:'/admin/users' }
 	]
 

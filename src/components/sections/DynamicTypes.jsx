@@ -36,7 +36,7 @@ export default function DynamicTypes(){
         }
 
         const mapped = apiCursos
-          .filter(c => c.published !== false)
+          .filter(c => c.published !== false && c.active !== false)
           .map(c => ({
             ...c,
             titulo: c.title || c.titulo || c.name,

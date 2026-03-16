@@ -52,7 +52,7 @@ export default function Carreras({ selectedSucursalId = null, selectedModalidad 
         let media = []
         if(needsMedia){ try{ const mres = await axios.get(endpoints.MEDIA); media = Array.isArray(mres.data)?mres.data:[] }catch(e){} }
         const mapped = apiCursos
-          .filter(c => c.published !== false)
+          .filter(c => c.published !== false && c.active !== false)
           .map(c => ({
             ...c,
             titulo: c.title || c.titulo || c.name,
