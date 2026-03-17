@@ -137,7 +137,7 @@ export default function App() {
       <Navbar />
       <main className="flex-grow-1">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<NosoatrosPage />} />
           <Route path="/cursos" element={<CursosPage />} />
           <Route path="/programas" element={<CarrerasPage />} />
           <Route path="/talleres" element={<TalleresPage />} />
