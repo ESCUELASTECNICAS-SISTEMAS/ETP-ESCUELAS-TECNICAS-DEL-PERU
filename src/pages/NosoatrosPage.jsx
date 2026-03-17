@@ -322,6 +322,7 @@ export default function NosotrosPage(){
         </div>
       </section>
 
+
           {/* ═══════════════════════════════════════════
               TICKER — franja de colores
           ═══════════════════════════════════════════ */}
@@ -570,12 +571,49 @@ export default function NosotrosPage(){
         </section>
       )}
 
-      {/* ═══════════════════════════════════════════
-          PRE-INSCRIPCIÓN — tarjeta centrada
-      ═══════════════════════════════════════════ */}
-      {/* ═══════════════════════════════════════════
-          5 ▸ CTA FINAL — gradiente multicolor brutal
-      ═══════════════════════════════════════════ */}
+      <section className="py-5" style={{background:'#f5f7ff'}}>
+        <div className="container">
+          <h2 className="fw-bold mb-4 text-center" style={{color:'#0b37c9'}}>Preguntas frecuentes</h2>
+          <div className="accordion" id="faqAccordion">
+            {[
+              {
+                q: '¿Se cobra por el cambio de hora y especialidad?',
+                a: 'No, no se cobra la primera vez que realices un cambio de hora o especialidad.'
+              },
+              {
+                q: '¿Se atiende todos los días?',
+                a: 'Sí, la atención es de lunes a domingo, de 8:00 a 21:30 horas.'
+              },
+              {
+                q: '¿Los precios varían?',
+                a: 'No, los precios no varían. Si te matriculaste con una promoción, se mantiene el precio hasta finalizar tus estudios.'
+              },
+              {
+                q: '¿Cuántas faltas se permiten?',
+                a: 'Se permite hasta el 30% de inasistencias.'
+              },
+              {
+                q: '¿Se puede retomar mis estudios?',
+                a: 'Sí, puedes retomar tus estudios si no han pasado más de 6 meses desde que dejaste de estudiar. Si ha pasado más tiempo, puedes conversar con el área de secretaría.'
+              }
+            ].map((item,i)=>(
+              <div className="accordion-item mb-2" key={i}>
+                <h2 className="accordion-header" id={`faqHeading${i}`}>
+                  <button className="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target={`#faqCollapse${i}`} aria-expanded="false" aria-controls={`faqCollapse${i}`}
+                    style={{background:'#fff',color:'#0b37c9',fontSize:'1.05rem'}}>
+                    {item.q}
+                  </button>
+                </h2>
+                <div id={`faqCollapse${i}`} className="accordion-collapse collapse" aria-labelledby={`faqHeading${i}`} data-bs-parent="#faqAccordion">
+                  <div className="accordion-body" style={{background:'#fff',color:'#222',fontSize:'.98rem'}}>
+                    {item.a}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <section className="text-center text-white position-relative overflow-hidden"
         style={{background:'linear-gradient(135deg,#0f0f14 0%,#1a0a2e 40%,#0a1a1f 100%)',padding:'110px 32px'}}>
 

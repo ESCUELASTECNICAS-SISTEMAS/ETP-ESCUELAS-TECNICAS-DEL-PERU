@@ -30,6 +30,7 @@ import AdminSocialLinks from './pages/AdminSocialLinks'
 import AdminTips from './pages/AdminTips'
 import AdminNosotros from './pages/AdminNosotros'
 import AdminPreinscripciones from './pages/AdminPreinscripciones'
+import AdminBlog from './pages/AdminBlog'
 import AdminRoute from './components/layout/AdminRoute'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { sendVisit } from './utils/visits'
@@ -161,6 +162,7 @@ export default function App() {
           <Route path="/admin/convenios" element={<AdminRoute><AdminConvenios /></AdminRoute>} />
           <Route path="/admin/seminarios" element={<AdminRoute><AdminSeminarios /></AdminRoute>} />
           <Route path="/admin/noticias" element={<AdminRoute><AdminNoticias /></AdminRoute>} />
+          <Route path="/admin/blog" element={<AdminRoute><AdminBlog /></AdminRoute>} />
           <Route path="/admin/social" element={<AdminRoute><AdminSocialLinks /></AdminRoute>} />
           <Route path="/admin/nosotros" element={<AdminRoute><AdminNosotros /></AdminRoute>} />
           <Route path="/admin/tips" element={<AdminRoute><AdminTips /></AdminRoute>} />
@@ -168,6 +170,7 @@ export default function App() {
           <Route path="/curso/:id" element={<CourseDetail />} />
           <Route path="/programa/:id" element={<CourseDetail />} />
         </Routes>
+
       </main>
       <Footer />
 

@@ -61,6 +61,7 @@ export default function AdminDashboard(){
 	const cards = [
 		{ title: 'Carousel', desc: 'Slides del home', icon: 'bi-images', to:'/admin/carousel' },
 		{ title: 'Cursos', desc: 'Cursos y programas', icon: 'bi-journal-bookmark', to:'/admin/courses' },
+		{ title: 'Blog', desc: 'Gestionar blog y noticias', icon: 'bi-journal-richtext', to:'/admin/blog' },
 		{ title: 'Noticias', desc: 'Gestionar noticias del sitio', icon: 'bi-newspaper', to:'/admin/noticias' },
 		{ title: 'Pre-inscripciones', desc: 'Leads de interés', icon: 'bi-ui-checks', to:'/admin/pre-inscripciones' },
 		{ title: 'Certificaciones', desc: 'Gestionar certificados y constancias', icon: 'bi-award', to:'/admin/certificaciones' },
