@@ -36,6 +36,8 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { sendVisit } from './utils/visits'
 import axios from 'axios'
 import { endpoints } from './utils/apiStatic'
+import BlogDetail from './pages/BlogDetail';
+import BlogsPage from './pages/BlogsPage';
 
 const DEFAULT_WA_MESSAGE = 'Buenas%20%F0%9F%91%8B%20vengo%20de%20su%20p%C3%A1gina%20web%20y%20deseo%20m%C3%A1s%20informaci%C3%B3n%20de%20los%20cursos%2C%20por%20favor%20%F0%9F%98%8A'
 
@@ -146,6 +148,8 @@ export default function App() {
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/noticias" element={<NoticiasPage />} />
           <Route path="/noticia/:id" element={<NoticiaDetail />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/nosotros" element={<NosoatrosPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

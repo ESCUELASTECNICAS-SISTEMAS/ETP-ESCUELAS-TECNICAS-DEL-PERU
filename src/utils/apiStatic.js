@@ -13,7 +13,8 @@ export const endpoints = {
   COURSE_DOCENTES: (courseId) => `${BASE_API}/courses/${courseId}/docentes`
   ,COURSE_SUCURSALES: (courseId) => `${BASE_API}/courses/${courseId}/sucursales`
   ,COURSE_SCHEDULES: (courseId) => `${BASE_API}/courses/${courseId}/schedules`
-  ,COURSE_SEMINARIOS: (courseId) => `${BASE_API}/courses/${courseId}/seminarios`
+  ,COURSE_SEMINARIOS: (courseId) => `${BASE_API}/courses/${courseId}/seminarios`,
+  BLOGS: `${BASE_API}/blogs`
   ,NEWS: `${BASE_API}/noticias`
   ,SOCIAL_LINKS: `${BASE_API}/social-links`
   ,VISITS: `${BASE_API}/visits`
