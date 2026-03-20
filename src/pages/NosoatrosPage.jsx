@@ -753,12 +753,12 @@ export default function NosotrosPage(){
             style={{fontSize:'1.05rem',color:'rgba(255,255,255,0.45)',lineHeight:1.9}}>
             Únete a los miles de profesionales que confiaron en Escuelas Técnicas del Perú.
           </p>
-          <a href="#quienes-somos"
-            className="cta-btn btn btn-lg fw-bold rounded-pill px-5 py-3 d-inline-block"
+          <a href="/programas"
+            className="cta-btn btn btn-lg fwS-bold rounded-pill px-5 py-3 d-inline-block"
             style={{background:'linear-gradient(90deg,#f97316,#ec4899,#8b5cf6)',color:'#fff',border:'none',letterSpacing:'.04em',fontSize:'1.05rem',boxShadow:'0 8px 40px rgba(249,115,22,0.35)',transition:'all .2s'}}
             onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow='0 16px 60px rgba(249,115,22,0.55)'}}
             onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 8px 40px rgba(249,115,22,0.35)'}}>
-            Ver todos los programas →
+            Ver Nuestras Carreras→
           </a>
         </div>
       </section>

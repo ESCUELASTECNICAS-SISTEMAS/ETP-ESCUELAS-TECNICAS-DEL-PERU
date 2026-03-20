@@ -171,8 +171,8 @@ export default function PreinscripcionesManager(){
   }
 
   return (
-    <div className="row g-3">
-      <div className="col-12 col-xl-7">
+    <div className="row g-3 justify-content-center">
+      <div className="col-12 col-xl-10">
         <div className="card h-100">
           <div className="card-body">
             <div className="d-flex align-items-center gap-3 mb-3">
@@ -236,12 +236,12 @@ export default function PreinscripcionesManager(){
                     <tr><td colSpan={8} className="text-muted">Sin resultados</td></tr>
                   )}
                   {items.map(item => {
-                    const nombre = [item.nombres, item.apellidos].filter(Boolean).join(' ') || '—'
-                    const contacto = [item.telefono, item.email].filter(Boolean).join(' / ') || '—'
-                    const courseName = displayCourseName(item.course_id || item.course?.id)
-                    const sucursalName = displaySucursalName(item.sucursal_id || item.sucursal?.id)
-                    const mod = item.modalidad?.nombre || item.modalidad_id || '—'
-                    const badge = item.active === false ? 'bg-secondary' : 'bg-success'
+                    const nombre = [item.nombre, item.apellido].filter(Boolean).join(' ') || [item.nombres, item.apellidos].filter(Boolean).join(' ') || '—';
+                    const contacto = [item.celular || item.telefono, item.email].filter(Boolean).join(' / ') || '—';
+                    const courseName = item.course?.title || item.course?.nombre || displayCourseName(item.course_id || item.course?.id);
+                    const sucursalName = item.sucursal?.nombre || item.sucursal?.name || displaySucursalName(item.sucursal_id || item.sucursal?.id);
+                    const mod = item.modalidad?.nombre || item.modalidad_id || '—';
+                    const badge = item.active === false ? 'bg-secondary' : 'bg-success';
                     return (
                       <tr key={item.id || nombre}>
                         <td className="small">{item.id || '—'}</td>
@@ -267,76 +267,7 @@ export default function PreinscripcionesManager(){
         </div>
       </div>
 
-      <div className="col-12 col-xl-5">
-        <div className="card h-100">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h5 className="mb-0">{editingId ? 'Editar pre-inscripción' : 'Nueva pre-inscripción'}</h5>
-              {editingId && <button className="btn btn-sm btn-outline-secondary" onClick={resetForm}>Limpiar</button>}
-            </div>
-            <p className="text-muted small mb-3">Coincide con el endpoint POST/PUT /pre-inscripciones</p>
 
-            {error && <div className="alert alert-danger py-2">{error}</div>}
-            {message && <div className="alert alert-success py-2">{message}</div>}
-
-            <form onSubmit={handleSubmit} className="row g-2">
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Nombres</label>
-                <input className="form-control" value={form.nombres} onChange={e=>setForm(f=>({ ...f, nombres: e.target.value }))} required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Apellidos</label>
-                <input className="form-control" value={form.apellidos} onChange={e=>setForm(f=>({ ...f, apellidos: e.target.value }))} required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">DNI</label>
-                <input className="form-control" value={form.dni} onChange={e=>setForm(f=>({ ...f, dni: e.target.value }))} />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Teléfono</label>
-                <input className="form-control" value={form.telefono} onChange={e=>setForm(f=>({ ...f, telefono: e.target.value }))} />
-              </div>
-              <div className="col-12">
-                <label className="form-label small">Email</label>
-                <input type="email" className="form-control" value={form.email} onChange={e=>setForm(f=>({ ...f, email: e.target.value }))} />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Curso</label>
-                <select className="form-select" value={form.course_id} onChange={e=>setForm(f=>({ ...f, course_id: e.target.value }))}>
-                  <option value="">Selecciona</option>
-                  {lookups.courses.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre || c.title || `ID ${c.id}`}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Sucursal</label>
-                <select className="form-select" value={form.sucursal_id} onChange={e=>setForm(f=>({ ...f, sucursal_id: e.target.value }))}>
-                  <option value="">Selecciona</option>
-                  {lookups.sucursales.map(s => (
-                    <option key={s.id} value={s.id}>{s.nombre || s.name || `ID ${s.id}`}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label small">Modalidad ID</label>
-                <input className="form-control" value={form.modalidad_id} onChange={e=>setForm(f=>({ ...f, modalidad_id: e.target.value }))} />
-              </div>
-              <div className="col-12">
-                <label className="form-label small">Nota / Mensaje</label>
-                <textarea className="form-control" rows={2} value={form.nota} onChange={e=>setForm(f=>({ ...f, nota: e.target.value }))}></textarea>
-              </div>
-              <div className="col-12 d-flex align-items-center gap-2">
-                <input type="checkbox" className="form-check-input" id="pi_active" checked={form.active} onChange={e=>setForm(f=>({ ...f, active: e.target.checked }))} />
-                <label htmlFor="pi_active" className="form-check-label small">Activa</label>
-              </div>
-              <div className="col-12">
-                <button className="btn btn-accent w-100" type="submit" disabled={saving}>{saving ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear')}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

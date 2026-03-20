@@ -45,18 +45,39 @@ export default function Footer() {
           <div className="col-lg-2 col-md-6">
             <h6 className="fw-semibold mb-3 text-uppercase">
               <i className="bi bi-share-fill me-2 text-success"></i>
-              Síguenos
+              Redes Sociales
             </h6>
-            <div className="d-flex gap-3">
-              <a href="#" className="text-light fs-4" aria-label="Facebook" style={{ transition: 'color 0.2s' }}>
-                <i className="bi bi-facebook"></i>
-              </a>
-              <a href="#" className="text-light fs-4" aria-label="Instagram" style={{ transition: 'color 0.2s' }}>
-                <i className="bi bi-instagram"></i>
-              </a>
-              <a href="#" className="text-light fs-4" aria-label="WhatsApp" style={{ transition: 'color 0.2s' }}>
-                <i className="bi bi-whatsapp"></i>
-              </a>
+            <div>
+              <div className="mb-2">
+                <span className="fw-bold text-info">Sede Arequipa</span>
+                <div className="d-flex gap-3 mt-1">
+                  <a href="https://www.facebook.com/etp.arequipa" className="text-light fs-4" aria-label="Facebook Arequipa" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-facebook"></i>
+                  </a>
+                  <a href="https://www.instagram.com/etp_arequipa/" className="text-light fs-4" aria-label="Instagram Arequipa" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-instagram"></i>
+                  </a>
+                  <a href="https://wa.me/51962825490" className="text-light fs-4" aria-label="WhatsApp Arequipa" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-whatsapp"></i>
+                  </a>
+                </div>
+                <div className="small mt-1 ms-1 text-light opacity-75">WhatsApp: 962&nbsp;825&nbsp;490</div>
+              </div>
+              <div>
+                <span className="fw-bold text-info">Sede Ica</span>
+                <div className="d-flex gap-3 mt-1">
+                  <a href="https://www.facebook.com/etp.ica" className="text-light fs-4" aria-label="Facebook Ica" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-facebook"></i>
+                  </a>
+                  <a href="https://www.instagram.com/etp_ica/" className="text-light fs-4" aria-label="Instagram Ica" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-instagram"></i>
+                  </a>
+                  <a href="https://wa.me/51900424028" className="text-light fs-4" aria-label="WhatsApp Ica" target="_blank" rel="noopener noreferrer" style={{ transition: 'color 0.2s' }}>
+                    <i className="bi bi-whatsapp"></i>
+                  </a>
+                </div>
+                <div className="small mt-1 ms-1 text-light opacity-75">WhatsApp: 900&nbsp;424&nbsp;028</div>
+              </div>
             </div>
           </div>
 
