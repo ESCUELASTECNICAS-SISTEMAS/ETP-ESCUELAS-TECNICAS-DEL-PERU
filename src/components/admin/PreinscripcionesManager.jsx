@@ -34,7 +34,7 @@ export default function PreinscripcionesManager() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  const [filters, setFilters] = useState({ active: 'true', course_id: '', sucursal_id: '', modalidad_id: '' })
+  const [filters, setFilters] = useState({ active: 'true', course_id: '', sucursal_id: '', modalidad_id: '', atendido: '' })
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
   const [lookups, setLookups] = useState({ courses: [], sucursales: [] })
@@ -55,6 +55,44 @@ export default function PreinscripcionesManager() {
   useEffect(() => { loadLookups() }, [])
   useEffect(() => { fetchItems() }, [filters])
 
+  const filteredItems = useMemo(() => {
+    const activeFilter = filters.active // 'true' | 'false' | 'all'
+    const atendidoFilter = filters.atendido // '' | 'true' | 'false'
+    const courseId = normalizeId(filters.course_id)
+    const sucursalId = normalizeId(filters.sucursal_id)
+    const modalidadId = normalizeId(filters.modalidad_id)
+
+    return (items || []).filter((it) => {
+      // Estado activo/inactivo
+      if (activeFilter === 'true' && it?.active === false) return false
+      if (activeFilter === 'false' && it?.active !== false) return false
+
+      // Atendido (boolean)
+      if (atendidoFilter === 'true' && it?.atendido !== true) return false
+      if (atendidoFilter === 'false' && it?.atendido === true) return false
+
+      // Curso
+      if (courseId) {
+        const itCourseId = normalizeId(it?.course_id ?? it?.course?.id)
+        if (itCourseId !== courseId) return false
+      }
+
+      // Sucursal
+      if (sucursalId) {
+        const itSucursalId = normalizeId(it?.sucursal_id ?? it?.sucursal?.id)
+        if (itSucursalId !== sucursalId) return false
+      }
+
+      // Modalidad
+      if (modalidadId) {
+        const itModalidadId = normalizeId(it?.modalidad_id ?? it?.modalidad?.id)
+        if (itModalidadId !== modalidadId) return false
+      }
+
+      return true
+    })
+  }, [items, filters])
+
   async function loadLookups() {
     try {
       const [coursesRes, sucursalesRes] = await Promise.allSettled([
@@ -73,13 +111,43 @@ export default function PreinscripcionesManager() {
     setLoading(true)
     setError(null)
     try {
+      // Construir parámetros correctamente según el backend
       const params = {}
-      if (filters.active === 'true') params.active = true
-      else if (filters.active === 'false') params.active = false
-      else params.include_inactive = true
-      if (filters.course_id) params.course_id = filters.course_id
-      if (filters.sucursal_id) params.sucursal_id = filters.sucursal_id
-      if (filters.modalidad_id) params.modalidad_id = filters.modalidad_id
+      
+      // Filtro de estado activo/inactivo
+      if (filters.active === 'true') {
+        params.active = true
+      } else if (filters.active === 'false') {
+        params.active = false
+      } else if (filters.active === 'all') {
+        // Para todas, no enviar el parámetro active o enviar null/undefined
+        // Algunos backends usan include_inactive=true
+        params.include_inactive = true
+      }
+      
+      // Filtro por curso
+      if (filters.course_id && filters.course_id !== '') {
+        params.course_id = parseInt(filters.course_id)
+      }
+      
+      // Filtro por sucursal
+      if (filters.sucursal_id && filters.sucursal_id !== '') {
+        params.sucursal_id = parseInt(filters.sucursal_id)
+      }
+      
+
+      // Filtro por modalidad
+      if (filters.modalidad_id && filters.modalidad_id !== '') {
+        params.modalidad_id = parseInt(filters.modalidad_id)
+      }
+
+      // Filtro por atendido
+      if (filters.atendido !== undefined && filters.atendido !== '') {
+        if (filters.atendido === 'true') params.atendido = true
+        else if (filters.atendido === 'false') params.atendido = false
+      }
+
+      console.log('Enviando parámetros:', params) // Para debug
 
       const res = await axios.get(baseApi, { headers, params })
       const data = Array.isArray(res.data) ? res.data : (res.data?.data || [])
@@ -91,6 +159,19 @@ export default function PreinscripcionesManager() {
       setLoading(false)
     }
   }
+
+  // Función para limpiar filtros
+  const clearFilters = useCallback(() => {
+    setFilters({
+      active: 'true',
+      course_id: '',
+      sucursal_id: '',
+      modalidad_id: '',
+      atendido: ''
+    })
+    setMessage('🔄 Filtros restablecidos')
+    setTimeout(() => setMessage(''), 3000)
+  }, [])
 
   const handleAtendidoToggle = useCallback(async (item, newAtendidoValue) => {
     try {
@@ -246,13 +327,24 @@ export default function PreinscripcionesManager() {
       {/* Filtros */}
       <div className="card shadow-sm mb-4 border-0">
         <div className="card-body">
-          <div className="d-flex align-items-center mb-3">
-            <i className="bi bi-funnel-fill me-2 text-primary"></i>
-            <h6 className="mb-0 fw-semibold">Filtros de búsqueda</h6>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex align-items-center">
+              <i className="bi bi-funnel-fill me-2 text-primary"></i>
+              <h6 className="mb-0 fw-semibold">Filtros de búsqueda</h6>
+            </div>
+            <button 
+              className="btn btn-sm btn-outline-secondary"
+              onClick={clearFilters}
+            >
+              <i className="bi bi-arrow-repeat me-1"></i>
+              Limpiar filtros
+            </button>
           </div>
           <div className="row g-3">
             <div className="col-md-3">
-              <label className="form-label small fw-semibold">Estado</label>
+              <label className="form-label small fw-semibold">
+                <i className="bi bi-toggle-on me-1"></i>Estado
+              </label>
               <select 
                 className="form-select form-select-sm" 
                 value={filters.active} 
@@ -260,11 +352,29 @@ export default function PreinscripcionesManager() {
               >
                 <option value="true">✅ Solo activas</option>
                 <option value="false">⛔ Solo inactivas</option>
-                <option value="all">📊 Todas</option>
+                <option value="all">📊 Todas (activas e inactivas)</option>
               </select>
+              <small className="text-muted">Filtra por estado activo/inactivo</small>
             </div>
             <div className="col-md-3">
-              <label className="form-label small fw-semibold">Curso</label>
+              <label className="form-label small fw-semibold">
+                <i className="bi bi-person-check me-1"></i>Atendido
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={filters.atendido}
+                onChange={e => setFilters(f => ({ ...f, atendido: e.target.value }))}
+              >
+                <option value="">👤 Todos</option>
+                <option value="true">✓ Atendidos</option>
+                <option value="false">○ Pendientes</option>
+              </select>
+              <small className="text-muted">Filtra por estado de atención</small>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small fw-semibold">
+                <i className="bi bi-book me-1"></i>Curso
+              </label>
               <select 
                 className="form-select form-select-sm" 
                 value={filters.course_id} 
@@ -277,7 +387,9 @@ export default function PreinscripcionesManager() {
               </select>
             </div>
             <div className="col-md-3">
-              <label className="form-label small fw-semibold">Sucursal</label>
+              <label className="form-label small fw-semibold">
+                <i className="bi bi-building me-1"></i>Sucursal
+              </label>
               <select 
                 className="form-select form-select-sm" 
                 value={filters.sucursal_id} 
@@ -290,8 +402,11 @@ export default function PreinscripcionesManager() {
               </select>
             </div>
             <div className="col-md-3">
-              <label className="form-label small fw-semibold">Modalidad ID</label>
+              <label className="form-label small fw-semibold">
+                <i className="bi bi-grid me-1"></i>Modalidad ID
+              </label>
               <input 
+                type="number"
                 className="form-control form-control-sm" 
                 value={filters.modalidad_id} 
                 onChange={e => setFilters(f => ({ ...f, modalidad_id: e.target.value }))}
@@ -343,7 +458,19 @@ export default function PreinscripcionesManager() {
                     </td>
                   </tr>
                 )}
-                {!loading && items.map(item => {
+                {!loading && items?.length > 0 && filteredItems.length === 0 && (
+                  <tr>
+                    <td colSpan="9" className="text-center py-5">
+                      <i className="bi bi-funnel display-4 text-muted"></i>
+                      <p className="text-muted mt-2 mb-0">No hay resultados con los filtros actuales</p>
+                      <button className="btn btn-sm btn-outline-secondary mt-3" onClick={clearFilters}>
+                        <i className="bi bi-arrow-repeat me-1"></i>
+                        Limpiar filtros
+                      </button>
+                    </td>
+                  </tr>
+                )}
+                {!loading && filteredItems.map(item => {
                   const nombre = [item.nombre, item.apellido].filter(Boolean).join(' ') || 
                                 [item.nombres, item.apellidos].filter(Boolean).join(' ') || '—';
                   const contacto = [item.celular || item.telefono, item.email].filter(Boolean).join(' / ') || '—';
