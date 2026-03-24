@@ -3,11 +3,56 @@ import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../utils/apiStatic'
 
+// Función para detectar URLs y convertirlas en enlaces
+const linkifyText = (text) => {
+  if (!text) return text
+  
+  // Regex para detectar URLs (http, https, ftp, www)
+  const urlRegex = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi
+  
+  return text.replace(urlRegex, (url) => {
+    let fullUrl = url
+    if (!url.match(/^https?:\/\//)) {
+      fullUrl = 'http://' + url
+    }
+    return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="text-primary fw-bold text-decoration-underline">${url}</a>`
+  })
+}
+
+// Función para procesar el HTML y convertir URLs en enlaces
+const processHtmlContent = (html) => {
+  if (!html) return html
+  
+  // Crear un div temporal para manipular el HTML
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+  
+  // Función recursiva para procesar nodos de texto
+  const processNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent
+      const linkedText = linkifyText(text)
+      if (linkedText !== text) {
+        const wrapper = document.createElement('span')
+        wrapper.innerHTML = linkedText
+        node.parentNode.replaceChild(wrapper, node)
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.nodeName !== 'A') {
+      Array.from(node.childNodes).forEach(processNode)
+    }
+  }
+  
+  Array.from(tempDiv.childNodes).forEach(processNode)
+  return tempDiv.innerHTML
+}
+
 export default function NoticiaDetail() {
   const { id } = useParams()
   const [noticia, setNoticia] = useState(null)
   const [media, setMedia] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -37,29 +82,17 @@ export default function NoticiaDetail() {
     return () => { mounted = false }
   }, [id])
 
-  // ── Loading ──────────────────────────────────────────────────────
-  if (loading) return (
-    <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
-      <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
-        <span className="visually-hidden">Cargando...</span>
-      </div>
-      <p className="text-muted fw-semibold">Cargando noticia…</p>
-    </div>
-  )
+  // Barra de progreso de lectura
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight
+      const progress = (window.scrollY / totalHeight) * 100
+      setScrollProgress(progress)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-  // ── Not found ────────────────────────────────────────────────────
-  if (!noticia) return (
-    <div className="d-flex flex-column align-items-center justify-content-center text-center" style={{ minHeight: '60vh' }}>
-      <div className="mb-4" style={{ fontSize: '4rem', lineHeight: 1 }}>📭</div>
-      <h2 className="fw-bold mb-2">Noticia no encontrada</h2>
-      <p className="text-muted mb-4">Es posible que haya sido eliminada o movida.</p>
-      <Link to="/noticia" className="btn btn-primary px-4 rounded-pill">
-        ← Volver a noticia
-      </Link>
-    </div>
-  )
-
-  // ── Helpers ──────────────────────────────────────────────────────
   const extractContent = (n) => {
     if (!n) return ''
     if (n.content && typeof n.content === 'object' && n.content.rendered) return n.content.rendered
@@ -92,280 +125,639 @@ export default function NoticiaDetail() {
   }
 
   const contentHtml = extractContent(noticia)
-  const titleText = noticia.title || noticia.titulo || noticia.name || 'Noticia'
-  const dateText = noticia.published_at
+  const processedContent = processHtmlContent(contentHtml)
+  const titleText = noticia?.title || noticia?.titulo || noticia?.name || 'Noticia'
+  const dateText = noticia?.published_at
     ? new Date(noticia.published_at).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })
-    : (noticia.fecha || noticia.publishedOn || '')
-  const category = noticia.categoria || noticia.category || null
-  const author = noticia.author || null
+    : (noticia?.fecha || noticia?.publishedOn || '')
+  const category = noticia?.categoria || noticia?.category || null
+  const author = noticia?.author || null
 
   const mediaUrl = media
     ? resolveMediaUrl(media)
-    : (noticia.image || noticia.image_url || noticia.featured_media_url || noticia.media?.url || null)
+    : (noticia?.image || noticia?.image_url || noticia?.featured_media_url || noticia?.media?.url || null)
 
-  let shareId = noticia.id ?? noticia.ID ?? noticia._id
+  let shareId = noticia?.id ?? noticia?.ID ?? noticia?._id
   if (!shareId) {
-    const raw = (noticia.slug || noticia.slugified || noticia.slug_name || '') + ''
+    const raw = (noticia?.slug || noticia?.slugified || noticia?.slug_name || '') + ''
     const cleaned = raw.replace(/^\/+|\/+$/g, '')
     const parts = cleaned.split('/').filter(Boolean)
     shareId = parts.length ? parts.pop() : cleaned
   }
-  if (!shareId) shareId = noticia.id ?? noticia.ID ?? noticia._id ?? '0'
+  if (!shareId) shareId = noticia?.id ?? noticia?.ID ?? noticia?._id ?? '0'
   const BASE_URL = 'https://etp-escuelas-tecnicas-del-peru-production.up.railway.app'
   const shareUrl = `${BASE_URL}/noticia/${encodeURIComponent(shareId)}`
 
-  // Split lead paragraph from rest of content
   const leadMatch = contentHtml && contentHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i)
   const leadHtml = leadMatch ? '<p>' + leadMatch[1] + '</p>' : ''
   const restHtml = leadMatch ? contentHtml.replace(leadMatch[0], '') : contentHtml
 
-  // ── Render ───────────────────────────────────────────────────────
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center position-relative overflow-hidden">
+        {/* Fondo animado */}
+        <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+          background: 'linear-gradient(-45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%)',
+          backgroundSize: '400% 400%',
+          animation: 'gradientShift 15s ease infinite',
+          opacity: '0.15'
+        }}></div>
+        <div className="text-center position-relative z-1">
+          <div className="spinner-grow text-primary mb-3" style={{ width: '4rem', height: '4rem' }} role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <h3 className="h4 text-primary fw-bold">Cargando noticia...</h3>
+        </div>
+        <style>{`
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  if (!noticia) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center position-relative overflow-hidden">
+        <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+          background: 'radial-gradient(circle at 20% 50%, #667eea 0%, transparent 50%), radial-gradient(circle at 80% 80%, #764ba2 0%, transparent 50%), radial-gradient(circle at 40% 20%, #f093fb 0%, transparent 50%)',
+          opacity: '0.1'
+        }}></div>
+        <div className="text-center p-5 position-relative z-1">
+          <div className="display-1 mb-4 text-primary" style={{ animation: 'float 3s ease-in-out infinite' }}>📰</div>
+          <h2 className="fw-bold mb-3">Noticia no encontrada</h2>
+          <p className="text-muted mb-4">Lo sentimos, la noticia que buscas no está disponible.</p>
+          <Link to="/noticias" className="btn btn-primary btn-lg px-5 rounded-pill shadow-lg hover-lift">
+            ← Volver a noticias
+          </Link>
+        </div>
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+            transition: all 0.3s ease;
+          }
+        `}</style>
+      </div>
+    )
+  }
+
   return (
     <>
-      {/* ── Inline styles injected once ── */}
       <style>{`
-        .noticia-hero-img {
-          width: 100%;
-          max-height: 520px;
-          object-fit: cover;
-          border-radius: 1rem;
+        /* Fondo animado */
+        .animated-bg {
+          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+          position: relative;
+          overflow: hidden;
         }
-        .article-content img {
-          max-width: 100%;
-          border-radius: .5rem;
-          margin: 1rem 0;
+        
+        .animated-bg::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(102,126,234,0.03) 0%, transparent 70%),
+                      radial-gradient(circle at 80% 20%, rgba(118,75,162,0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 20% 80%, rgba(240,147,251,0.03) 0%, transparent 50%);
+          animation: rotate 30s linear infinite;
         }
-        .article-content p {
-          line-height: 1.85;
-          margin-bottom: 1.25rem;
+        
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        .article-content h2,
-        .article-content h3 {
-          margin-top: 2rem;
-          font-weight: 700;
-        }
-        .article-content a {
-          color: inherit;
-          text-decoration: underline;
-          text-underline-offset: 3px;
-        }
-        .lead-paragraph p {
-          font-size: 1.2rem;
-          line-height: 1.75;
-          font-weight: 400;
-          color: #374151;
-        }
-        .share-btn {
-          transition: transform .15s, box-shadow .15s;
-        }
-        .share-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
-        .divider-bar {
-          width: 3.5rem;
+        
+        /* Barra de progreso */
+        .progress-bar-top {
+          position: fixed;
+          top: 0;
+          left: 0;
           height: 4px;
-          border-radius: 99px;
-          background: #0d6efd;
-          margin-bottom: 1.5rem;
+          background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+          z-index: 9999;
+          transition: width 0.1s ease;
+          box-shadow: 0 0 10px rgba(102,126,234,0.5);
+        }
+        
+        /* Card hover effects */
+        .article-card {
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          animation: slideUp 0.6s ease-out;
+        }
+        
+        .article-card:hover {
+          transform: translateY(-10px) scale(1.01);
+          box-shadow: 0 30px 60px rgba(0,0,0,0.12) !important;
+        }
+        
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Hero image zoom */
+        .hero-image-container {
+          overflow: hidden;
+        }
+        
+        .hero-image {
+          transition: transform 0.7s ease;
+        }
+        
+        .hero-image-container:hover .hero-image {
+          transform: scale(1.05);
+        }
+        
+        /* Badge pulse */
+        .badge-pulse {
+          animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(13,110,253,0.7); }
+          70% { box-shadow: 0 0 0 15px rgba(13,110,253,0); }
+          100% { box-shadow: 0 0 0 0 rgba(13,110,253,0); }
+        }
+        
+        /* Content animations */
+        .content-fade-in {
+          animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Share buttons */
+        .share-btn {
+          transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .share-btn::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.3);
+          transform: translate(-50%, -50%);
+          transition: width 0.6s, height 0.6s;
+        }
+        
+        .share-btn:hover::before {
+          width: 100%;
+          height: 100%;
+        }
+        
+        .share-btn:hover {
+          transform: translateY(-5px) scale(1.1);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Lead paragraph */
+        .lead-highlight {
+          position: relative;
+          padding-left: 1.5rem;
+          border-left: 4px solid #667eea;
+          background: linear-gradient(90deg, rgba(102,126,234,0.05) 0%, transparent 100%);
+          padding: 1.5rem;
+          border-radius: 0 1rem 1rem 0;
+          animation: slideInLeft 0.6s ease-out;
+        }
+        
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Breadcrumb glass effect */
+        .breadcrumb-glass {
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.3);
+          box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* Reading progress indicator */
+        .reading-indicator {
+          position: relative;
+        }
+        
+        .reading-indicator::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.3s ease;
+        }
+        
+        .reading-indicator:hover::after {
+          transform: scaleX(1);
+        }
+        
+        /* Floating shapes decoration */
+        .floating-shape {
+          position: absolute;
+          border-radius: 50%;
+          opacity: 0.1;
+          animation: floatShape 20s infinite ease-in-out;
+        }
+        
+        .shape-1 {
+          width: 300px;
+          height: 300px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          top: 10%;
+          right: -150px;
+          animation-delay: 0s;
+        }
+        
+        .shape-2 {
+          width: 200px;
+          height: 200px;
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          bottom: 20%;
+          left: -100px;
+          animation-delay: 5s;
+        }
+        
+        @keyframes floatShape {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        /* Typography enhancements */
+        .gradient-text {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        /* Meta items hover */
+        .meta-item {
+          transition: all 0.3s ease;
+        }
+        
+        .meta-item:hover {
+          transform: translateX(5px);
+          color: #667eea !important;
+        }
+        
+        /* Link hover effect in content */
+        .article-content a {
+          position: relative;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+        
+        .article-content a::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+          transition: width 0.3s ease;
+        }
+        
+        .article-content a:hover::after {
+          width: 100%;
+        }
+        
+        /* Button back animation */
+        .btn-back {
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+          padding-left: 2.5rem;
+          padding-right: 2.5rem;
+        }
+        
+        /* Category tag */
+        .category-tag {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .category-tag::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+          transform: rotate(45deg);
+          animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%) rotate(45deg); }
+          100% { transform: translateX(100%) rotate(45deg); }
         }
       `}</style>
 
-      <section className="py-5 bg-light" style={{ minHeight: '100vh' }}>
-        <div className="container" style={{ maxWidth: '860px' }}>
+      {/* Barra de progreso de lectura */}
+      <div className="progress-bar-top" style={{ width: `${scrollProgress}%` }}></div>
 
-          {/* ── Breadcrumb / back ── */}
-          <nav aria-label="breadcrumb" className="mb-4">
-            <ol className="breadcrumb align-items-center mb-0">
+      <div className="animated-bg min-vh-100 position-relative">
+        {/* Formas flotantes decorativas */}
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+
+        <div className="container py-5 position-relative z-1">
+          
+          {/* Breadcrumb */}
+          <nav aria-label="breadcrumb" className="mb-4 content-fade-in">
+            <ol className="breadcrumb breadcrumb-glass rounded-pill px-4 py-2 d-inline-flex mb-0">
               <li className="breadcrumb-item">
-                <Link to="/" className="text-decoration-none text-muted small fw-semibold">Inicio</Link>
+                <Link to="/" className="text-decoration-none text-primary fw-semibold hover-opacity">
+                  <i className="bi bi-house-door me-1"></i>Inicio
+                </Link>
               </li>
               <li className="breadcrumb-item">
-                <Link to="/noticia" className="text-decoration-none text-muted small fw-semibold">Noticia</Link>
+                <Link to="/noticias" className="text-decoration-none text-primary fw-semibold">Noticias</Link>
               </li>
-              <li className="breadcrumb-item active text-muted small text-truncate" style={{ maxWidth: '200px' }}>
+              <li className="breadcrumb-item active text-truncate fw-bold" style={{ maxWidth: '250px' }}>
                 {titleText}
               </li>
             </ol>
           </nav>
 
-          {/* ── Main card ── */}
-          <article className="bg-white rounded-4 shadow-sm overflow-hidden">
-
-            {/* Hero image */}
+          {/* Main Article Card */}
+          <article className="card article-card border-0 shadow-lg overflow-hidden bg-white">
+            
+            {/* Hero Image */}
             {mediaUrl && (
-              <div className="position-relative">
+              <div className="hero-image-container position-relative">
                 <img
                   src={mediaUrl}
-                  alt={(media && (media.alt_text || media.alt)) || titleText}
-                  className="noticia-hero-img"
-                  style={{ borderRadius: '1rem 1rem 0 0', maxHeight: '480px' }}
+                  alt={media?.alt_text || media?.alt || titleText}
+                  className="hero-image w-100"
+                  style={{ maxHeight: '550px', objectFit: 'cover' }}
                 />
-                {/* Category pill over image */}
+                <div className="position-absolute bottom-0 start-0 w-100" style={{
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)',
+                  height: '200px'
+                }}></div>
                 {category && (
-                  <span
-                    className="position-absolute top-0 start-0 m-3 badge text-uppercase fw-semibold px-3 py-2 rounded-pill"
-                    style={{ fontSize: '.7rem', letterSpacing: '.08em', background: '#0d6efd', color: '#fff' }}
-                  >
-                    {category}
-                  </span>
+                  <div className="position-absolute top-0 start-0 m-4">
+                    <span className="badge category-tag badge-pulse fs-6 px-4 py-2 rounded-pill text-white fw-bold shadow-lg">
+                      <i className="bi bi-tag me-1"></i>
+                      {category}
+                    </span>
+                  </div>
                 )}
-                {/* Image caption */}
-                {media && (media.caption || media.caption_text) && (
-                  <p
-                    className="text-muted small text-center py-2 mb-0 bg-light"
-                    dangerouslySetInnerHTML={{ __html: media.caption || media.caption_text }}
-                  />
+                {media?.caption && (
+                  <div className="position-absolute bottom-0 start-0 w-100 text-center pb-3">
+                    <span className="text-white-50 small">{media.caption}</span>
+                  </div>
                 )}
               </div>
             )}
 
-            {/* Body */}
-            <div className="p-4 p-md-5">
-
-              {/* Category (no image) */}
-              {category && !mediaUrl && (
-                <span
-                  className="badge text-uppercase fw-semibold px-3 py-2 rounded-pill mb-3 d-inline-block"
-                  style={{ fontSize: '.7rem', letterSpacing: '.08em', background: '#e8f0fe', color: '#0d6efd' }}
-                >
-                  {category}
-                </span>
-              )}
-
-              {/* Title */}
-              <h1 className="fw-bold mb-3 lh-sm" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.4rem)' }}>
-                {titleText}
-              </h1>
-
-              {/* Decorative bar */}
-              <div className="divider-bar" />
-
-              {/* Meta row */}
-              {(author || dateText) && (
-                <div className="d-flex flex-wrap align-items-center gap-3 mb-4">
-                  {author && (
-                    <div className="d-flex align-items-center gap-2">
-                      <div
-                        className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
-                        style={{ width: '36px', height: '36px', fontSize: '.8rem', flexShrink: 0 }}
-                      >
-                        {author.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="fw-semibold small lh-sm">{author}</div>
-                        <div className="text-muted" style={{ fontSize: '.72rem' }}>Autor</div>
-                      </div>
-                    </div>
-                  )}
-                  {dateText && (
-                    <div className="d-flex align-items-center gap-1 text-muted small">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-                      </svg>
-                      <span>{dateText}</span>
-                    </div>
-                  )}
+            {/* Article Content */}
+            <div className="card-body p-4 p-md-5">
+              
+              {!mediaUrl && category && (
+                <div className="mb-3 content-fade-in">
+                  <span className="badge category-tag fs-6 px-4 py-2 rounded-pill text-white fw-bold">
+                    <i className="bi bi-tag me-1"></i>
+                    {category}
+                  </span>
                 </div>
               )}
 
-              {/* ── Separator ── */}
-              <hr className="mb-4" />
+              {/* Title */}
+              <h1 className="display-4 fw-bold mb-4 gradient-text content-fade-in" style={{ animationDelay: '0.1s' }}>
+                {titleText}
+              </h1>
 
-              {/* Lead paragraph */}
+              {/* Meta Info */}
+              <div className="d-flex flex-wrap align-items-center gap-4 mb-4 pb-4 border-bottom border-2 content-fade-in" style={{ animationDelay: '0.2s' }}>
+                {author && (
+                  <div className="d-flex align-items-center gap-3 meta-item cursor-pointer">
+                    <div 
+                      className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-lg"
+                      style={{ 
+                        width: '50px', 
+                        height: '50px',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      }}
+                    >
+                      {author.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="fw-bold">{author}</div>
+                      <div className="text-muted small text-uppercase tracking-wide">Autor</div>
+                    </div>
+                  </div>
+                )}
+                
+                {dateText && (
+                  <div className="d-flex align-items-center gap-2 text-muted meta-item">
+                    <i className="bi bi-calendar3 fs-5 text-primary"></i>
+                    <div>
+                      <div className="fw-semibold">{dateText}</div>
+                      <div className="small">Publicado</div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="d-flex align-items-center gap-2 text-muted meta-item reading-indicator">
+                  <i className="bi bi-clock fs-5 text-primary"></i>
+                  <div>
+                    <div className="fw-semibold">{Math.ceil(contentHtml.replace(/<[^>]*>/g, '').split(/\s+/).length / 200)} min</div>
+                    <div className="small">Lectura</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lead Paragraph */}
               {leadHtml && (
-                <div
-                  className="lead-paragraph mb-4 pb-2"
-                  dangerouslySetInnerHTML={{ __html: leadHtml }}
+                <div 
+                  className="lead-highlight mb-4 fs-5 text-secondary content-fade-in"
+                  style={{ animationDelay: '0.3s' }}
+                  dangerouslySetInnerHTML={{ __html: processHtmlContent(leadHtml) }}
                 />
               )}
 
-              {/* Article body */}
+              {/* Main Content */}
               <div
-                className="article-content"
-                style={{ color: '#1f2937' }}
+                className="article-content fs-5 lh-lg text-dark content-fade-in"
+                style={{ animationDelay: '0.4s' }}
                 dangerouslySetInnerHTML={{
-                  __html: restHtml || contentHtml || '<p class="text-muted">No hay contenido disponible para esta noticia.</p>',
+                  __html: processHtmlContent(restHtml) || processHtmlContent(contentHtml) || '<p class="text-muted text-center py-5 fst-italic">No hay contenido disponible para esta noticia.</p>',
                 }}
               />
 
-              {/* ── Footer ── */}
-              <hr className="mt-5 mb-4" />
+              {/* Tags/Keywords section (if available) */}
+              {noticia?.tags && (
+                <div className="mt-5 pt-4 border-top content-fade-in" style={{ animationDelay: '0.5s' }}>
+                  <h5 className="text-muted mb-3 text-uppercase small fw-bold tracking-wider">
+                    <i className="bi bi-bookmarks me-2"></i>Etiquetas
+                  </h5>
+                  <div className="d-flex flex-wrap gap-2">
+                    {noticia.tags.map((tag, idx) => (
+                      <span key={idx} className="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
-                {/* Back button */}
-                <Link to="/noticia" className="btn btn-outline-secondary rounded-pill px-4">
-                  ← Volver a noticia
-                </Link>
-
-                {/* Share buttons */}
-                <div className="d-flex align-items-center gap-2 flex-wrap">
-                  <span className="text-muted small fw-semibold me-1">Compartir:</span>
-
-                  {/* WhatsApp */}
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(titleText + ' ' + shareUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-sm rounded-pill share-btn"
-                    style={{ background: '#25D366', color: '#fff', border: 'none' }}
-                    title="WhatsApp"
+              {/* Footer Actions */}
+              <div className="mt-5 pt-4 border-top border-2 content-fade-in" style={{ animationDelay: '0.6s' }}>
+                <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4">
+                  
+                  {/* Back Button */}
+                  <Link 
+                    to="/noticias" 
+                    className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold btn-back"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-                    </svg>
-                    <span className="ms-1 d-none d-sm-inline">WhatsApp</span>
-                  </a>
+                    <i className="bi bi-arrow-left me-2"></i>
+                    Volver a noticias
+                  </Link>
 
-                  {/* Facebook */}
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-sm rounded-pill share-btn"
-                    style={{ background: '#1877F2', color: '#fff', border: 'none' }}
-                    title="Facebook"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
-                    </svg>
-                    <span className="ms-1 d-none d-sm-inline">Facebook</span>
-                  </a>
+                  {/* Share Section */}
+                  <div className="d-flex flex-column align-items-start align-items-md-end gap-3">
+                    <span className="text-muted small fw-bold text-uppercase tracking-wider">
+                      <i className="bi bi-share me-1"></i>Compartir
+                    </span>
+                    <div className="d-flex gap-3">
+                      
+                      {/* WhatsApp */}
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(titleText + ' - ' + shareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-success rounded-circle share-btn d-flex align-items-center justify-content-center"
+                        style={{ width: '50px', height: '50px' }}
+                        title="WhatsApp"
+                      >
+                        <i className="bi bi-whatsapp fs-4"></i>
+                      </a>
 
-                  {/* Copy link */}
-                  <button
-                    className="btn btn-sm btn-outline-secondary rounded-pill share-btn"
-                    title="Copiar enlace"
-                    onClick={() => {
-                      navigator.clipboard.writeText(shareUrl).then(() => {
-                        // brief feedback
-                        const btn = document.activeElement
-                        const original = btn.innerHTML
-                        btn.innerHTML = '✓ Copiado'
-                        setTimeout(() => { btn.innerHTML = original }, 1800)
-                      })
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
-                      <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
-                    </svg>
-                    <span className="ms-1">Copiar</span>
-                  </button>
+                      {/* Facebook */}
+                      <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary rounded-circle share-btn d-flex align-items-center justify-content-center"
+                        style={{ width: '50px', height: '50px' }}
+                        title="Facebook"
+                      >
+                        <i className="bi bi-facebook fs-4"></i>
+                      </a>
+
+                      {/* Twitter/X */}
+                      <a
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(titleText)}&url=${encodeURIComponent(shareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-dark rounded-circle share-btn d-flex align-items-center justify-content-center"
+                        style={{ width: '50px', height: '50px' }}
+                        title="X (Twitter)"
+                      >
+                        <i className="bi bi-twitter-x fs-4"></i>
+                      </a>
+
+                      {/* LinkedIn */}
+                      <a
+                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-info rounded-circle share-btn d-flex align-items-center justify-content-center"
+                        style={{ width: '50px', height: '50px', backgroundColor: '#0077b5', borderColor: '#0077b5' }}
+                        title="LinkedIn"
+                      >
+                        <i className="bi bi-linkedin fs-4"></i>
+                      </a>
+
+                      {/* Copy Link */}
+                      <button
+                        className={`btn ${copied ? 'btn-success' : 'btn-outline-secondary'} rounded-circle share-btn d-flex align-items-center justify-content-center`}
+                        style={{ width: '50px', height: '50px' }}
+                        onClick={handleCopyLink}
+                        title="Copiar enlace"
+                      >
+                        <i className={`bi ${copied ? 'bi-check-lg' : 'bi-link-45deg'} fs-4`}></i>
+                      </button>
+                    </div>
+                    
+                    {copied && (
+                      <span className="text-success small fw-bold animate-fade-in">
+                        <i className="bi bi-check-circle me-1"></i>¡Enlace copiado!
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </article>
 
-          {/* ── Back to top nudge ── */}
-          <div className="text-center mt-5 mb-2">
-            <Link to="/noticia" className="btn btn-link text-muted small text-decoration-none">
-              ← Ver todas las noticia
+          {/* Related Articles Suggestion */}
+          <div className="mt-5 text-center content-fade-in" style={{ animationDelay: '0.7s' }}>
+            <Link 
+              to="/noticias" 
+              className="btn btn-light btn-lg rounded-pill px-5 shadow-sm hover-lift fw-semibold"
+            >
+              <i className="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>
+              Ver todas las noticias
             </Link>
           </div>
-
         </div>
-      </section>
+      </div>
+
+      {/* Bootstrap Icons */}
+      <link 
+        rel="stylesheet" 
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      />
     </>
   )
 }
