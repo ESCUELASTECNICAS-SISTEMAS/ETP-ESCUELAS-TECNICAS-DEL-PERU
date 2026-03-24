@@ -53,9 +53,9 @@ export default function UserManager(){
     if (!confirm('Desactivar usuario?')) return
     setSaving(true); setError(null)
     try{
-      await axios.delete(`${USERS}/${id}`, { headers })
+      await axios.patch(`${USERS}/${id}/active`, { active: false }, { headers })
       await fetchUsers()
-    }catch(err){ console.error('delete user', err); setError('Error desactivando usuario') }
+    }catch(err){ console.error('patch user active', err); setError('Error desactivando usuario') }
     finally{ setSaving(false) }
   }
 
