@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react'
 import './index.css'
 import Navbar from './components/layout/Navbar'
+import ToastContainer from './setupReactToastify'
 import Footer from './components/layout/Footer'
 import HomePage from './pages/HomePage'
 import CursosPage from './pages/CursosPage'
@@ -187,6 +188,7 @@ export default function App() {
           onSubmit={handleWaSubmit}
         />
       )}
+      <ToastContainer />
     </div>
   )
 }

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { connectSocket, disconnectSocket } from '../../utils/socket'
+import { toast } from 'react-toastify'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { endpoints } from '../../utils/apiStatic'
@@ -39,6 +41,40 @@ export default function Navbar() {
       if (raw) setUser(JSON.parse(raw))
     } catch (e) { /* ignore */ }
   }, [])
+
+  // Socket.io: notificación solo para administradores
+  useEffect(() => {
+    if (!user || !(user.role === 'admin' || user.role === 'administrador')) return
+    const token = localStorage.getItem('etp_token')
+    const socket = connectSocket(token)
+    socket.on('nuevo_usuario', (data) => {
+      toast.info(`Nuevo usuario registrado: ${data.name} (${data.email})`, {
+        position: 'top-right',
+        autoClose: 7000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      })
+    })
+    socket.on('nueva_preinscripcion', (data) => {
+      toast.info(`Nueva pre-inscripción: ${data.nombres || data.name || 'Sin nombre'} (${data.email || 'Sin email'})`, {
+        position: 'top-right',
+        autoClose: 7000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      })
+    })
+    return () => {
+      socket.off('nuevo_usuario')
+      socket.off('nueva_preinscripcion')
+      disconnectSocket()
+    }
+  }, [user])
 
   useEffect(() => {
     const onLogin = (ev) => setUser(ev?.detail || null)
