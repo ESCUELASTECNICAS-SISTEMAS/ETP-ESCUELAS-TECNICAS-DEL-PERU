@@ -1,7 +1,13 @@
 // src/utils/socket.js
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+// Usa la misma base que tu API por defecto (definida en `apiStatic.js`).
+// Esto evita que el frontend intente conectar a `localhost:3000` cuando el backend
+// real está en el dominio de producción.
+const API_BASE =
+  import.meta.env.VITE_API_BASE || 'https://servidorpaginaetp-production.up.railway.app'
+
+const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || API_BASE).replace(/\/$/, '');
 
 let socket;
 
