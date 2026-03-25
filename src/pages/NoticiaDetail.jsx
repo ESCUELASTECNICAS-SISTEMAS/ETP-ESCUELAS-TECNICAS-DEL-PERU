@@ -47,7 +47,7 @@ const processHtmlContent = (html) => {
 }
 
 export default function NoticiaDetail() {
-  const { id } = useParams()
+  const { slug } = useParams()
   const [noticia, setNoticia] = useState(null)
   const [media, setMedia] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -58,7 +58,7 @@ export default function NoticiaDetail() {
     let mounted = true
     const load = async () => {
       try {
-        const res = await axios.get(`${endpoints.NEWS}/${id}`)
+        const res = await axios.get(`${endpoints.NEWS}/slug/${slug}`)
         if (!mounted) return
         const n = res.data
         setNoticia(n)
@@ -80,7 +80,7 @@ export default function NoticiaDetail() {
     }
     load()
     return () => { mounted = false }
-  }, [id])
+  }, [slug])
 
   // Barra de progreso de lectura
   useEffect(() => {

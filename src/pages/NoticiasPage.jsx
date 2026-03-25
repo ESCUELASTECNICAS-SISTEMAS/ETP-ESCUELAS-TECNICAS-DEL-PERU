@@ -48,7 +48,7 @@ const NewsCard = ({ noticia, media, isFeatured = false }) => {
                 {(noticia.summary || noticia.resumen || '').slice(0, 220)}...
               </p>
               <div className="mt-4">
-                <a href={`/noticia/${noticia.id}`} className="btn btn-primary">
+                <a href={`/noticia/${noticia.slug || noticia.id}`} className="btn btn-primary">
                   Leer noticia completa
                   <i className="bi bi-arrow-right ms-2"></i>
                 </a>
@@ -99,7 +99,7 @@ const NewsCard = ({ noticia, media, isFeatured = false }) => {
         
         <div className="mt-auto">
           <a 
-            href={`/noticia/${noticia.id}`} 
+            href={`/noticia/${noticia.slug || noticia.id}`} 
             className="btn btn-outline-primary btn-sm"
           >
             Leer más

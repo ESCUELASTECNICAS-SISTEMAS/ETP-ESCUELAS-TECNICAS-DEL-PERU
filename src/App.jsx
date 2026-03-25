@@ -137,7 +137,7 @@ export default function App() {
           <Route path="/cinco-meses" element={<CincoMesesPage />} />
           <Route path="/cursos-informatica" element={<CursosInformatica />} />
           <Route path="/noticias" element={<NoticiasPage />} />
-          <Route path="/noticia/:id" element={<NoticiaDetail />} />
+          <Route path="/noticia/:slug" element={<NoticiaDetail />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/nosotros" element={<NosoatrosPage />} />

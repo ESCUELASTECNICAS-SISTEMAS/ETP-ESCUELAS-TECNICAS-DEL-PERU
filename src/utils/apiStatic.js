@@ -16,6 +16,7 @@ export const endpoints = {
   ,COURSE_SEMINARIOS: (courseId) => `${BASE_API}/courses/${courseId}/seminarios`,
   BLOGS: `${BASE_API}/blogs`
   ,NEWS: `${BASE_API}/noticias`
+  ,NEWS_BY_SLUG: (slug) => `${BASE_API}/noticias/slug/${slug}`
   ,SOCIAL_LINKS: `${BASE_API}/social-links`
   ,VISITS: `${BASE_API}/visits`
   ,VISIT_STATS: `${BASE_API}/visits/stats`

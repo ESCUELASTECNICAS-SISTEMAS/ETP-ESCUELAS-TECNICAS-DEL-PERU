@@ -9,7 +9,7 @@ export default function AdminNoticias(){
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  const [form, setForm] = useState({ title:'', summary:'', featured_media_id:'', published:true, published_at:'' })
+  const [form, setForm] = useState({ title:'', summary:'', featured_media_id:'', published:true, published_at:'', slug:'', category:'', tags:'' })
   const [mediaList, setMediaList] = useState([])
   const [loadingMedia, setLoadingMedia] = useState(true)
   const [editingId, setEditingId] = useState(null)
@@ -31,14 +31,34 @@ export default function AdminNoticias(){
     finally{ setLoading(false) }
   }
 
-  const startEdit = (n) => setEditingId(n.id) || setForm({ title:n.title||'', summary:n.summary||'', featured_media_id: n.featured_media_id||'', published: !!n.published, published_at: n.published_at || '', active: n.active !== undefined ? !!n.active : true })
-  const cancelEdit = () => { setEditingId(null); setForm({ title:'', summary:'', featured_media_id:'', published:true, published_at:'', active: true }) }
+  const startEdit = (n) => setEditingId(n.id) || setForm({
+    title: n.title || '',
+    summary: n.summary || '',
+    featured_media_id: n.featured_media_id || '',
+    published: !!n.published,
+    published_at: n.published_at || '',
+    active: n.active !== undefined ? !!n.active : true,
+    slug: n.slug || '',
+    category: n.category || '',
+    tags: Array.isArray(n.tags) ? n.tags.join(', ') : (n.tags || '')
+  })
+  const cancelEdit = () => { setEditingId(null); setForm({ title:'', summary:'', featured_media_id:'', published:true, published_at:'', active: true, slug:'', category:'', tags:'' }) }
 
   const save = async (e) => {
     e && e.preventDefault()
     setSaving(true); setError(null)
     try{
-      const payload = { title: form.title, summary: form.summary, featured_media_id: form.featured_media_id || null, published: !!form.published, published_at: form.published_at || null, active: form.active === undefined ? true : !!form.active }
+      const payload = {
+        title: form.title,
+        summary: form.summary,
+        featured_media_id: form.featured_media_id || null,
+        published: !!form.published,
+        published_at: form.published_at || null,
+        active: form.active === undefined ? true : !!form.active,
+        slug: form.slug || null,
+        category: form.category || null,
+        tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : []
+      }
       if (editingId) await axios.put(`${endpoints.NEWS}/${editingId}`, payload, { headers })
       else await axios.post(endpoints.NEWS, payload, { headers })
       await fetch(); cancelEdit()
@@ -95,6 +115,9 @@ export default function AdminNoticias(){
               <form onSubmit={save}>
                 <div className="mb-2"><label className="form-label">Título</label><input className="form-control" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} required /></div>
                 <div className="mb-2"><label className="form-label">Resumen</label><textarea className="form-control" rows={3} value={form.summary} onChange={e=>setForm(f=>({...f,summary:e.target.value}))} /></div>
+                <div className="mb-2"><label className="form-label">Slug (URL)</label><input className="form-control" value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value}))} placeholder="ej: seminarios-exito-2026" /></div>
+                <div className="mb-2"><label className="form-label">Categoría</label><input className="form-control" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="ej: Seminarios" /></div>
+                <div className="mb-2"><label className="form-label">Tags (separados por coma)</label><input className="form-control" value={form.tags} onChange={e=>setForm(f=>({...f,tags:e.target.value}))} placeholder="ej: evento, éxito, capacitación" /></div>
                 <div className="mb-2">
                   <label className="form-label">Imagen destacada</label>
                   <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.featured_media_id} onSelect={id=>setForm(f=>({...f,featured_media_id:id}))} label="imagen" />
