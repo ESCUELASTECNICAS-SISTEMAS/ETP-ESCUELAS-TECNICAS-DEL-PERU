@@ -22,7 +22,7 @@ export default function AdminCourses(){
     title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
     hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
     razones_para_estudiar: '', publico_objetivo: '',
-    modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [],
+    modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_url: '', extra_media: [],
     precio: '', descuento: '', oferta: false, matricula: '', pension: ''
   })
 
@@ -402,7 +402,7 @@ export default function AdminCourses(){
         description: form.description,
         type: form.type,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : null,
-        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : null,
+        horarios_media_url: form.horarios_media_url || null,
         extra_media: Array.isArray(form.extra_media) && form.extra_media.length ? form.extra_media.map(n => Number(n)) : [],
         slug: form.slug,
         published: Boolean(form.published),
@@ -439,11 +439,11 @@ export default function AdminCourses(){
           }
         }catch(e){ console.error('attach extra media failed', e) }
       }
-      setForm({ 
+      setForm({
         title: '', subtitle: '', description: '', type: '', thumbnail_media_id: '', slug: '', published: true,
         hours: '', duration: '', grado: '', registro: '', perfil_egresado: '',
         razones_para_estudiar: '', publico_objetivo: '',
-        modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_id: '', extra_media: [],
+        modalidad: '', is_virtual: false, is_presencial: false, temario: '', horarios_media_url: '', extra_media: [],
         precio: '', descuento: '', oferta: false, matricula: '', pension: ''
       })
       setSelectedSucursalIds([])
@@ -504,7 +504,7 @@ export default function AdminCourses(){
     setEditingId(c.id)
     setForm({
       title: c.title||'', subtitle: c.subtitle||'', description: c.description||'', type: c.type||'',
-      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_id: c.horarios_media_id || (c.horarios && c.horarios.id) || '', extra_media: (Array.isArray(c.extra_media) ? c.extra_media.map(em => (em && (em.id || em.media_id)) ? (em.id || em.media_id) : em) : (c.extra_media_id ? [c.extra_media_id] : (c.extraImage && c.extraImage.id ? [c.extraImage.id] : []))), slug: c.slug||'', published: !!c.published,
+      thumbnail_media_id: c.thumbnail_media_id || (c.thumbnail && c.thumbnail.id) || '', horarios_media_url: c.horarios_media_url || '', extra_media: (Array.isArray(c.extra_media) ? c.extra_media.map(em => (em && (em.id || em.media_id)) ? (em.id || em.media_id) : em) : (c.extra_media_id ? [c.extra_media_id] : (c.extraImage && c.extraImage.id ? [c.extraImage.id] : []))), slug: c.slug||'', published: !!c.published,
       hours: c.hours || '', duration: c.duration || '', grado: c.grado || '', registro: c.registro || '',
       perfil_egresado: c.perfil_egresado || '',
       razones_para_estudiar: c.razones_para_estudiar || '', publico_objetivo: c.publico_objetivo || '',
@@ -605,7 +605,7 @@ export default function AdminCourses(){
         description: toTrimmedOrUndefined(form.description),
         type: (form.type || editingCourse.type || editingCourse.tipo || '').trim() || undefined,
         thumbnail_media_id: form.thumbnail_media_id ? Number(form.thumbnail_media_id) : undefined,
-        horarios_media_id: form.horarios_media_id ? Number(form.horarios_media_id) : undefined,
+        horarios_media_url: toTrimmedOrUndefined(form.horarios_media_url),
         extra_media: (Array.isArray(form.extra_media) && form.extra_media.length) ? form.extra_media.map(n => Number(n)) : undefined,
         slug: toTrimmedOrUndefined(form.slug),
         published: Boolean(form.published),
@@ -816,12 +816,15 @@ export default function AdminCourses(){
                   </div>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Horario (media)</label>
-                  <div className="d-flex align-items-center gap-2">
-                    <div style={{position:'relative',width:'100%'}}>
-                      <MediaPicker mediaList={mediaList} loading={loadingMedia} selectedId={form.horarios_media_id} onSelect={id=>handleChange('horarios_media_id', id)} label="horario" />
-                    </div>
-                  </div>
+                  <label className="form-label">URL de Horarios</label>
+                  <input
+                    type="url"
+                    className="form-control"
+                    placeholder="https://ejemplo.com/horarios.jpg"
+                    value={form.horarios_media_url || ''}
+                    onChange={e => handleChange('horarios_media_url', e.target.value)}
+                  />
+                  <small className="text-muted">URL para ver los horarios del curso (imagen o PDF)</small>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Imágenes adicionales (hasta 3)</label>

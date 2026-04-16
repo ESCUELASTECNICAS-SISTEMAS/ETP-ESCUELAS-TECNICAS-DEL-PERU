@@ -734,20 +734,6 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Carrusel de imágenes adicionales debajo de Dirigido a */}
-              {(() => {
-                const imgs = buildExtraMedias()
-                if (!imgs || imgs.length === 0) return null
-                return (
-                  <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
-                    <h5 className="cd-sidebar-title"><i className="bi bi-building me-2 text-primary"></i>Nuestras modernas instalaciones</h5>
-                    <div className="text-center">
-                      <InlineCarousel images={imgs} interval={3000} />
-                    </div>
-                  </div>
-                )
-              })()}
-
               {/* Imagen de Horarios */}
               {course.horarios && course.horarios.url && (
                 <div className="cd-sidebar-card cd-sidebar-horario shadow-sm border-0 rounded-3 mb-3">
@@ -760,6 +746,45 @@ export default function CourseDetail() {
                   </div>
                 </div>
               )}
+
+              {/* URL de Horarios */}
+              {course.horarios_media_url && (
+                <div className="cd-sidebar-card cd-sidebar-horario-url shadow-sm border-0 rounded-3 mb-3">
+                  <h5 className="cd-sidebar-title"><i className="bi bi-link-45deg me-2 text-primary"></i>Horarios del Curso</h5>
+                  <div className="text-center">
+                    <a href={course.horarios_media_url} target="_blank" rel="noopener noreferrer" className="d-block">
+                      <img 
+                        src={course.horarios_media_url} 
+                        alt="Horarios del curso" 
+                        className="img-fluid rounded-3 shadow-sm border border-2 border-primary border-opacity-25" 
+                        style={{maxHeight:280,objectFit:'contain',transition:'all 0.3s ease'}} 
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Carrusel de imágenes adicionales debajo de Horarios */}
+              {(() => {
+                const imgs = buildExtraMedias()
+                if (!imgs || imgs.length === 0) return null
+                return (
+                  <div className="cd-sidebar-card shadow-sm border-0 rounded-3 mb-3">
+                    <h5 className="cd-sidebar-title"><i className="bi bi-building me-2 text-primary"></i>Nuestras modernas instalaciones</h5>
+                    <div className="text-center">
+                      <InlineCarousel images={imgs} interval={3000} />
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Horarios Detallados */}
               {schedules && schedules.length > 0 && (

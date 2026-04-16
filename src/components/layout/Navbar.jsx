@@ -1,26 +1,27 @@
   import React, { useEffect, useRef, useState } from 'react'
-  import { connectSocket, disconnectSocket } from '../../utils/socket'
-  import { toast } from 'react-toastify'
-  import { Link, useNavigate } from 'react-router-dom'
-  import axios from 'axios'
-  import { endpoints } from '../../utils/apiStatic'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { connectSocket, disconnectSocket } from '../../utils/socket'
+import { endpoints } from '../../utils/apiStatic'
+import { toast } from 'react-toastify'
 
-  export default function Navbar() {
-    const [scrolled, setScrolled] = useState(false)
-    const [user, setUser] = useState(null)
-    const [query, setQuery] = useState('')
-    const [results, setResults] = useState([])
-    const [courses, setCourses] = useState([])
-    const [showResults, setShowResults] = useState(false)
-    const [notifications, setNotifications] = useState([])
-    const navigate = useNavigate()
-    const soundRef = useRef({ lastAt: 0 })
-    const isAdmin = !!(user && (user.role === 'admin' || user.role === 'administrador'))
-    const unreadCount = notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0)
+export default function Navbar() {
+  const [user, setUser] = useState(null)
+  const [scrolled, setScrolled] = useState(false)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [courses, setCourses] = useState([])
+  const [showResults, setShowResults] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [navKey, setNavKey] = useState(0) // Forzar re-render
+  const navigate = useNavigate()
+  const soundRef = useRef({ lastAt: 0 })
+  const isAdmin = !!(user && (user.role === 'admin' || user.role === 'administrador'))
+  const unreadCount = notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0)
 
-    useEffect(() => {
-      axios.get(endpoints.COURSES).then(r => setCourses(r.data || [])).catch(() => {})
-    }, [])
+  useEffect(() => {
+    axios.get(endpoints.COURSES).then(r => setCourses(r.data || [])).catch(() => {})
+  }, [])
 
     useEffect(() => {
       if (!query.trim()) { setResults([]); return }
@@ -40,10 +41,51 @@
     }, [])
 
     useEffect(() => {
-      try {
-        const raw = localStorage.getItem('etp_user')
-        if (raw) setUser(JSON.parse(raw))
-      } catch (e) { /* ignore */ }
+      const initializeUser = () => {
+        try {
+          const raw = localStorage.getItem('etp_user')
+          const token = localStorage.getItem('etp_token')
+          
+          // Si no hay token o usuario, limpiar completamente
+          if (!token || !raw) {
+            setUser(null)
+            localStorage.removeItem('etp_token')
+            localStorage.removeItem('etp_user')
+            return
+          }
+          
+          // Parsear y validar usuario
+          const user = JSON.parse(raw)
+          if (user && user.id) {
+            setUser(user)
+          } else {
+            // Usuario inválido, limpiar todo
+            setUser(null)
+            localStorage.removeItem('etp_token')
+            localStorage.removeItem('etp_user')
+          }
+        } catch (e) {
+          // Error en parseo, limpiar todo
+          setUser(null)
+          localStorage.removeItem('etp_token')
+          localStorage.removeItem('etp_user')
+        }
+      }
+      
+      initializeUser()
+      
+      // Escuchar cambios en storage
+      const handleStorageChange = (e) => {
+        if (e.key === 'etp_user' || e.key === 'etp_token') {
+          initializeUser()
+        }
+      }
+      
+      window.addEventListener('storage', handleStorageChange)
+      
+      return () => {
+        window.removeEventListener('storage', handleStorageChange)
+      }
     }, [])
 
     useEffect(() => {
@@ -212,14 +254,53 @@
 
     useEffect(() => {
       const onLogin = (ev) => setUser(ev?.detail || null)
+      const onLogout = () => setUser(null)
+      
       window.addEventListener('etp:login', onLogin)
-      return () => window.removeEventListener('etp:login', onLogin)
+      window.addEventListener('etp:logout', onLogout)
+      
+      return () => {
+        window.removeEventListener('etp:login', onLogin)
+        window.removeEventListener('etp:logout', onLogout)
+      }
     }, [])
 
     const handleLogout = () => {
+      // Limpiar localStorage primero
       localStorage.removeItem('etp_token')
       localStorage.removeItem('etp_user')
+      
+      // Forzar estado a null inmediatamente
       setUser(null)
+      
+      // Forzar re-renderizado completo del navbar
+      setNavKey(prev => prev + 1)
+      
+      // Disparar evento global
+      window.dispatchEvent(new CustomEvent('etp:logout', { detail: null }))
+      
+      // Cerrar menú móvil
+      closeMobileMenu()
+      
+      // Forzar limpieza completa de estado
+      setTimeout(() => {
+        setUser(null)
+        setNavKey(prev => prev + 1)
+        // Verificar que localStorage esté limpio
+        const token = localStorage.getItem('etp_token')
+        const user = localStorage.getItem('etp_user')
+        if (token || user) {
+          localStorage.removeItem('etp_token')
+          localStorage.removeItem('etp_user')
+        }
+      }, 50)
+      
+      // Forzar navegación si estamos en página de admin
+      if (window.location.pathname.startsWith('/admin')) {
+        setTimeout(() => {
+          navigate('/')
+        }, 100)
+      }
     }
 
     const handleLogin = (u) => setUser(u)
@@ -240,7 +321,7 @@
 
     return (
       <>
-        <style jsx>{`
+        <style>{`
           @keyframes borderGlow {
             0% { 
               box-shadow: 0 2px 8px rgba(255, 107, 53, 0.6);
@@ -256,7 +337,7 @@
             }
           }
         `}</style>
-        <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`} style={{
+        <nav key={navKey} className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`} style={{
           background: scrolled 
             ? 'linear-gradient(135deg, rgba(3, 18, 196, 0.95) 0%, rgba(2, 12, 150, 0.95) 100%)'
             : 'linear-gradient(135deg, rgba(3, 18, 196, 0.98) 0%, rgba(2, 12, 150, 0.98) 100%)',
@@ -710,7 +791,7 @@
                 {/* Auth area */}
                 {!user && (
                   <li className="nav-item ms-2">
-                    <Link className="btn btn-login-nav" to="/login" onClick={closeMobileMenu} style={{
+                    <Link className="btn" to="/login" onClick={closeMobileMenu} style={{
                       background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
                       color: '#1976d2',
                       border: 'none',
