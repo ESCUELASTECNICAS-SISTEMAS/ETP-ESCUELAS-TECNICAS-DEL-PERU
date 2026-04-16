@@ -33,6 +33,11 @@ const parseJsonField = (v) => {
   return null
 }
 
+const isSchedulePdfUrl = (url) => {
+  if (!url || typeof url !== 'string') return false
+  return /\.pdf(\?|#|$)/i.test(url.trim())
+}
+
 const resolveModalidadDisplay = (course) => {
   if (!course) return null
   const raw = String(course.modalidad || '').trim().toLowerCase()
@@ -385,8 +390,18 @@ export default function CourseDetail() {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('temario')
   const [showSedeModal, setShowSedeModal] = useState(false)
+  const [horarioModal, setHorarioModal] = useState(null)
   const [sucursales, setSucursales] = useState([])
   const [defaultSedeId, setDefaultSedeId] = useState(null)
+
+  useEffect(() => {
+    if (!horarioModal) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') setHorarioModal(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [horarioModal])
 
   useEffect(() => {
     if (!showSedeModal) return
@@ -739,10 +754,31 @@ export default function CourseDetail() {
                 <div className="cd-sidebar-card cd-sidebar-horario shadow-sm border-0 rounded-3 mb-3">
                   <h5 className="cd-sidebar-title"><i className="bi bi-calendar-week me-2 text-success"></i>Horarios</h5>
                   <div className="text-center">
-                    <a href={course.horarios.url} target="_blank" rel="noopener noreferrer" className="d-block">
-                      <img src={course.horarios.url} alt={course.horarios.alt_text || 'Horario'} className="img-fluid rounded-3 shadow-sm border border-2 border-success border-opacity-25" style={{maxHeight:280,objectFit:'contain'}} />
-                      <small className="d-block mt-2 text-primary fw-bold"><i className="bi bi-zoom-in me-1"></i>Click para ampliar</small>
-                    </a>
+                    <button
+                      type="button"
+                      className="p-0 border-0 bg-transparent d-block mx-auto rounded-3"
+                      style={{ cursor: 'zoom-in', maxWidth: '100%' }}
+                      onClick={() => setHorarioModal({ src: course.horarios.url, alt: course.horarios.alt_text || 'Horario' })}
+                      aria-label="Ampliar imagen de horarios"
+                    >
+                      {isSchedulePdfUrl(course.horarios.url) ? (
+                        <div
+                          className="rounded-3 shadow-sm border border-2 border-success border-opacity-25 bg-white d-flex flex-column align-items-center justify-content-center gap-2 py-4 px-3"
+                          style={{ minHeight: 200, maxHeight: 400, width: '100%' }}
+                        >
+                          <i className="bi bi-file-earmark-pdf text-danger" style={{ fontSize: '2.5rem' }} aria-hidden="true" />
+                          <span className="fw-semibold text-success small">Horarios (PDF) — clic para ver</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={course.horarios.url}
+                          alt={course.horarios.alt_text || 'Horario'}
+                          className="img-fluid rounded-3 shadow-sm border border-2 border-success border-opacity-25"
+                          style={{ maxHeight: 400, width: '100%', objectFit: 'contain', display: 'block' }}
+                        />
+                      )}
+                    </button>
+                    <small className="d-block mt-2 text-muted">Clic para ver en grande (misma página)</small>
                   </div>
                 </div>
               )}
@@ -750,24 +786,33 @@ export default function CourseDetail() {
               {/* URL de Horarios */}
               {course.horarios_media_url && (
                 <div className="cd-sidebar-card cd-sidebar-horario-url shadow-sm border-0 rounded-3 mb-3">
-                  <h5 className="cd-sidebar-title"><i className="bi bi-link-45deg me-2 text-primary"></i>Horarios del Curso</h5>
+                  <h5 className="cd-sidebar-title"><i className="bi bi-calendar-week me-2 text-primary"></i>Horarios del Curso</h5>
                   <div className="text-center">
-                    <a href={course.horarios_media_url} target="_blank" rel="noopener noreferrer" className="d-block">
-                      <img 
-                        src={course.horarios_media_url} 
-                        alt="Horarios del curso" 
-                        className="img-fluid rounded-3 shadow-sm border border-2 border-primary border-opacity-25" 
-                        style={{maxHeight:280,objectFit:'contain',transition:'all 0.3s ease'}} 
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.05)'
-                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)'
-                          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'
-                        }}
-                      />
-                    </a>
+                    <button
+                      type="button"
+                      className="p-0 border-0 bg-transparent d-block mx-auto rounded-3"
+                      style={{ cursor: 'zoom-in', maxWidth: '100%' }}
+                      onClick={() => setHorarioModal({ src: course.horarios_media_url, alt: 'Horarios del curso' })}
+                      aria-label="Ampliar horarios del curso"
+                    >
+                      {isSchedulePdfUrl(course.horarios_media_url) ? (
+                        <div
+                          className="rounded-3 shadow-sm border border-2 border-primary border-opacity-25 bg-white d-flex flex-column align-items-center justify-content-center gap-2 py-4 px-3"
+                          style={{ minHeight: 200, maxHeight: 400, width: '100%' }}
+                        >
+                          <i className="bi bi-file-earmark-pdf text-danger" style={{ fontSize: '2.5rem' }} aria-hidden="true" />
+                          <span className="fw-semibold text-primary small">Horarios (PDF) — clic para ver</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={course.horarios_media_url}
+                          alt="Horarios del curso"
+                          className="img-fluid rounded-3 shadow-sm border border-2 border-primary border-opacity-25"
+                          style={{ maxHeight: 400, width: '100%', objectFit: 'contain', display: 'block' }}
+                        />
+                      )}
+                    </button>
+                    <small className="d-block mt-2 text-muted">Clic para ver en grande (misma página)</small>
                   </div>
                 </div>
               )}
@@ -874,6 +919,56 @@ export default function CourseDetail() {
         </div>
       </div>
     </div>
+
+    {horarioModal && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={horarioModal.alt || 'Horarios'}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.88)',
+          zIndex: 10050,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+        }}
+        onClick={() => setHorarioModal(null)}
+      >
+        <div
+          className="position-relative bg-dark rounded-3 overflow-hidden"
+          style={{ maxWidth: 'min(96vw, 1200px)', maxHeight: '92vh', width: '100%' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="btn-close btn-close-white position-absolute top-0 end-0 m-2"
+            style={{ zIndex: 2 }}
+            onClick={() => setHorarioModal(null)}
+            aria-label="Cerrar"
+          />
+          {isSchedulePdfUrl(horarioModal.src) ? (
+            <iframe
+              title={horarioModal.alt || 'Horarios'}
+              src={horarioModal.src}
+              className="d-block w-100 border-0"
+              style={{ height: 'min(85vh, 900px)', minHeight: 360, background: '#fff' }}
+            />
+          ) : (
+            <div className="p-2 p-md-3 text-center" style={{ maxHeight: '90vh', overflow: 'auto' }}>
+              <img
+                src={horarioModal.src}
+                alt={horarioModal.alt || ''}
+                className="img-fluid rounded-2"
+                style={{ maxHeight: '85vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    )}
     </>
   )
 }
