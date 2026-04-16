@@ -65,25 +65,128 @@ export default function CarrerasPage(){
   })
 
   return (
-    <div className="container py-5">
-      {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Cargando...</span></div>
-        </div>
-      ) : carrerasAuxiliares.length === 0 ? (
-        <div className="text-center py-5">
-          <i className="bi bi-inbox fs-1 text-muted"></i>
-          <h4 className="mt-3 text-muted">No hay carreras disponibles</h4>
-        </div>
-      ) : (
-        <div className="row g-4">
-          {carrerasAuxiliares.map((c, i) => (
-            <div className="col-12 col-md-6 col-lg-4" key={i}>
-              <CourseCard item={c} />
+    <div style={{ 
+      background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)',
+      minHeight: '100vh',
+      padding: '2rem 0'
+    }}>
+      <div className="container">
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border" style={{ color: '#1976d2', width: '3rem', height: '3rem' }} role="status">
+              <span className="visually-hidden">Cargando...</span>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : carrerasAuxiliares.length === 0 ? (
+          <div className="text-center py-5">
+            <div style={{
+              width: '80px',
+              height: '80px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem',
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)'
+            }}>
+              <i className="bi bi-inbox" style={{ fontSize: '2rem', color: '#1976d2' }}></i>
+            </div>
+            <h4 style={{ color: '#1565c0', fontWeight: '600' }}>No hay carreras disponibles</h4>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="text-center mb-5">
+              <div style={{
+                display: 'inline-block',
+                backgroundColor: '#1976d2',
+                color: 'white',
+                padding: '8px 20px',
+                borderRadius: '20px',
+                marginBottom: '1rem',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}>
+                <i className="bi bi-mortarboard me-2"></i>
+                Formación Profesional
+              </div>
+              <h1 style={{
+                fontSize: '3rem',
+                fontWeight: '800',
+                color: '#0d47a1',
+                marginBottom: '1rem',
+                textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                Carreras Técnicas
+              </h1>
+              <p style={{
+                fontSize: '1.2rem',
+                color: '#1565c0',
+                marginBottom: '2rem'
+              }}>
+                Especialízate en áreas con alta demanda laboral
+              </p>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '2rem',
+                backgroundColor: 'rgba(255,255,255,0.8)',
+                padding: '1rem 2rem',
+                borderRadius: '15px',
+                boxShadow: '0 4px 15px rgba(25, 118, 210, 0.1)'
+              }}>
+                <div className="text-center">
+                  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1976d2' }}>
+                    {carrerasAuxiliares.length}
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#5e92f3' }}>Carreras</div>
+                </div>
+                <div style={{ width: '1px', height: '30px', backgroundColor: '#bbdefb' }}></div>
+                <div className="text-center">
+                  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2e7d32' }}>
+                    1
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#66bb6a' }}>Año</div>
+                </div>
+                <div style={{ width: '1px', height: '30px', backgroundColor: '#bbdefb' }}></div>
+                <div className="text-center">
+                  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f57c00' }}>
+                    100%
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#ffb74d' }}>Certificado</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid */}
+            <div className="row g-4">
+              {carrerasAuxiliares.map((c, i) => (
+                <div className="col-12 col-md-6 col-lg-4" key={i}>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '15px',
+                    boxShadow: '0 4px 20px rgba(25, 118, 210, 0.15)',
+                    overflow: 'hidden',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    height: '100%'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-5px)'
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(25, 118, 210, 0.25)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(25, 118, 210, 0.15)'
+                  }}>
+                    <CourseCard item={c} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
