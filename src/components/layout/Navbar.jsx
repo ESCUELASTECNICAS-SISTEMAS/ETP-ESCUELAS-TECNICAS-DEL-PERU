@@ -240,13 +240,78 @@
 
     return (
       <>
-        <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`}>
+        <style jsx>{`
+          @keyframes borderGlow {
+            0% { 
+              box-shadow: 0 2px 8px rgba(255, 107, 53, 0.6);
+              filter: brightness(1);
+            }
+            50% { 
+              box-shadow: 0 2px 12px rgba(255, 107, 53, 0.9);
+              filter: brightness(1.2);
+            }
+            100% { 
+              box-shadow: 0 2px 8px rgba(255, 107, 53, 0.6);
+              filter: brightness(1);
+            }
+          }
+        `}</style>
+        <nav className={`navbar navbar-expand-lg navbar-light nav-enhanced ${scrolled ? 'scrolled' : ''}`} style={{
+          background: scrolled 
+            ? 'linear-gradient(135deg, rgba(3, 18, 196, 0.95) 0%, rgba(2, 12, 150, 0.95) 100%)'
+            : 'linear-gradient(135deg, rgba(3, 18, 196, 0.98) 0%, rgba(2, 12, 150, 0.98) 100%)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: scrolled 
+            ? '0 8px 32px rgba(25, 118, 210, 0.25)'
+            : '0 4px 20px rgba(25, 118, 210, 0.15)',
+          borderRadius: '0',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          border: 'none',
+          padding: '0.5rem 0',
+          borderBottom: '3px solid #ff6b35',
+          boxShadow: '0 2px 8px rgba(255, 107, 53, 0.6)',
+          animation: 'borderGlow 2s ease-in-out infinite'
+        }}>
           <div className="container">
-            <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="ETP - Escuelas Técnicas del Perú">
-              <img src="/assets/images/logo.jpg" alt="ETP" className="me-2 brand-img" />
+            <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="ETP - Escuelas Técnicas del Perú" style={{
+              transition: 'transform 0.3s ease, filter 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.filter = 'brightness(1.1)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.filter = 'brightness(1)'
+            }}>
+              <div style={{
+                width: '35px',
+                height: '35px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                boxShadow: '0 2px 8px rgba(255,255,255,0.2)',
+                marginRight: '8px'
+              }}>
+                <img src="/assets/images/logo.jpg" alt="ETP" className="brand-img" style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }} />
+              </div>
               <div className="brand-text">
-                <div className="brand-title">ETP - Escuelas Técnicas</div>
-                <div className="brand-subtitle">del Perú</div>
+                <div className="brand-title" style={{
+                  fontWeight: '700',
+                  fontSize: '1.1rem',
+                  color: '#ffffff',
+                  lineHeight: '1.1',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.4)'
+                }}>ETP - Escuelas Técnicas</div>
+                <div className="brand-subtitle" style={{
+                  fontWeight: '500',
+                  fontSize: '0.75rem',
+                  color: 'rgba(255,255,255,0.85)',
+                  lineHeight: '1.1'
+                }}>del Perú</div>
               </div>
             </Link>
             <button   
@@ -257,42 +322,229 @@
               aria-controls="navbarSupportedContent"
               aria-expanded="false"
               aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
+              style={{
+                border: '2px solid rgba(255,255,255,0.3)',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                transition: 'all 0.3s ease',
+                backgroundColor: 'rgba(255,255,255,0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+              }}>
+              <span className="navbar-toggler-icon" style={{
+                backgroundImage: "url(\"data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E\")"
+              }}></span>
             </button>
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+              <ul className="navbar-nav ms-auto mb-0 mb-lg-0 align-items-center">
                 <li className="nav-item">
-                  <Link className="nav-link active" aria-current="page" to="/" onClick={closeMobileMenu}>Inicio</Link>
+                  <Link className="nav-link active" aria-current="page" to="/" onClick={closeMobileMenu} style={{
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    backgroundColor: 'rgba(255,255,255,0.12)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>Inicio</Link>
                 </li>
                 <li className="nav-item dropdown">
-                  <a className="nav-link dropdown-toggle" href="#" id="cursosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <a className="nav-link dropdown-toggle" href="#" id="cursosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>
                     Cursos
                   </a>
-                  <ul className="dropdown-menu" aria-labelledby="cursosDropdown">
-                    <li><Link className="dropdown-item" to="/talleres" onClick={closeMobileMenu}>Talleres</Link></li>
-                    <li><Link className="dropdown-item" to="/cursos-informatica" onClick={closeMobileMenu}>Cortos</Link></li>
+                  <ul className="dropdown-menu" aria-labelledby="cursosDropdown" style={{
+                    border: 'none',
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)',
+                    backdropFilter: 'blur(12px)',
+                    backgroundColor: 'rgba(255,255,255,0.95)',
+                    padding: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    <li><Link className="dropdown-item" to="/talleres" onClick={closeMobileMenu} style={{
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease',
+                      color: '#1565c0'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}>Talleres</Link></li>
+                    <li><Link className="dropdown-item" to="/cursos-informatica" onClick={closeMobileMenu} style={{
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease',
+                      color: '#1565c0'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}>Cortos</Link></li>
                   </ul>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/programas" onClick={closeMobileMenu}>Carreras</Link>
+                  <Link className="nav-link" to="/programas" onClick={closeMobileMenu} style={{
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>Carreras</Link>
                 </li>
                 <li className="nav-item dropdown">
-                  <a className="nav-link dropdown-toggle" href="#" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <a className="nav-link dropdown-toggle" href="#" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>
                     Nosotros
                   </a>
-                  <ul className="dropdown-menu" aria-labelledby="nosotrosDropdown">
-                    <li><Link className="dropdown-item" to="/nosotros" onClick={closeMobileMenu}>Sobre nosotros</Link></li>
-                    <li><Link className="dropdown-item" to="/galeria" onClick={closeMobileMenu}>Ver galería</Link></li>
-                    <li><Link className="dropdown-item" to="/blogs" onClick={closeMobileMenu}>Blogs</Link></li>
+                  <ul className="dropdown-menu" aria-labelledby="nosotrosDropdown" style={{
+                    border: 'none',
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)',
+                    backdropFilter: 'blur(12px)',
+                    backgroundColor: 'rgba(255,255,255,0.95)',
+                    padding: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    <li><Link className="dropdown-item" to="/nosotros" onClick={closeMobileMenu} style={{
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease',
+                      color: '#1565c0'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}>Sobre nosotros</Link></li>
+                    <li><Link className="dropdown-item" to="/galeria" onClick={closeMobileMenu} style={{
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease',
+                      color: '#1565c0'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}>Ver galería</Link></li>
+                    <li><Link className="dropdown-item" to="/blogs" onClick={closeMobileMenu} style={{
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease',
+                      color: '#1565c0'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}>Blogs</Link></li>
                   </ul>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/noticias" onClick={closeMobileMenu}>Noticias</Link>
+                  <Link className="nav-link" to="/noticias" onClick={closeMobileMenu} style={{
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>Noticias</Link>
                 </li>
                 {/* Buscador compacto */}
                 <li className="nav-item ms-2 position-relative">
-                  <div className="input-group input-group-sm" style={{width:180}}>
+                  <div className="input-group input-group-sm" style={{
+                    width: 160,
+                    borderRadius: '25px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s ease'
+                  }}>
                     <input
                       type="search"
                       className="form-control form-control-sm border-0"
@@ -301,19 +553,57 @@
                       onChange={e => { setQuery(e.target.value); setShowResults(true) }}
                       onFocus={() => setShowResults(true)}
                       onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        padding: '0.3rem 0.8rem',
+                        fontSize: '0.8rem',
+                        fontWeight: '500'
+                      }}
                     />
-                    <span className="input-group-text bg-white border-0"><i className="bi bi-search"></i></span>
+                    <span className="input-group-text bg-white border-0" style={{
+                      backgroundColor: 'rgba(255,255,255,0.9)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.9)'
+                    }}><i className="bi bi-search" style={{color: '#1976d2'}}></i></span>
                   </div>
                   {showResults && results.length > 0 && (
-                    <div className="position-absolute bg-white shadow rounded mt-1 w-100" style={{zIndex:1050,maxHeight:240,overflowY:'auto'}}>
+                    <div className="position-absolute bg-white shadow rounded mt-1 w-100" style={{
+                      zIndex:1050,
+                      maxHeight:240,
+                      overflowY:'auto',
+                      borderRadius: '16px',
+                      boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)',
+                      border: 'none',
+                      backdropFilter: 'blur(12px)',
+                      backgroundColor: 'rgba(255,255,255,0.95)'
+                    }}>
                       {results.map(c => (
                         <div
                           key={c.id}
                           className="px-3 py-2 border-bottom small"
-                          style={{cursor:'pointer'}}
+                          style={{
+                            cursor:'pointer',
+                            transition: 'all 0.3s ease',
+                            borderRadius: '8px',
+                            margin: '4px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.08)'
+                            e.currentTarget.style.transform = 'translateX(4px)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.transform = 'translateX(0)'
+                          }}
                           onMouseDown={() => { navigate(`/curso/${c.slug || c.id}`); setQuery(''); setShowResults(false); closeMobileMenu() }}
                         >
-                          <strong>{c.title || c.titulo}</strong>
+                          <strong style={{color: '#1565c0'}}>{c.title || c.titulo}</strong>
                           {c.subtitle && <div className="text-muted" style={{fontSize:'.75rem'}}>{c.subtitle}</div>}
                         </div>
                       ))}
@@ -420,7 +710,29 @@
                 {/* Auth area */}
                 {!user && (
                   <li className="nav-item ms-2">
-                    <Link className="btn btn-login-nav" to="/login" onClick={closeMobileMenu}>
+                    <Link className="btn btn-login-nav" to="/login" onClick={closeMobileMenu} style={{
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      color: '#1976d2',
+                      border: 'none',
+                      borderRadius: '25px',
+                      padding: '0.4rem 1.2rem',
+                      fontWeight: '600',
+                      fontSize: '0.8rem',
+                      boxShadow: '0 4px 16px rgba(255,255,255,0.3)',
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 6px 24px rgba(255,255,255,0.4)'
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,255,255,0.3)'
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+                    }}>
                       <i className="bi bi-person-circle me-2"></i>Login
                     </Link>
                   </li>
@@ -428,15 +740,73 @@
 
                 {user && (
                   <li className="nav-item dropdown ms-3">
-                    <a className="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <span style={{maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block'}}>
+                    <a className="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
+                      padding: '0.3rem 0.8rem',
+                      borderRadius: '20px',
+                      backgroundColor: 'rgba(255,255,255,0.12)',
+                      transition: 'all 0.3s ease',
+                      fontWeight: '500',
+                      fontSize: '0.8rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}>
+                      <i className="bi bi-person-circle" style={{fontSize: '1.1rem'}}></i>
+                      <span style={{
+                        maxWidth: '120px', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        whiteSpace: 'nowrap', 
+                        display: 'inline-block'
+                      }}>
                         {user.name || user.email}
                       </span>
                     </a>
-                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                      <li><Link className="dropdown-item" to="/admin" onClick={closeMobileMenu}>Panel</Link></li>
-                      <li><hr className="dropdown-divider" /></li>
-                      <li><button className="dropdown-item" onClick={handleLogout}>Cerrar sesión</button></li>
+                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu" style={{
+                      border: 'none',
+                      borderRadius: '16px',
+                      boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)',
+                      backdropFilter: 'blur(12px)',
+                      backgroundColor: 'rgba(255,255,255,0.95)',
+                      padding: '0.5rem',
+                      marginTop: '0.5rem'
+                    }}>
+                      <li><Link className="dropdown-item" to="/admin" onClick={closeMobileMenu} style={{
+                        borderRadius: '12px',
+                        padding: '0.75rem 1rem',
+                        fontWeight: '500',
+                        transition: 'all 0.3s ease',
+                        color: '#1565c0'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'
+                        e.currentTarget.style.transform = 'translateX(4px)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.transform = 'translateX(0)'
+                      }}><i className="bi bi-speedometer2 me-2"></i>Panel</Link></li>
+                      <li><hr className="dropdown-divider" style={{margin: '0.5rem 0'}} /></li>
+                      <li><button className="dropdown-item" onClick={handleLogout} style={{
+                        borderRadius: '12px',
+                        padding: '0.75rem 1rem',
+                        fontWeight: '500',
+                        transition: 'all 0.3s ease',
+                        color: '#dc3545'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(220, 53, 69, 0.1)'
+                        e.currentTarget.style.transform = 'translateX(4px)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.transform = 'translateX(0)'
+                      }}><i className="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button></li>
                     </ul>
                   </li>
                 )}
