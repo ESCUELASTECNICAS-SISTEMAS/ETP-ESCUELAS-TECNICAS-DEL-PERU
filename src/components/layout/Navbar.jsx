@@ -344,13 +344,12 @@ export default function Navbar() {
           backdropFilter: 'blur(12px)',
           boxShadow: scrolled 
             ? '0 8px 32px rgba(25, 118, 210, 0.25)'
-            : '0 4px 20px rgba(25, 118, 210, 0.15)',
+            : '0 2px 8px rgba(255, 107, 53, 0.6)',
           borderRadius: '0',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           border: 'none',
           padding: '0.5rem 0',
           borderBottom: '3px solid #ff6b35',
-          boxShadow: '0 2px 8px rgba(255, 107, 53, 0.6)',
           animation: 'borderGlow 2s ease-in-out infinite'
         }}>
           <div className="container">
@@ -617,6 +616,31 @@ export default function Navbar() {
                     e.currentTarget.style.transform = 'translateY(0)'
                   }}>Noticias</Link>
                 </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="https://webintranetetp-production.up.railway.app/login" onClick={closeMobileMenu} style={{
+                    color: '#ffffff',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    padding: '0.5rem 1.2rem',
+                    borderRadius: '25px',
+                    transition: 'all 0.3s ease',
+                    background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                    boxShadow: '0 4px 16px rgba(255, 107, 53, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #ff8c42 0%, #ffa562 100%)'
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)'
+                    e.currentTarget.style.boxShadow = '0 6px 24px rgba(255, 107, 53, 0.6)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)'
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 107, 53, 0.4)'
+                  }}>Intranet</a>
+                </li>
                 {/* Buscador compacto */}
                 <li className="nav-item ms-2 position-relative">
                   <div className="input-group input-group-sm" style={{
@@ -792,29 +816,27 @@ export default function Navbar() {
                 {!user && (
                   <li className="nav-item ms-2">
                     <Link className="btn" to="/login" onClick={closeMobileMenu} style={{
-                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      background: '#ffffff',
                       color: '#1976d2',
                       border: 'none',
-                      borderRadius: '25px',
-                      padding: '0.4rem 1.2rem',
+                      borderRadius: '20px',
+                      padding: '0.35rem 1rem',
                       fontWeight: '600',
                       fontSize: '0.8rem',
-                      boxShadow: '0 4px 16px rgba(255,255,255,0.3)',
-                      transition: 'all 0.3s ease',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s ease'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 6px 24px rgba(255,255,255,0.4)'
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+                      e.currentTarget.style.background = '#f8f9fa'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,255,255,0.3)'
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+                      e.currentTarget.style.background = '#ffffff'
                     }}>
-                      <i className="bi bi-person-circle me-2"></i>Login
+                      <i className="bi bi-person-circle me-1"></i>Login
                     </Link>
                   </li>
                 )}

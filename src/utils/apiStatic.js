@@ -1,4 +1,4 @@
-const BASE_API = import.meta.env.VITE_API_BASE || 'https://servidorpaginaetp-production.up.railway.app'
+const BASE_API = import.meta.env.VITE_API_BASE || '/api'
 
 export const endpoints = {
   LOGIN: `${BASE_API}/auth/login`,
