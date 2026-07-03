@@ -119,15 +119,7 @@ export default function CourseCard({ item, showPrice = true }) {
 
         {showPrice && price != null && (
           <div className="cc-price">
-            {discountedPrice ? (
-              <>
-                <span className="cc-price-old">S/ {price}</span>
-                <span className="cc-price-now">S/ {discountedPrice}</span>
-                <span className="badge bg-danger ms-2">-{discountPct}%</span>
-              </>
-            ) : (
-              <span className="cc-price-now">S/ {price}</span>
-            )}
+            <span className="cc-price-now">S/ {price}</span>
           </div>
         )}
 
@@ -142,14 +134,7 @@ export default function CourseCard({ item, showPrice = true }) {
             {hasPension && (
               <span>
                 Mensualidad: 
-                {discountedPension != null ? (
-                  <>
-                    <span className="cc-price-old ms-1">S/ {pension}</span>
-                    <strong className="ms-1">S/ {discountedPension}</strong>
-                  </>
-                ) : (
-                  <strong className="ms-1">S/ {pension}</strong>
-                )}
+                <strong className="ms-1">S/ {pension}</strong>
               </span>
             )}
             <span
@@ -164,12 +149,33 @@ export default function CourseCard({ item, showPrice = true }) {
         )}
 
         {isPackageSinglePayment && (
-          <div className="mt-2">
+          <div className="mt-2 mb-3">
             <span className="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">
-              Paquete completo pago unico
+              Paquete completo pago único
             </span>
           </div>
         )}
+
+        <div className="my-3">
+          <a
+            href={`https://wa.me/51900424018?text=${encodeURIComponent(`¡Hola! 👋 Vengo de la página web. Me interesa inscribirme y obtener el descuento especial para el curso: ${item.titulo || item.title || 'este curso'}.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="d-flex align-items-center gap-2 fw-bold text-success text-decoration-none p-2 rounded-2"
+            style={{ 
+              fontSize: '0.85rem', 
+              background: '#e8fdf0', 
+              border: '1px solid #b7f4cb',
+              transition: 'all .2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#d8fbe3'; e.currentTarget.style.borderColor = '#86e7a6' }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#e8fdf0'; e.currentTarget.style.borderColor = '#b7f4cb' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <i className="bi bi-whatsapp text-success" style={{ fontSize: '1.15rem' }}></i>
+            <span style={{ color: '#14532d' }}>Obtén tu descuento especial dando click aquí</span>
+          </a>
+        </div>
 
         <Link to={detailUrl} className="cc-cta">
           Ver detalles <i className="bi bi-arrow-right"></i>
